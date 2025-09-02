@@ -39,6 +39,10 @@ d:\02-VLU\02-AI-ThucChien\
 │   ├── uploads/           # Local file storage
 │   ├── docker-compose.yml # Redis container
 │   ├── docker-compose-mongodb.yml # MongoDB container
+│   ├── dev.py             # Development environment manager
+│   ├── start_redis.py     # Redis startup script
+│   ├── start_worker.py    # Celery worker startup
+│   ├── setup_mongodb.py   # MongoDB setup script
 │   └── env.example        # Environment template
 ├── fe/                     # Frontend ReactJS
 │   ├── public/
@@ -111,7 +115,36 @@ npm install
 
 ### Bước 3: Chạy hệ thống
 
-#### Cách 1: Quick Start với Docker Compose (Khuyến nghị)
+#### Cách 1: Quick Start với Development Manager (Khuyến nghị)
+```bash
+cd be
+python dev.py start
+```
+
+#### Cách 2: Manual Start từng service
+```bash
+# Terminal 1: Start Redis
+cd be
+python start_redis.py
+
+# Terminal 2: Start MongoDB
+cd be
+python setup_mongodb.py
+
+# Terminal 3: Start Celery Worker
+cd be
+python start_worker.py
+
+# Terminal 4: Start Backend API
+cd be
+python main.py
+
+# Terminal 5: Start Frontend
+cd fe
+npm start
+```
+
+#### Cách 3: Docker Compose (Alternative)
 ```bash
 # Terminal 1: Start Redis và MongoDB
 cd be
@@ -127,29 +160,6 @@ cd be
 python main.py
 
 # Terminal 4: Start Frontend
-cd fe
-npm start
-```
-
-#### Cách 2: Manual Start từng service
-```bash
-# Terminal 1: Start Redis
-cd be
-docker-compose up -d redis
-
-# Terminal 2: Start MongoDB
-cd be
-docker-compose -f docker-compose-mongodb.yml up -d
-
-# Terminal 3: Start Celery Worker
-cd be
-celery -A celery_app.celery_app worker --loglevel=info --pool=threads --concurrency=2
-
-# Terminal 4: Start Backend API
-cd be
-python main.py
-
-# Terminal 5: Start Frontend
 cd fe
 npm start
 ```
@@ -267,8 +277,11 @@ sudo systemctl enable mongodb
 
 ### Kiểm tra MongoDB
 ```bash
-# Test MongoDB connection
+# Test MongoDB setup với script
 cd be
+python setup_mongodb.py
+
+# Test MongoDB connection
 python -c "from database import get_database_status; print(get_database_status())"
 
 # Check Docker containers
@@ -288,21 +301,34 @@ Không sao! Hệ thống tự động fallback về **in-memory storage**:
 - ⚠️ Documents sẽ mất khi restart server
 - 💡 Suitable cho development và testing
 
-### 🎯 Quick Start với Docker MongoDB
+### 🎯 Quick Start với Development Scripts
 ```bash
 # 1. Clone project và cd vào backend
 cd be
 
-# 2. Start MongoDB với Docker
-docker-compose -f docker-compose-mongodb.yml up -d
+# 2. Start MongoDB với setup script
+python setup_mongodb.py
 
 # 3. Start Redis
-docker-compose up -d redis
+python start_redis.py
 
 # 4. Start backend server
 python main.py
 
 # 5. Start frontend (terminal mới)
+cd ../fe
+npm start
+```
+
+### 🚀 Super Quick Start (All-in-One)
+```bash
+# 1. Clone project và cd vào backend
+cd be
+
+# 2. Start tất cả services với dev manager
+python dev.py start
+
+# 3. Start frontend (terminal mới)
 cd ../fe
 npm start
 ```
@@ -599,11 +625,20 @@ python start_worker.py
 
 **3. Redis connection failed:**
 ```bash
-# Start Redis trước
+# Start Redis với script
 python start_redis.py
 
 # Test connection
 python -c "import redis; print(redis.Redis().ping())"
+```
+
+**4. MongoDB không kết nối được:**
+```bash
+# Setup MongoDB với script
+python setup_mongodb.py
+
+# Test connection
+python -c "from database import get_database_status; print(get_database_status())"
 ```
 
 ## 📈 Tính năng sẽ phát triển
