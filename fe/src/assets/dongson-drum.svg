@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <!-- Outer ring of drum -->
+  <circle cx="200" cy="200" r="190" fill="none" stroke="#8B4513" stroke-width="8"/>
+  
+  <!-- Inner decorative rings -->
+  <circle cx="200" cy="200" r="170" fill="none" stroke="#CD853F" stroke-width="3"/>
+  <circle cx="200" cy="200" r="150" fill="none" stroke="#8B4513" stroke-width="2"/>
+  
+  <!-- Central sun with 14 rays -->
+  <g id="central-sun">
+    <!-- Sun rays -->
+    <g stroke="#D4AF37" stroke-width="3" fill="none">
+      <line x1="200" y1="80" x2="200" y2="100" transform="rotate(0 200 200)"/>
+      <line x1="200" y1="80" x2="200" y2="100" transform="rotate(25.7 200 200)"/>
+      <line x1="200" y1="80" x2="200" y2="100" transform="rotate(51.4 200 200)"/>
+      <line x1="200" y1="80" x2="200" y2="100" transform="rotate(77.1 200 200)"/>
+      <line x1="200" y1="80" x2="200" y2="100" transform="rotate(102.8 200 200)"/>
+      <line x1="200" y1="80" x2="200" y2="100" transform="rotate(128.5 200 200)"/>
+      <line x1="200" y1="80" x2="200" y2="100" transform="rotate(154.2 200 200)"/>
+      <line x1="200" y1="80" x2="200" y2="100" transform="rotate(180 200 200)"/>
+      <line x1="200" y1="80" x2="200" y2="100" transform="rotate(205.7 200 200)"/>
+      <line x1="200" y1="80" x2="200" y2="100" transform="rotate(231.4 200 200)"/>
+      <line x1="200" y1="80" x2="200" y2="100" transform="rotate(257.1 200 200)"/>
+      <line x1="200" y1="80" x2="200" y2="100" transform="rotate(282.8 200 200)"/>
+      <line x1="200" y1="80" x2="200" y2="100" transform="rotate(308.5 200 200)"/>
+      <line x1="200" y1="80" x2="200" y2="100" transform="rotate(334.2 200 200)"/>
+    </g>
+    
+    <!-- Central sun circle -->
+    <circle cx="200" cy="200" r="30" fill="#FFD700" stroke="#D4AF37" stroke-width="2"/>
+    
+    <!-- Inner sun pattern -->
+    <circle cx="200" cy="200" r="20" fill="none" stroke="#B8860B" stroke-width="1"/>
+    <circle cx="200" cy="200" r="10" fill="none" stroke="#B8860B" stroke-width="1"/>
+  </g>
+  
+  <!-- Lac birds around the sun -->
+  <g id="lac-birds" fill="#8B4513" stroke="#654321" stroke-width="1">
+    <!-- Bird 1 -->
+    <g transform="rotate(0 200 200)">
+      <path d="M 200 130 Q 190 125 185 135 Q 190 140 200 135 Q 210 140 215 135 Q 210 125 200 130" />
+      <path d="M 195 135 L 190 145 M 205 135 L 210 145" stroke-width="0.5"/>
+      <circle cx="195" cy="132" r="1"/>
+    </g>
+    
+    <!-- Bird 2 -->
+    <g transform="rotate(72 200 200)">
+      <path d="M 200 130 Q 190 125 185 135 Q 190 140 200 135 Q 210 140 215 135 Q 210 125 200 130" />
+      <path d="M 195 135 L 190 145 M 205 135 L 210 145" stroke-width="0.5"/>
+      <circle cx="195" cy="132" r="1"/>
+    </g>
+    
+    <!-- Bird 3 -->
+    <g transform="rotate(144 200 200)">
+      <path d="M 200 130 Q 190 125 185 135 Q 190 140 200 135 Q 210 140 215 135 Q 210 125 200 130" />
+      <path d="M 195 135 L 190 145 M 205 135 L 210 145" stroke-width="0.5"/>
+      <circle cx="195" cy="132" r="1"/>
+    </g>
+    
+    <!-- Bird 4 -->
+    <g transform="rotate(216 200 200)">
+      <path d="M 200 130 Q 190 125 185 135 Q 190 140 200 135 Q 210 140 215 135 Q 210 125 200 130" />
+      <path d="M 195 135 L 190 145 M 205 135 L 210 145" stroke-width="0.5"/>
+      <circle cx="195" cy="132" r="1"/>
+    </g>
+    
+    <!-- Bird 5 -->
+    <g transform="rotate(288 200 200)">
+      <path d="M 200 130 Q 190 125 185 135 Q 190 140 200 135 Q 210 140 215 135 Q 210 125 200 130" />
+      <path d="M 195 135 L 190 145 M 205 135 L 210 145" stroke-width="0.5"/>
+      <circle cx="195" cy="132" r="1"/>
+    </g>
+  </g>
+  
+  <!-- Boats pattern on outer ring -->
+  <g id="boats" fill="none" stroke="#8B4513" stroke-width="2">
+    <!-- Boat 1 -->
+    <g transform="rotate(45 200 200)">
+      <path d="M 180 300 Q 200 295 220 300" />
+      <line x1="190" y1="295" x2="190" y2="285"/>
+      <line x1="200" y1="294" x2="200" y2="280"/>
+      <line x1="210" y1="295" x2="210" y2="285"/>
+      <path d="M 185 285 Q 200 275 215 285" />
+    </g>
+    
+    <!-- Boat 2 -->
+    <g transform="rotate(135 200 200)">
+      <path d="M 180 300 Q 200 295 220 300" />
+      <line x1="190" y1="295" x2="190" y2="285"/>
+      <line x1="200" y1="294" x2="200" y2="280"/>
+      <line x1="210" y1="295" x2="210" y2="285"/>
+      <path d="M 185 285 Q 200 275 215 285" />
+    </g>
+    
+    <!-- Boat 3 -->
+    <g transform="rotate(225 200 200)">
+      <path d="M 180 300 Q 200 295 220 300" />
+      <line x1="190" y1="295" x2="190" y2="285"/>
+      <line x1="200" y1="294" x2="200" y2="280"/>
+      <line x1="210" y1="295" x2="210" y2="285"/>
+      <path d="M 185 285 Q 200 275 215 285" />
+    </g>
+    
+    <!-- Boat 4 -->
+    <g transform="rotate(315 200 200)">
+      <path d="M 180 300 Q 200 295 220 300" />
+      <line x1="190" y1="295" x2="190" y2="285"/>
+      <line x1="200" y1="294" x2="200" y2="280"/>
+      <line x1="210" y1="295" x2="210" y2="285"/>
+      <path d="M 185 285 Q 200 275 215 285" />
+    </g>
+  </g>
+  
+  <!-- Geometric patterns -->
+  <g id="geometric-patterns" fill="none" stroke="#CD853F" stroke-width="1">
+    <!-- Concentric circles with patterns -->
+    <circle cx="200" cy="200" r="130" stroke-dasharray="5,3"/>
+    <circle cx="200" cy="200" r="110" stroke-dasharray="3,2"/>
+    
+    <!-- Zigzag patterns -->
+    <g stroke-width="1.5">
+      <path d="M 120 200 L 130 190 L 140 200 L 150 190 L 160 200" transform="rotate(0 200 200)"/>
+      <path d="M 120 200 L 130 190 L 140 200 L 150 190 L 160 200" transform="rotate(90 200 200)"/>
+      <path d="M 120 200 L 130 190 L 140 200 L 150 190 L 160 200" transform="rotate(180 200 200)"/>
+      <path d="M 120 200 L 130 190 L 140 200 L 150 190 L 160 200" transform="rotate(270 200 200)"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,49 @@
+/* MaisonNeue Font Family - Official Company Fonts */
+
+@font-face {
+  font-family: 'MaisonNeue';
+  src: url('./fonts/MaisonNeue-Thin.otf') format('opentype');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'MaisonNeue';
+  src: url('./fonts/MaisonNeue-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'MaisonNeue';
+  src: url('./fonts/MaisonNeue-Book.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'MaisonNeue';
+  src: url('./fonts/MaisonNeue-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'MaisonNeue';
+  src: url('./fonts/MaisonNeue-Demi.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'MaisonNeue';
+  src: url('./fonts/MaisonNeue-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVC.AI - Responsive Design Test</title>
+    <link rel="stylesheet" href="./public/fonts.css">
+    <link rel="stylesheet" href="./src/index.css">
+    <style>
+        .test-container {
+            font-family: 'MaisonNeue', 'Inter', sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+            background: #f5f7fa;
+        }
+        
+        .screen-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+        
+        .breakpoint-indicator {
+            background: var(--secondary-color);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+        }
+        
+        .breakpoint-indicator::before {
+            content: "Mobile (< 768px)";
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .test-card {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+        
+        .icon-text-demo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        
+        .icon-demo {
+            width: 24px;
+            height: 24px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        /* Breakpoint indicators */
+        @media (min-width: 768px) {
+            .breakpoint-indicator::before {
+                content: "Tablet (768px - 991px)";
+            }
+        }
+        
+        @media (min-width: 992px) {
+            .breakpoint-indicator::before {
+                content: "Small Desktop (992px - 1199px)";
+            }
+        }
+        
+        @media (min-width: 1200px) {
+            .breakpoint-indicator::before {
+                content: "Desktop (1200px - 1919px)";
+            }
+        }
+        
+        @media (min-width: 1920px) {
+            .breakpoint-indicator::before {
+                content: "Large Desktop/2K (1920px - 2559px)";
+            }
+        }
+        
+        @media (min-width: 2560px) {
+            .breakpoint-indicator::before {
+                content: "4K+ Ultra Wide (2560px+)";
+            }
+        }
+        
+        /* Container behavior demonstration */
+        .container-demo {
+            background: rgba(210, 105, 30, 0.1);
+            border: 2px dashed var(--primary-color);
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .main-content-demo {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+        
+        /* Common resolutions table */
+        .resolution-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        
+        .resolution-table th,
+        .resolution-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .resolution-table th {
+            background: var(--secondary-color);
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .current-resolution {
+            background: rgba(210, 105, 30, 0.1);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen-info" id="screenInfo">
+        Loading...
+    </div>
+    
+    <div class="test-container">
+        <div class="container-2xl">
+            <h1 style="color: var(--primary-color); font-size: 36px; margin-bottom: 8px;">
+                🌍 DVC.AI - Responsive Design Test
+            </h1>
+            <p style="color: var(--text-secondary); font-size: 18px; margin-bottom: 32px;">
+                Kiểm tra giao diện trên các độ phân giải khác nhau
+            </p>
+            
+            <div class="breakpoint-indicator"></div>
+            
+            <h2 style="color: var(--primary-color); margin: 32px 0 16px 0;">
+                📱 Độ phân giải phổ biến
+            </h2>
+            
+            <table class="resolution-table">
+                <thead>
+                    <tr>
+                        <th>Thiết bị</th>
+                        <th>Độ phân giải</th>
+                        <th>Breakpoint</th>
+                        <th>Layout</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>📱 Mobile</td>
+                        <td>375x812, 390x844</td>
+                        <td>< 768px</td>
+                        <td>Stack layout, padding 16-20px</td>
+                    </tr>
+                    <tr>
+                        <td>📱 Tablet</td>
+                        <td>768x1024, 820x1180</td>
+                        <td>768px - 991px</td>
+                        <td>2-column grid, padding 20-24px</td>
+                    </tr>
+                    <tr>
+                        <td>💻 Laptop</td>
+                        <td>1366x768, 1440x900</td>
+                        <td>992px - 1199px</td>
+                        <td>Multi-column, padding 24-28px</td>
+                    </tr>
+                    <tr>
+                        <td>🖥️ Desktop</td>
+                        <td>1920x1080</td>
+                        <td>1200px - 1919px</td>
+                        <td>max-width 1200px, centered</td>
+                    </tr>
+                    <tr>
+                        <td>🖥️ 2K</td>
+                        <td>2560x1440</td>
+                        <td>1920px - 2559px</td>
+                        <td>max-width 1600px, centered</td>
+                    </tr>
+                    <tr id="currentRow">
+                        <td>🖥️ 4K+</td>
+                        <td>2560x1600+</td>
+                        <td>2560px+</td>
+                        <td>max-width 1800px, centered</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h2 style="color: var(--primary-color); margin: 32px 0 16px 0;">
+                📐 Container Behavior Demo
+            </h2>
+            
+            <div class="container-demo">
+                <h3 style="margin-top: 0;">Main Content Container</h3>
+                <p>Container này sẽ thay đổi max-width tùy theo breakpoint:</p>
+                <div class="main-content-demo" id="containerDemo">
+                    <h4 style="color: var(--primary-color); margin-top: 0;">DVC.AI Content Area</h4>
+                    <p>Đây là nội dung chính sẽ được center và giới hạn width trên màn hình lớn.</p>
+                </div>
+            </div>
+            
+            <h2 style="color: var(--primary-color); margin: 32px 0 16px 0;">
+                🎨 Spacing & Typography Demo
+            </h2>
+            
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3 style="color: var(--primary-color); margin-top: 0;">Typography Scale</h3>
+                    <div class="text-xs">Text XS (12px) - Captions, timestamps</div>
+                    <div class="text-sm">Text SM (14px) - Secondary text</div>
+                    <div class="text-base">Text Base (16px) - Body text</div>
+                    <div class="text-lg">Text LG (18px) - Large text</div>
+                    <div class="text-xl">Text XL (20px) - Headings</div>
+                    <div class="text-2xl">Text 2XL (24px) - Page titles</div>
+                </div>
+                
+                <div class="test-card">
+                    <h3 style="color: var(--primary-color); margin-top: 0;">Icon-Text Spacing</h3>
+                    <div class="icon-text-gap-sm">
+                        <div class="icon-demo">S</div>
+                        <span>Small gap (6px)</span>
+                    </div>
+                    <div class="icon-text-gap-md">
+                        <div class="icon-demo">M</div>
+                        <span>Medium gap (12px)</span>
+                    </div>
+                    <div class="icon-text-gap-lg">
+                        <div class="icon-demo">L</div>
+                        <span>Large gap (16px)</span>
+                    </div>
+                </div>
+                
+                <div class="test-card">
+                    <h3 style="color: var(--primary-color); margin-top: 0;">Line Heights</h3>
+                    <div class="lh-tight">Tight (1.2) - Headings và titles</div>
+                    <div class="lh-normal">Normal (1.5) - UI text</div>
+                    <div class="lh-relaxed">Relaxed (1.6) - Body text</div>
+                    <div class="lh-loose">Loose (1.8) - Long form content</div>
+                </div>
+                
+                <div class="test-card">
+                    <h3 style="color: var(--primary-color); margin-top: 0;">Font Weights</h3>
+                    <div class="font-light">Light (300) - Captions</div>
+                    <div class="font-normal">Normal (400) - Body</div>
+                    <div class="font-medium">Medium (500) - Labels</div>
+                    <div class="font-semibold">Semibold (600) - Headings</div>
+                    <div class="font-bold">Bold (700) - Emphasis</div>
+                </div>
+            </div>
+            
+            <h2 style="color: var(--primary-color); margin: 32px 0 16px 0;">
+                🎯 Component Preview
+            </h2>
+            
+            <div style="background: white; padding: 24px; border-radius: 8px; box-shadow: var(--shadow);">
+                <div class="icon-text-gap-lg" style="margin-bottom: 16px;">
+                    <div style="width: 40px; height: 40px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                        AI
+                    </div>
+                    <div>
+                        <h3 class="mb-0 lh-tight font-semibold" style="color: var(--primary-color);">DVC.AI</h3>
+                        <div class="text-sm lh-normal" style="color: var(--text-secondary);">
+                            Trợ lý dịch vụ công và cổng Kiến thức
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="text-base lh-relaxed">
+                    Đây là preview của header component với spacing và typography mới. 
+                    Icon và text có khoảng cách hợp lý, font weights rõ ràng, và line height tối ưu cho đọc.
+                </p>
+            </div>
+            
+            <div style="margin-top: 40px; padding: 20px; background: var(--secondary-color); border-radius: 8px; text-align: center;">
+                <h3 style="color: var(--primary-color); margin-top: 0;">✅ Responsive Test Complete</h3>
+                <p style="margin-bottom: 0; color: var(--text-secondary);">
+                    Resize browser window hoặc test trên thiết bị khác để xem responsive behavior
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function updateScreenInfo() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const devicePixelRatio = window.devicePixelRatio || 1;
+            
+            let breakpoint = '';
+            if (width >= 2560) breakpoint = '4K+ (2560px+)';
+            else if (width >= 1920) breakpoint = '2K (1920px-2559px)';
+            else if (width >= 1200) breakpoint = 'Desktop (1200px-1919px)';
+            else if (width >= 992) breakpoint = 'Small Desktop (992px-1199px)';
+            else if (width >= 768) breakpoint = 'Tablet (768px-991px)';
+            else breakpoint = 'Mobile (<768px)';
+            
+            document.getElementById('screenInfo').innerHTML = `
+                📐 ${width}×${height}<br>
+                📱 ${breakpoint}<br>
+                🔍 Ratio: ${devicePixelRatio}x
+            `;
+            
+            // Highlight current resolution in table
+            const rows = document.querySelectorAll('.resolution-table tbody tr');
+            rows.forEach(row => row.classList.remove('current-resolution'));
+            
+            if (width >= 2560) {
+                document.getElementById('currentRow').classList.add('current-resolution');
+            }
+        }
+        
+        window.addEventListener('resize', updateScreenInfo);
+        window.addEventListener('load', updateScreenInfo);
+        
+        // Update container demo
+        function updateContainerDemo() {
+            const demo = document.getElementById('containerDemo');
+            const width = window.innerWidth;
+            
+            let maxWidth = 'none';
+            if (width >= 2560) maxWidth = '1800px';
+            else if (width >= 1920) maxWidth = '1600px';
+            else if (width >= 1200) maxWidth = '1200px';
+            
+            demo.style.maxWidth = maxWidth;
+            demo.style.margin = '0 auto';
+            
+            const info = demo.querySelector('p');
+            info.innerHTML = `
+                Current width: ${width}px<br>
+                Container max-width: ${maxWidth}<br>
+                Status: ${maxWidth === 'none' ? 'Full width' : 'Centered with max-width'}
+            `;
+        }
+        
+        window.addEventListener('resize', updateContainerDemo);
+        window.addEventListener('load', updateContainerDemo);
+    </script>
+</body>
+</html>
