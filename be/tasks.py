@@ -14,19 +14,15 @@ logger = logging.getLogger(__name__)
 from database import add_document
 
 def send_websocket_message(user_id: str, message: dict):
-    """
-    Helper function to send WebSocket message from sync context
-    """
+    """Helper function to send WebSocket message from sync context"""
     try:
         logger.info(f"WebSocket message for user {user_id}: {message['type']}")
         
-        # Create event loop in thread if needed
         def run_async():
             try:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
                 
-                # Send WebSocket message based on type
                 if message['type'] == 'file_upload_progress':
                     loop.run_until_complete(
                         websocket_manager.sio.emit('file_upload_progress', message)
@@ -51,6 +47,10 @@ def send_websocket_message(user_id: str, message: dict):
                     loop.run_until_complete(
                         websocket_manager.sio.emit('bulk_upload_error', message)
                     )
+                elif message['type'] == 'file_processing_update':
+                    loop.run_until_complete(
+                        websocket_manager.sio.emit('file_processing_update', message)
+                    )
                     
                 logger.info(f"WebSocket message sent successfully: {message['type']}")
                 
@@ -62,34 +62,22 @@ def send_websocket_message(user_id: str, message: dict):
                 except:
                     pass
         
-        # Run in separate thread to avoid blocking
         thread = threading.Thread(target=run_async)
         thread.daemon = True
         thread.start()
         
     except Exception as e:
         logger.error(f"Error sending WebSocket message: {e}")
-        # Don't raise exception to avoid breaking the task
 
 @celery_app.task(bind=True)
 def process_file_upload(self, file_path: str, filename: str, user_id: str, task_id: str):
-    """
-    Process file upload to Google Cloud Storage
-    
-    Args:
-        file_path: Local file path
-        filename: Original filename
-        user_id: User ID who uploaded the file
-        task_id: Unique task ID for WebSocket communication
-    """
+    """Process file upload to Google Cloud Storage"""
     try:
-        # Update task status
         current_task.update_state(
             state='PROGRESS',
             meta={'current': 0, 'total': 100, 'status': 'Starting upload...'}
         )
         
-        # Send WebSocket update
         send_websocket_message(user_id, {
             'type': 'file_upload_progress',
             'task_id': task_id,
@@ -98,30 +86,48 @@ def process_file_upload(self, file_path: str, filename: str, user_id: str, task_
             'progress': 10
         })
         
-        # Check if file exists
+        send_websocket_message(user_id, {
+            'type': 'file_processing_update',
+            'task_id': task_id,
+            'filename': filename,
+            'status': 'uploading',
+            'progress': 10
+        })
+        
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"File not found: {file_path}")
         
-        # Update progress
         current_task.update_state(
             state='PROGRESS',
             meta={'current': 25, 'total': 100, 'status': 'Uploading to Google Cloud Storage...'}
         )
         
-        # Upload to Google Cloud Storage
+        send_websocket_message(user_id, {
+            'type': 'file_processing_update',
+            'task_id': task_id,
+            'filename': filename,
+            'status': 'processing',
+            'progress': 25
+        })
+        
         public_url = gcs_service.upload_file(file_path, f"documents/{filename}")
         
-        # Update progress
         current_task.update_state(
             state='PROGRESS',
             meta={'current': 75, 'total': 100, 'status': 'Finalizing...'}
         )
         
-        # Get file information
+        send_websocket_message(user_id, {
+            'type': 'file_processing_update',
+            'task_id': task_id,
+            'filename': filename,
+            'status': 'processing',
+            'progress': 75
+        })
+        
         file_size = os.path.getsize(file_path) if os.path.exists(file_path) else 0
         file_extension = os.path.splitext(filename)[1].lower()
         
-        # Add document to database
         document = add_document(
             filename=filename,
             file_type=file_extension,
@@ -130,13 +136,11 @@ def process_file_upload(self, file_path: str, filename: str, user_id: str, task_
             stored_filename=filename
         )
         
-        # Clean up local file
         try:
             os.remove(file_path)
         except Exception as e:
             logger.warning(f"Could not remove local file {file_path}: {e}")
         
-        # Send success notification via WebSocket
         send_websocket_message(user_id, {
             'type': 'file_upload_complete',
             'task_id': task_id,
@@ -156,7 +160,6 @@ def process_file_upload(self, file_path: str, filename: str, user_id: str, task_
         }
         
     except Exception as e:
-        # Send error notification via WebSocket
         send_websocket_message(user_id, {
             'type': 'file_upload_error',
             'task_id': task_id,
@@ -165,7 +168,6 @@ def process_file_upload(self, file_path: str, filename: str, user_id: str, task_
             'error': str(e)
         })
         
-        # Clean up local file on error
         try:
             if os.path.exists(file_path):
                 os.remove(file_path)
@@ -181,21 +183,13 @@ def process_file_upload(self, file_path: str, filename: str, user_id: str, task_
 
 @celery_app.task(bind=True)
 def process_bulk_upload(self, file_paths: list, user_id: str, bulk_task_id: str):
-    """
-    Process bulk file upload
-    
-    Args:
-        file_paths: List of file paths with metadata
-        user_id: User ID who uploaded the files
-        bulk_task_id: Unique bulk task ID
-    """
+    """Process bulk file upload"""
     try:
         total_files = len(file_paths)
         completed_files = 0
         failed_files = []
         successful_uploads = []
         
-        # Send initial progress
         send_websocket_message(user_id, {
             'type': 'bulk_upload_progress',
             'bulk_task_id': bulk_task_id,
@@ -209,14 +203,27 @@ def process_bulk_upload(self, file_paths: list, user_id: str, bulk_task_id: str)
             filename = file_info['filename']
             
             try:
-                # Get file info before upload
+                send_websocket_message(user_id, {
+                    'type': 'file_processing_update',
+                    'task_id': f"{bulk_task_id}_{filename}",
+                    'filename': filename,
+                    'status': 'processing',
+                    'progress': 0
+                })
+                
                 file_size = os.path.getsize(file_path) if os.path.exists(file_path) else 0
                 file_extension = os.path.splitext(filename)[1].lower()
                 
-                # Upload individual file
+                send_websocket_message(user_id, {
+                    'type': 'file_processing_update',
+                    'task_id': f"{bulk_task_id}_{filename}",
+                    'filename': filename,
+                    'status': 'processing',
+                    'progress': 50
+                })
+                
                 public_url = gcs_service.upload_file(file_path, f"documents/{filename}")
                 
-                # Add document to database
                 document = add_document(
                     filename=filename,
                     file_type=file_extension,
@@ -231,7 +238,14 @@ def process_bulk_upload(self, file_paths: list, user_id: str, bulk_task_id: str)
                     'document_id': document['id']
                 })
                 
-                # Clean up local file
+                send_websocket_message(user_id, {
+                    'type': 'file_processing_update',
+                    'task_id': f"{bulk_task_id}_{filename}",
+                    'filename': filename,
+                    'status': 'completed',
+                    'progress': 100
+                })
+                
                 try:
                     os.remove(file_path)
                 except Exception as e:
@@ -246,7 +260,6 @@ def process_bulk_upload(self, file_paths: list, user_id: str, bulk_task_id: str)
             completed_files += 1
             progress = (completed_files / total_files) * 100
             
-            # Send progress update
             send_websocket_message(user_id, {
                 'type': 'bulk_upload_progress',
                 'bulk_task_id': bulk_task_id,
@@ -256,7 +269,6 @@ def process_bulk_upload(self, file_paths: list, user_id: str, bulk_task_id: str)
                 'status': 'processing'
             })
         
-        # Send completion notification
         send_websocket_message(user_id, {
             'type': 'bulk_upload_complete',
             'bulk_task_id': bulk_task_id,
@@ -274,7 +286,6 @@ def process_bulk_upload(self, file_paths: list, user_id: str, bulk_task_id: str)
         }
         
     except Exception as e:
-        # Send error notification
         send_websocket_message(user_id, {
             'type': 'bulk_upload_error',
             'bulk_task_id': bulk_task_id,

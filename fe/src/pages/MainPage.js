@@ -11,6 +11,7 @@ import {
 } from 'antd';
 import { 
   FileTextOutlined, 
+  UploadOutlined,
   MessageOutlined, 
   UserOutlined, 
   LogoutOutlined,
@@ -18,8 +19,9 @@ import {
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import DocumentManagement from '../components/DocumentManagement';
+import DocumentUpload from '../components/DocumentUpload';
 import ChatBot from '../components/ChatBot';
-import dongsondrum from '../assets/dongson-drum.svg';
+import logo from '../assets/logo.png';
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
@@ -69,6 +71,16 @@ const MainPage = () => {
       children: <DocumentManagement />
     },
     {
+      key: 'upload',
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <UploadOutlined />
+          Tải lên Tài liệu
+        </span>
+      ),
+      children: <DocumentUpload />
+    },
+    {
       key: 'chatbot',
       label: (
         <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -95,8 +107,8 @@ const MainPage = () => {
         }}>
           <div className="icon-text-gap-lg" style={{ minWidth: 0, flex: '1 1 auto' }}>
             <img 
-              src={dongsondrum} 
-              alt="Trống đồng Đông Sơn" 
+              src={logo} 
+              alt="DVC.AI Logo" 
               style={{ 
                 width: 'clamp(32px, 5vw, 40px)', 
                 height: 'clamp(32px, 5vw, 40px)', 

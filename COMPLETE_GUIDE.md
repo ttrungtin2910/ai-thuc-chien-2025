@@ -38,9 +38,7 @@ d:\02-VLU\02-AI-ThucChien\
 │   │   └── gcs_service.py # Google Cloud Storage
 │   ├── uploads/           # Local file storage
 │   ├── docker-compose.yml # Redis container
-│   ├── dev.py             # Development script
-│   ├── start_redis.py     # Redis startup
-│   ├── start_worker.py    # Celery worker
+│   ├── docker-compose-mongodb.yml # MongoDB container
 │   └── env.example        # Environment template
 ├── fe/                     # Frontend ReactJS
 │   ├── public/
@@ -113,27 +111,45 @@ npm install
 
 ### Bước 3: Chạy hệ thống
 
-#### Cách 1: Quick Start (Khuyến nghị)
+#### Cách 1: Quick Start với Docker Compose (Khuyến nghị)
 ```bash
+# Terminal 1: Start Redis và MongoDB
 cd be
-python dev.py start
-```
-
-#### Cách 2: Manual Start
-```bash
-# Terminal 1: Start Redis
-cd be
-python start_redis.py
+docker-compose up -d redis
+docker-compose -f docker-compose-mongodb.yml up -d
 
 # Terminal 2: Start Celery Worker
 cd be
-python start_worker.py
+celery -A celery_app.celery_app worker --loglevel=info --pool=threads --concurrency=2
 
 # Terminal 3: Start Backend API
 cd be
 python main.py
 
 # Terminal 4: Start Frontend
+cd fe
+npm start
+```
+
+#### Cách 2: Manual Start từng service
+```bash
+# Terminal 1: Start Redis
+cd be
+docker-compose up -d redis
+
+# Terminal 2: Start MongoDB
+cd be
+docker-compose -f docker-compose-mongodb.yml up -d
+
+# Terminal 3: Start Celery Worker
+cd be
+celery -A celery_app.celery_app worker --loglevel=info --pool=threads --concurrency=2
+
+# Terminal 4: Start Backend API
+cd be
+python main.py
+
+# Terminal 5: Start Frontend
 cd fe
 npm start
 ```
@@ -251,12 +267,12 @@ sudo systemctl enable mongodb
 
 ### Kiểm tra MongoDB
 ```bash
-# Test MongoDB setup
+# Test MongoDB connection
 cd be
-python setup_mongodb.py
-
-# Verify connection
 python -c "from database import get_database_status; print(get_database_status())"
+
+# Check Docker containers
+docker ps | grep mongodb
 ```
 
 ### Tính năng MongoDB
@@ -277,13 +293,16 @@ Không sao! Hệ thống tự động fallback về **in-memory storage**:
 # 1. Clone project và cd vào backend
 cd be
 
-# 2. Start MongoDB với Docker (automatic setup)
-python setup_mongodb.py
+# 2. Start MongoDB với Docker
+docker-compose -f docker-compose-mongodb.yml up -d
 
-# 3. Start backend server
+# 3. Start Redis
+docker-compose up -d redis
+
+# 4. Start backend server
 python main.py
 
-# 4. Start frontend (terminal mới)
+# 5. Start frontend (terminal mới)
 cd ../fe
 npm start
 ```

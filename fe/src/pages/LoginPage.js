@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, message, Card, Typography, Space } from 'antd';
 import { UserOutlined, LockOutlined, SafetyOutlined } from '@ant-design/icons';
-import dongsondrum from '../assets/dongson-drum.svg';
+import logo from '../assets/logo.png';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -35,9 +35,9 @@ const LoginPage = () => {
         <div className="login-logo">
           <Space direction="vertical" align="center" size="small">
             <img 
-              src={dongsondrum} 
-              alt="Trống đồng Đông Sơn" 
-              style={{ width: '64px', height: '64px', filter: 'hue-rotate(25deg) saturate(1.3) brightness(1.1)' }}
+              src={logo} 
+              alt="DVC.AI Logo" 
+              style={{ width: '64px', height: '64px' }}
             />
             <Title level={2} style={{ margin: 0, color: '#D2691E', fontFamily: "'MaisonNeue', 'Inter', sans-serif" }}>
               DVC.AI

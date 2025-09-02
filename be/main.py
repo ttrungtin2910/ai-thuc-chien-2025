@@ -12,14 +12,18 @@ import hashlib
 import json
 import aiofiles
 import socketio
+import logging
 from config import Config
 from services.gcs_service import gcs_service
 from websocket_manager import websocket_manager
 from tasks import process_file_upload, process_bulk_upload
 
+# Initialize logger
+logger = logging.getLogger(__name__)
+
 app = FastAPI(title="Document Management API", version="1.0.0")
 
-# Cấu hình CORS
+# CORS configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # React app URL
@@ -28,12 +32,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Security
+# JWT Security configuration
 security = HTTPBearer()
 SECRET_KEY = Config.SECRET_KEY
 ALGORITHM = Config.ALGORITHM
 
-# Thư mục lưu trữ file upload
+# Local upload directory (temporary storage)
 UPLOAD_DIR = Config.UPLOAD_DIR
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
@@ -66,7 +70,7 @@ class FileUploadResponse(BaseModel):
     message: str
     filename: str
 
-# Fake database cho demo
+# User database (demo users)
 fake_users = {
     "admin": {
         "username": "admin",
@@ -209,16 +213,84 @@ async def delete_document_endpoint(document_id: str, username: str = Depends(ver
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
     
-    # Xóa file khỏi disk nếu có
-    file_path = os.path.join(UPLOAD_DIR, document.get("stored_filename", ""))
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    filename = document.get("filename", "unknown")
+    logger.info(f"🗑️ Starting deletion process for document: {filename} (ID: {document_id})")
     
-    # Xóa khỏi database
-    if delete_document_from_db(document_id):
-        return {"message": "Document deleted successfully"}
+    # Xóa file từ Google Cloud Storage nếu có
+    public_url = document.get("public_url", "")
+    gcs_deletion_success = True
+    
+    if public_url and public_url.startswith("gs://"):
+        try:
+            # Extract blob name từ GCS URL
+            # Format: gs://bucket-name/path/to/file
+            # Ví dụ: gs://my-bucket/documents/myfile.pdf -> documents/myfile.pdf
+            blob_name = public_url.replace(f"gs://{gcs_service.bucket_name}/", "")
+            
+            logger.info(f"🌩️ Deleting file from GCS: {blob_name}")
+            gcs_deletion_success = gcs_service.delete_file(blob_name)
+            
+            if gcs_deletion_success:
+                logger.info(f"✅ Successfully deleted file from GCS: {blob_name}")
+            else:
+                logger.warning(f"⚠️ Failed to delete file from GCS: {blob_name}")
+                
+        except Exception as e:
+            logger.error(f"❌ Error deleting file from GCS: {e}")
+            gcs_deletion_success = False
+    elif public_url and public_url.startswith("local://"):
+        logger.info(f"📁 File stored locally, will delete from local storage")
     else:
-        raise HTTPException(status_code=500, detail="Failed to delete document")
+        logger.info(f"ℹ️ No GCS URL found for document: {filename}")
+    
+    # Xóa file khỏi local disk nếu có
+    local_deletion_success = True
+    stored_filename = document.get("stored_filename", "")
+    
+    if stored_filename:
+        file_path = os.path.join(UPLOAD_DIR, stored_filename)
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+                logger.info(f"✅ Successfully deleted local file: {file_path}")
+            except Exception as e:
+                logger.error(f"❌ Error deleting local file {file_path}: {e}")
+                local_deletion_success = False
+        else:
+            logger.info(f"ℹ️ Local file not found: {file_path}")
+    
+    # Xóa khỏi MongoDB database
+    database_deletion_success = delete_document_from_db(document_id)
+    
+    if database_deletion_success:
+        logger.info(f"✅ Successfully deleted document from database: {filename} (ID: {document_id})")
+        
+        # Tạo response message tùy theo kết quả của từng bước
+        messages = []
+        if gcs_deletion_success or not public_url.startswith("gs://"):
+            messages.append("Document deleted successfully")
+        else:
+            messages.append("Document deleted from database but failed to delete from cloud storage")
+            
+        if not local_deletion_success and stored_filename:
+            messages.append("Warning: Could not delete local file")
+        
+        return {
+            "message": "; ".join(messages),
+            "details": {
+                "document_id": document_id,
+                "filename": filename,
+                "database_deleted": True,
+                "gcs_deleted": gcs_deletion_success if public_url.startswith("gs://") else "not_applicable",
+                "local_deleted": local_deletion_success if stored_filename else "not_applicable"
+            }
+        }
+    else:
+        logger.error(f"❌ Failed to delete document from database: {filename} (ID: {document_id})")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to delete document from database. GCS deletion: {'success' if gcs_deletion_success else 'failed'}"
+        )
 
 @app.post("/api/documents/bulk-upload", response_model=BulkUploadResponse)
 async def bulk_upload_documents(
@@ -304,19 +376,18 @@ async def websocket_status(username: str = Depends(verify_token)):
         "sessions": list(user_sessions)
     }
 
-# Chatbot API (placeholder for future development)
+# Chatbot API
 @app.post("/api/chatbot/message")
 async def chatbot_message(
     message: dict,
     username: str = Depends(verify_token)
 ):
-    # Placeholder response
     return {
         "response": "Đây là phản hồi mẫu từ chatbot. Tính năng này sẽ được phát triển thêm trong tương lai.",
         "timestamp": datetime.now().isoformat()
     }
 
-# Create combined ASGI app
+# Create combined ASGI app with WebSocket support
 combined_asgi_app = socketio.ASGIApp(websocket_manager.sio, app)
 
 if __name__ == "__main__":

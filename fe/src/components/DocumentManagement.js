@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Upload,
   Button,
   Table,
   Space,
@@ -15,26 +14,17 @@ import {
   Empty,
   Spin,
   Progress,
-  notification,
-  List,
-  Alert,
-  Divider,
-  Badge
+  notification
 } from 'antd';
 import {
-  UploadOutlined,
   DeleteOutlined,
   FileTextOutlined,
   FilePdfOutlined,
   FileWordOutlined,
   DownloadOutlined,
   ReloadOutlined,
-  SyncOutlined,
-  InboxOutlined,
   CheckCircleOutlined,
-  ExclamationCircleOutlined,
-  FolderOutlined,
-  CloudUploadOutlined
+  ExclamationCircleOutlined
 } from '@ant-design/icons';
 import { documentsAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -42,19 +32,16 @@ import websocketService from '../services/websocket';
 import moment from 'moment';
 
 const { Title, Text } = Typography;
-const { Dragger } = Upload;
 
 const DocumentManagement = () => {
   const { user } = useAuth();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState({});
+  // Track file processing status for existing documents
+  const [fileProcessingStatus, setFileProcessingStatus] = useState({});
   
-  // Bulk upload states
-  const [fileList, setFileList] = useState([]);
-  const [bulkProgress, setBulkProgress] = useState(null);
-  const [uploadResults, setUploadResults] = useState(null);
+  // Track when documents need to be refreshed
+  const [needsRefresh, setNeedsRefresh] = useState(false);
 
   useEffect(() => {
     fetchDocuments();
@@ -64,100 +51,77 @@ const DocumentManagement = () => {
       websocketService.connect(user.username);
     }
     
-    // Setup WebSocket event listeners
-    const handleFileProgress = (data) => {
-      setUploadProgress(prev => ({
+    // Additional handler for file processing updates
+    const handleFileProcessing = (data) => {
+      setFileProcessingStatus(prev => ({
         ...prev,
-        [data.task_id]: data
+        [data.filename]: {
+          progress: data.progress || 0,
+          status: data.status || 'processing',
+          task_id: data.task_id,
+          timestamp: Date.now()
+        }
       }));
     };
-    
+
     const handleFileComplete = (data) => {
-      setUploadProgress(prev => {
-        const newProgress = { ...prev };
-        delete newProgress[data.task_id];
-        return newProgress;
+      // Clear file processing status
+      setFileProcessingStatus(prev => {
+        const newStatus = { ...prev };
+        delete newStatus[data.filename];
+        return newStatus;
       });
       
-      notification.success({
-        message: 'Upload Complete',
-        description: `File ${data.filename} uploaded successfully`,
-        duration: 3
-      });
-      
-      // Refresh documents list
-      fetchDocuments();
-    };
-    
-    const handleFileError = (data) => {
-      setUploadProgress(prev => {
-        const newProgress = { ...prev };
-        delete newProgress[data.task_id];
-        return newProgress;
-      });
-      
-      notification.error({
-        message: 'Upload Failed',
-        description: `File ${data.filename} upload failed: ${data.error}`,
-        duration: 5
-      });
-      
-      setUploading(false);
+      // Trigger documents refresh
+      setNeedsRefresh(true);
     };
 
-    // Bulk upload handlers
-    const handleBulkProgress = (data) => {
-      setBulkProgress(data);
-    };
-
-    const handleBulkComplete = (data) => {
-      setUploading(false);
-      setBulkProgress(null);
-      setUploadResults(data);
-      
-      notification.success({
-        message: 'Upload đồng loạt hoàn thành',
-        description: `Đã tải lên thành công ${data.successful_uploads?.length || 0} file`,
-        duration: 5
-      });
-      
-      // Refresh documents list
-      fetchDocuments();
-    };
-
-    const handleBulkError = (data) => {
-      setUploading(false);
-      setBulkProgress(null);
-      
-      notification.error({
-        message: 'Upload đồng loạt thất bại',
-        description: data.error || 'Có lỗi xảy ra trong quá trình upload',
-        duration: 5
-      });
-    };
-    
-    websocketService.on('file_upload_progress', handleFileProgress);
+    websocketService.on('file_processing_update', handleFileProcessing);
     websocketService.on('file_upload_complete', handleFileComplete);
-    websocketService.on('file_upload_error', handleFileError);
-    websocketService.on('bulk_upload_progress', handleBulkProgress);
-    websocketService.on('bulk_upload_complete', handleBulkComplete);
-    websocketService.on('bulk_upload_error', handleBulkError);
     
     return () => {
-      websocketService.off('file_upload_progress', handleFileProgress);
+      websocketService.off('file_processing_update', handleFileProcessing);
       websocketService.off('file_upload_complete', handleFileComplete);
-      websocketService.off('file_upload_error', handleFileError);
-      websocketService.off('bulk_upload_progress', handleBulkProgress);
-      websocketService.off('bulk_upload_complete', handleBulkComplete);
-      websocketService.off('bulk_upload_error', handleBulkError);
     };
   }, [user?.username]);
+
+
+
+  // Clean up old processing status periodically (không auto-refresh documents)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Clean up old processing status (older than 5 minutes)
+      const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+      setFileProcessingStatus(prev => {
+        const cleaned = {};
+        Object.entries(prev).forEach(([filename, status]) => {
+          if (status.timestamp > fiveMinutesAgo) {
+            cleaned[filename] = status;
+          }
+        });
+        return cleaned;
+      });
+    }, 30000); // Clean up every 30 seconds instead of 3 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Refresh documents only when explicitly needed
+  useEffect(() => {
+    if (needsRefresh) {
+      fetchDocuments();
+      setNeedsRefresh(false);
+    }
+  }, [needsRefresh]);
 
   const fetchDocuments = async () => {
     setLoading(true);
     try {
       const data = await documentsAPI.getDocuments();
       setDocuments(data);
+      
+      // Không tự động đánh dấu files là processing khi reload
+      // Chỉ dựa vào WebSocket events để update status
     } catch (error) {
       message.error('Không thể tải danh sách tài liệu');
       console.error('Fetch documents error:', error);
@@ -166,149 +130,32 @@ const DocumentManagement = () => {
     }
   };
 
-  const handleUpload = async (file) => {
-    // Kiểm tra loại file
-    const allowedTypes = ['.pdf', '.docx', '.doc', '.txt', '.png', '.jpg', '.jpeg'];
-    const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-    
-    if (!allowedTypes.includes(fileExtension)) {
-      message.error('Chỉ hỗ trợ file PDF, DOCX, DOC, TXT, PNG, JPG, JPEG!');
-      return false;
-    }
 
-    // Kiểm tra kích thước file (100MB - configurable)
-    const maxSize = 100 * 1024 * 1024;
-    if (file.size > maxSize) {
-      message.error('Kích thước file không được vượt quá 100MB!');
-      return false;
-    }
-
-    setUploading(true);
-    try {
-      const response = await documentsAPI.uploadDocument(file);
-      
-      message.success({
-        content: `File ${file.name} đã được gửi để xử lý. Bạn sẽ nhận được thông báo khi hoàn thành.`,
-        duration: 3
-      });
-      
-      console.log('Upload task started:', response.data);
-    } catch (error) {
-      setUploading(false);
-      message.error(`Tải lên thất bại: ${error.response?.data?.detail || 'Lỗi không xác định'}`);
-      console.error('Upload error:', error);
-    }
-
-    return false; // Prevent default upload behavior
-  };
 
   const handleDelete = async (documentId, filename) => {
     try {
       await documentsAPI.deleteDocument(documentId);
       message.success(`Đã xóa file ${filename}`);
-      fetchDocuments(); // Refresh danh sách
+      setNeedsRefresh(true); // Trigger refresh
     } catch (error) {
       message.error('Xóa file thất bại');
       console.error('Delete error:', error);
     }
   };
 
-  // Bulk upload functions
-  const handleBulkUpload = async () => {
-    if (fileList.length === 0) {
-      notification.warning({
-        message: 'Chưa chọn file',
-        description: 'Vui lòng chọn file để tải lên',
-      });
-      return;
-    }
 
-    setUploading(true);
-    setUploadResults(null);
-    setBulkProgress(null);
-    setUploadProgress({});
-
-    try {
-      const formData = new FormData();
-      fileList.forEach((file) => {
-        formData.append('files', file.originFileObj);
-      });
-
-      const response = await documentsAPI.bulkUploadDocuments(formData);
-
-      notification.success({
-        message: 'Bắt đầu upload',
-        description: response.message,
-      });
-
-    } catch (error) {
-      setUploading(false);
-      console.error('Upload error:', error);
-      
-      notification.error({
-        message: 'Upload thất bại',
-        description: error.response?.data?.detail || 'Không thể bắt đầu upload',
-      });
-    }
-  };
-
-  const handleRemoveFile = (file) => {
-    const newFileList = fileList.filter(item => item.uid !== file.uid);
-    setFileList(newFileList);
-  };
-
-  const handleClearAll = () => {
-    setFileList([]);
-    setUploadProgress({});
-    setUploadResults(null);
-    setBulkProgress(null);
-  };
-
-  const getFileIcon = (status) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircleOutlined style={{ color: '#52c41a' }} />;
-      case 'failed':
-        return <ExclamationCircleOutlined style={{ color: '#f5222d' }} />;
-      case 'uploading':
-        return <SyncOutlined spin style={{ color: '#1890ff' }} />;
-      default:
-        return null;
-    }
-  };
 
   const getStatusTag = (status) => {
     const statusConfig = {
       completed: { color: 'success', text: 'Hoàn thành' },
       failed: { color: 'error', text: 'Thất bại' },
-      uploading: { color: 'processing', text: 'Đang tải' },
+      uploading: { color: 'processing', text: 'Đang xử lý' },
+      processing: { color: 'processing', text: 'Đang xử lý' },
       pending: { color: 'default', text: 'Chờ xử lý' }
     };
 
     const config = statusConfig[status] || statusConfig.pending;
     return <Tag color={config.color}>{config.text}</Tag>;
-  };
-
-  // Combined upload props for both single and multiple files
-  const combinedUploadProps = {
-    name: 'file',
-    multiple: true,
-    fileList,
-    beforeUpload: () => false, // Prevent automatic upload
-    onChange: (info) => {
-      setFileList(info.fileList);
-      
-      // If only one file is selected, auto-trigger single upload
-      if (info.fileList.length === 1 && !uploading) {
-        const file = info.fileList[0].originFileObj;
-        // Auto upload single file
-        handleUpload(file);
-        // Clear the file list after single upload
-        setTimeout(() => setFileList([]), 100);
-      }
-    },
-    accept: '.pdf,.docx,.doc,.txt,.png,.jpg,.jpeg',
-    maxCount: 50,
   };
 
   const getFileTypeIcon = (fileType) => {
@@ -392,6 +239,43 @@ const DocumentManagement = () => {
       responsive: ['lg'],
     },
     {
+      title: <span className="font-semibold text-sm">Trạng thái</span>,
+      key: 'status',
+      render: (_, record) => {
+        // Check existing file processing status
+        const processingInfo = fileProcessingStatus[record.filename];
+        
+        if (processingInfo) {
+          return (
+            <div style={{ minWidth: '100px' }}>
+              <div style={{ marginBottom: '4px' }}>
+                {getStatusTag(processingInfo.status)}
+              </div>
+              <Progress 
+                percent={processingInfo.progress || 0} 
+                size="small"
+                strokeColor={{
+                  '0%': '#D2691E',
+                  '100%': '#CD853F'
+                }}
+                trailColor="rgba(244, 228, 188, 0.5)"
+                status={processingInfo.status === 'failed' ? 'exception' : 'active'}
+                showInfo={false}
+              />
+            </div>
+          );
+        }
+        
+        return (
+          <Tag color="success" style={{ fontSize: 'clamp(11px, 2vw, 12px)' }}>
+            ✅ Hoàn thành
+          </Tag>
+        );
+      },
+      width: 120,
+      responsive: ['md'],
+    },
+    {
       title: <span className="font-semibold text-sm">Thao tác</span>,
       key: 'action',
       render: (_, record) => (
@@ -459,12 +343,7 @@ const DocumentManagement = () => {
     },
   ];
 
-  const uploadProps = {
-    multiple: true,
-    beforeUpload: handleUpload,
-    showUploadList: false,
-    accept: '.pdf,.docx,.doc,.txt,.png,.jpg,.jpeg',
-  };
+
 
   const totalSize = documents.reduce((sum, doc) => sum + doc.size, 0);
   const pdfCount = documents.filter(doc => doc.file_type === '.pdf').length;
@@ -500,7 +379,7 @@ const DocumentManagement = () => {
             marginBottom: '24px'
           }}
         >
-          Tải lên đơn lẻ hoặc hàng loạt, quản lý tài liệu một cách thông minh với AI
+          Xem, quản lý và tải xuống tài liệu đã upload với giao diện trực quan
         </Text>
       </div>
 
@@ -600,9 +479,9 @@ const DocumentManagement = () => {
         </Col>
       </Row>
 
-      {/* Upload Area */}
+      {/* Documents Table */}
       <Card 
-        className="upload-card mb-4"
+        className="mb-4"
         title={
           <span style={{ 
             color: '#D2691E', 
@@ -610,7 +489,7 @@ const DocumentManagement = () => {
             fontSize: 'clamp(16px, 3vw, 20px)',
             fontFamily: "'MaisonNeue', 'Inter', sans-serif"
           }}>
-            📤 Tải lên Tài liệu (Đơn lẻ & Hàng loạt)
+            📄 Danh sách tài liệu
           </span>
         }
         style={{
@@ -623,630 +502,6 @@ const DocumentManagement = () => {
         bodyStyle={{ 
           padding: 'clamp(20px, 4vw, 32px)' 
         }}
-      >
-        {/* Combined Upload Area */}
-        <div style={{ padding: 'clamp(16px, 3vw, 24px) 0' }}>
-          <Dragger 
-            {...combinedUploadProps} 
-            style={{ 
-              marginBottom: '24px',
-              borderRadius: '12px',
-              border: '2px dashed #D2691E',
-              background: 'linear-gradient(135deg, #FDF5E6 0%, rgba(222, 184, 135, 0.3) 100%)'
-            }}
-            className="earth-dragger"
-          >
-            <div style={{ padding: 'clamp(24px, 5vw, 48px) clamp(16px, 3vw, 24px)' }}>
-              <p className="ant-upload-drag-icon">
-                <InboxOutlined 
-                  style={{ 
-                    color: '#D2691E', 
-                    fontSize: 'clamp(48px, 8vw, 64px)',
-                    marginBottom: '16px'
-                  }} 
-                />
-              </p>
-              <p 
-                className="ant-upload-text" 
-                style={{ 
-                  color: '#D2691E', 
-                  fontSize: 'clamp(16px, 3vw, 20px)',
-                  fontWeight: '600',
-                  fontFamily: "'MaisonNeue', 'Inter', sans-serif",
-                  margin: '16px 0 8px 0'
-                }}
-              >
-                Kéo thả file vào đây để upload
-              </p>
-              <p 
-                className="ant-upload-hint" 
-                style={{ 
-                  fontSize: 'clamp(13px, 2.5vw, 15px)',
-                  color: '#A0522D',
-                  margin: '8px 0 0 0',
-                  lineHeight: '1.6'
-                }}
-              >
-                ✨ 1 file = Upload ngay • Nhiều file = Hiển thị danh sách để xử lý hàng loạt • Tối đa 50 file • 100MB/file
-              </p>
-            </div>
-          </Dragger>
-          
-          <div style={{ 
-            display: 'flex', 
-            gap: 'clamp(12px, 3vw, 16px)',
-            flexWrap: 'wrap',
-            justifyContent: window.innerWidth <= 768 ? 'center' : 'flex-start',
-            marginBottom: '24px'
-          }}>
-            <Upload {...uploadProps}>
-              <Button 
-                icon={<UploadOutlined />} 
-                loading={uploading}
-                className="btn-government upload-btn"
-                size="large"
-                style={{ 
-                  height: 'clamp(40px, 8vw, 48px)',
-                  fontWeight: '500',
-                  letterSpacing: '0.01em',
-                  fontSize: 'clamp(13px, 2.5vw, 16px)',
-                  padding: '0 clamp(16px, 4vw, 24px)',
-                  borderRadius: 'clamp(8px, 2vw, 12px)',
-                  minWidth: window.innerWidth <= 768 ? '140px' : 'auto',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                }}
-              >
-                {uploading ? 'Đang tải lên...' : (window.innerWidth <= 480 ? 'Chọn file' : 'Chọn file từ máy')}
-              </Button>
-            </Upload>
-            
-            <Button 
-              icon={<ReloadOutlined />} 
-              onClick={fetchDocuments}
-              loading={loading}
-              size="large"
-              className="refresh-btn"
-              style={{ 
-                height: 'clamp(40px, 8vw, 48px)',
-                fontSize: 'clamp(13px, 2.5vw, 16px)',
-                padding: '0 clamp(16px, 4vw, 24px)',
-                borderRadius: 'clamp(8px, 2vw, 12px)',
-                minWidth: window.innerWidth <= 768 ? '120px' : 'auto',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}
-            >
-              {window.innerWidth <= 480 ? 'Làm mới' : 'Làm mới danh sách'}
-            </Button>
-          </div>
-
-          {fileList.length > 0 && (
-            <Card 
-              className="file-list-card"
-              style={{ 
-                marginBottom: 'clamp(16px, 3vw, 24px)',
-                borderRadius: '12px',
-                border: '1px solid #F4E4BC',
-                background: 'rgba(255, 255, 255, 0.8)'
-              }}
-              bodyStyle={{ 
-                padding: 'clamp(16px, 3vw, 24px)' 
-              }}
-              title={
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: window.innerWidth <= 768 ? 'flex-start' : 'center',
-                  flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
-                  gap: window.innerWidth <= 768 ? '16px' : '8px'
-                }}>
-                  <div>
-                    <Text 
-                      strong 
-                      style={{
-                        fontSize: 'clamp(16px, 3vw, 18px)',
-                        color: '#D2691E',
-                        fontFamily: "'MaisonNeue', 'Inter', sans-serif",
-                        fontWeight: '600'
-                      }}
-                    >
-                      📂 File đã chọn ({fileList.length})
-                    </Text>
-                    <div style={{ 
-                      fontSize: 'clamp(12px, 2.5vw, 14px)',
-                      color: '#8B4513',
-                      marginTop: '4px' 
-                    }}>
-                      Tổng dung lượng: {(fileList.reduce((sum, file) => sum + file.size, 0) / 1024 / 1024).toFixed(2)} MB
-                    </div>
-                  </div>
-                  <Space 
-                    direction={window.innerWidth <= 480 ? 'vertical' : 'horizontal'}
-                    style={{ 
-                      width: window.innerWidth <= 768 ? '100%' : 'auto' 
-                    }}
-                  >
-                    <Button 
-                      type="primary" 
-                      icon={<CloudUploadOutlined />}
-                      onClick={handleBulkUpload}
-                      loading={uploading}
-                      disabled={fileList.length === 0}
-                      className="btn-government upload-btn"
-                      size="large"
-                      style={{
-                        height: 'clamp(40px, 8vw, 48px)',
-                        fontSize: 'clamp(14px, 2.5vw, 16px)',
-                        fontWeight: '600',
-                        borderRadius: 'clamp(8px, 2vw, 12px)',
-                        background: 'linear-gradient(135deg, #D2691E 0%, #A0522D 100%)',
-                        border: 'none',
-                        boxShadow: '0 4px 16px rgba(210, 105, 30, 0.3)',
-                        width: window.innerWidth <= 768 ? '100%' : 'auto',
-                        minWidth: window.innerWidth <= 768 ? '120px' : '160px'
-                      }}
-                    >
-                      {uploading ? '🔄 Đang tải lên...' : '⬆️ Tải lên tất cả'}
-                    </Button>
-                    <Button 
-                      icon={<DeleteOutlined />}
-                      onClick={handleClearAll}
-                      disabled={uploading}
-                      size="large"
-                      style={{
-                        height: 'clamp(40px, 8vw, 48px)',
-                        fontSize: 'clamp(14px, 2.5vw, 16px)',
-                        borderRadius: 'clamp(8px, 2vw, 12px)',
-                        color: '#A0522D',
-                        borderColor: '#DEB887',
-                        background: 'rgba(255, 255, 255, 0.9)',
-                        width: window.innerWidth <= 768 ? '100%' : 'auto',
-                        minWidth: window.innerWidth <= 768 ? '120px' : '140px'
-                      }}
-                      className="clear-btn"
-                    >
-                      🗑️ Xóa tất cả
-                    </Button>
-                  </Space>
-                </div>
-              }
-            >
-              <List
-                size="small"
-                dataSource={fileList}
-                style={{ 
-                  background: 'rgba(253, 245, 230, 0.5)',
-                  borderRadius: '8px',
-                  padding: '8px'
-                }}
-                renderItem={(file) => {
-                  const progressData = Object.values(uploadProgress).find(p => 
-                    p.filename === file.name
-                  );
-                  
-                  return (
-                    <List.Item
-                      style={{
-                        padding: 'clamp(12px, 2.5vw, 16px)',
-                        borderRadius: '8px',
-                        background: 'rgba(255, 255, 255, 0.7)',
-                        marginBottom: '8px',
-                        border: '1px solid rgba(244, 228, 188, 0.6)',
-                        transition: 'all 0.3s ease'
-                      }}
-                      actions={[
-                        getFileIcon(progressData?.status),
-                        !uploading && (
-                          <Button 
-                            type="text" 
-                            size="small"
-                            icon={<DeleteOutlined />}
-                            onClick={() => handleRemoveFile(file)}
-                            style={{
-                              color: '#A0522D',
-                              borderRadius: '6px',
-                              height: 'clamp(28px, 6vw, 32px)',
-                              width: 'clamp(28px, 6vw, 32px)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
-                            }}
-                            className="file-remove-btn"
-                          />
-                        )
-                      ].filter(Boolean)}
-                    >
-                      <List.Item.Meta
-                        title={
-                          <Space direction="vertical" size={4} style={{ width: '100%' }}>
-                            <div style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '8px',
-                              flexWrap: 'wrap'
-                            }}>
-                              <Text 
-                                style={{
-                                  fontSize: 'clamp(14px, 2.5vw, 16px)',
-                                  fontWeight: '500',
-                                  color: '#D2691E',
-                                  wordBreak: 'break-word',
-                                  flex: '1',
-                                  minWidth: '0'
-                                }}
-                              >
-                                📄 {file.name}
-                              </Text>
-                              {progressData && getStatusTag(progressData.status)}
-                            </div>
-                            <div style={{ 
-                              display: 'flex', 
-                              gap: 'clamp(12px, 3vw, 20px)',
-                              fontSize: 'clamp(12px, 2vw, 13px)',
-                              color: '#8B4513'
-                            }}>
-                              <span>📏 {(file.size / 1024 / 1024).toFixed(2)} MB</span>
-                              <span>📅 {file.type || 'Unknown'}</span>
-                            </div>
-                            {progressData?.progress !== undefined && (
-                              <Progress 
-                                percent={progressData.progress} 
-                                size="small"
-                                strokeColor={{
-                                  '0%': '#D2691E',
-                                  '100%': '#CD853F'
-                                }}
-                                trailColor="rgba(244, 228, 188, 0.5)"
-                                status={progressData.status === 'failed' ? 'exception' : 'active'}
-                                style={{ marginTop: '8px' }}
-                              />
-                            )}
-                          </Space>
-                        }
-                      />
-                    </List.Item>
-                  );
-                }}
-              />
-            </Card>
-          )}
-
-          {bulkProgress && (
-            <Card
-              title={
-                <span style={{ 
-                  color: '#D2691E', 
-                  fontWeight: '600',
-                  fontSize: 'clamp(16px, 3vw, 18px)',
-                  fontFamily: "'MaisonNeue', 'Inter', sans-serif"
-                }}>
-                  <SyncOutlined spin style={{ marginRight: '8px' }} />
-                  🔄 Đang xử lý file ({bulkProgress.completed_files}/{bulkProgress.total_files})
-                </span>
-              }
-              style={{ 
-                marginBottom: 'clamp(16px, 3vw, 24px)',
-                borderRadius: '12px',
-                border: '2px solid #DEB887',
-                background: 'rgba(222, 184, 135, 0.1)'
-              }}
-              bodyStyle={{ 
-                padding: 'clamp(16px, 3vw, 24px)' 
-              }}
-            >
-              <div style={{ marginBottom: '16px' }}>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center',
-                  marginBottom: '8px'
-                }}>
-                  <Text style={{ 
-                    fontSize: 'clamp(14px, 2.5vw, 16px)',
-                    color: '#8B4513',
-                    fontWeight: '500'
-                  }}>
-                    Tiến trình xử lý:
-                  </Text>
-                  <Text style={{ 
-                    fontSize: 'clamp(14px, 2.5vw, 16px)',
-                    color: '#D2691E',
-                    fontWeight: '600'
-                  }}>
-                    {Math.round(bulkProgress.progress)}%
-                  </Text>
-                </div>
-                <Progress 
-                  percent={bulkProgress.progress} 
-                  status="active"
-                  strokeColor={{
-                    '0%': '#D2691E',
-                    '100%': '#CD853F'
-                  }}
-                  trailColor="rgba(244, 228, 188, 0.5)"
-                  size="default"
-                  format={percent => `${Math.round(percent)}%`}
-                  style={{ marginBottom: '8px' }}
-                />
-                <div style={{ 
-                  fontSize: 'clamp(12px, 2vw, 14px)',
-                  color: '#A0522D',
-                  textAlign: 'center'
-                }}>
-                  Đã hoàn thành: {bulkProgress.completed_files} / {bulkProgress.total_files} file
-                </div>
-              </div>
-            </Card>
-          )}
-
-          {uploadResults && (
-            <Card 
-              title={
-                <span style={{ 
-                  color: '#D2691E', 
-                  fontWeight: '600',
-                  fontSize: 'clamp(16px, 3vw, 18px)',
-                  fontFamily: "'MaisonNeue', 'Inter', sans-serif"
-                }}>
-                  📊 Kết quả Upload
-                </span>
-              }
-              style={{ 
-                marginTop: 'clamp(16px, 3vw, 24px)',
-                borderRadius: '12px',
-                border: '2px solid #F4E4BC',
-                background: 'rgba(255, 255, 255, 0.95)'
-              }}
-              bodyStyle={{ 
-                padding: 'clamp(16px, 3vw, 24px)' 
-              }}
-            >
-              <Space direction="vertical" style={{ width: '100%' }} size="large">
-                {/* Summary Stats */}
-                <div style={{ 
-                  display: 'flex', 
-                  gap: 'clamp(16px, 4vw, 32px)',
-                  flexWrap: 'wrap',
-                  justifyContent: 'center'
-                }}>
-                  <div style={{ 
-                    textAlign: 'center',
-                    padding: 'clamp(12px, 3vw, 16px)',
-                    borderRadius: '8px',
-                    background: 'rgba(253, 245, 230, 0.8)',
-                    border: '1px solid #F4E4BC',
-                    minWidth: '100px'
-                  }}>
-                    <div style={{ 
-                      fontSize: 'clamp(20px, 4vw, 28px)',
-                      fontWeight: '700',
-                      color: '#D2691E',
-                      fontFamily: "'MaisonNeue', 'Inter', sans-serif"
-                    }}>
-                      {uploadResults.total_files}
-                    </div>
-                    <div style={{ 
-                      fontSize: 'clamp(12px, 2vw, 14px)',
-                      color: '#8B4513'
-                    }}>
-                      📁 Tổng file
-                    </div>
-                  </div>
-                  
-                  <div style={{ 
-                    textAlign: 'center',
-                    padding: 'clamp(12px, 3vw, 16px)',
-                    borderRadius: '8px',
-                    background: 'rgba(82, 196, 26, 0.1)',
-                    border: '1px solid rgba(82, 196, 26, 0.3)',
-                    minWidth: '100px'
-                  }}>
-                    <div style={{ 
-                      fontSize: 'clamp(20px, 4vw, 28px)',
-                      fontWeight: '700',
-                      color: '#52c41a',
-                      fontFamily: "'MaisonNeue', 'Inter', sans-serif"
-                    }}>
-                      {uploadResults.successful_uploads?.length || 0}
-                    </div>
-                    <div style={{ 
-                      fontSize: 'clamp(12px, 2vw, 14px)',
-                      color: '#52c41a'
-                    }}>
-                      ✅ Thành công
-                    </div>
-                  </div>
-                  
-                  <div style={{ 
-                    textAlign: 'center',
-                    padding: 'clamp(12px, 3vw, 16px)',
-                    borderRadius: '8px',
-                    background: 'rgba(245, 34, 45, 0.1)',
-                    border: '1px solid rgba(245, 34, 45, 0.3)',
-                    minWidth: '100px'
-                  }}>
-                    <div style={{ 
-                      fontSize: 'clamp(20px, 4vw, 28px)',
-                      fontWeight: '700',
-                      color: '#f5222d',
-                      fontFamily: "'MaisonNeue', 'Inter', sans-serif"
-                    }}>
-                      {uploadResults.failed_files?.length || 0}
-                    </div>
-                    <div style={{ 
-                      fontSize: 'clamp(12px, 2vw, 14px)',
-                      color: '#f5222d'
-                    }}>
-                      ❌ Thất bại
-                    </div>
-                  </div>
-                </div>
-
-                {/* Success Files */}
-                {uploadResults.successful_uploads?.length > 0 && (
-                  <div>
-                    <Title 
-                      level={5} 
-                      style={{ 
-                        color: '#52c41a',
-                        fontSize: 'clamp(14px, 2.5vw, 16px)',
-                        marginBottom: '12px'
-                      }}
-                    >
-                      ✅ File đã tải lên thành công:
-                    </Title>
-                    <List
-                      size="small"
-                      style={{ 
-                        background: 'rgba(82, 196, 26, 0.05)',
-                        borderRadius: '8px',
-                        padding: '8px'
-                      }}
-                      dataSource={uploadResults.successful_uploads}
-                      renderItem={(item) => (
-                        <List.Item
-                          style={{
-                            padding: 'clamp(8px, 2vw, 12px)',
-                            background: 'rgba(255, 255, 255, 0.8)',
-                            borderRadius: '6px',
-                            marginBottom: '4px',
-                            border: '1px solid rgba(82, 196, 26, 0.2)'
-                          }}
-                        >
-                          <List.Item.Meta
-                            avatar={<CheckCircleOutlined style={{ color: '#52c41a', fontSize: '16px' }} />}
-                            title={
-                              <Text style={{ 
-                                fontSize: 'clamp(13px, 2.5vw, 15px)',
-                                color: '#D2691E',
-                                fontWeight: '500'
-                              }}>
-                                📄 {item.filename}
-                              </Text>
-                            }
-                            description={
-                              item.public_url && (
-                                <a 
-                                  href={item.public_url} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  style={{ 
-                                    fontSize: 'clamp(12px, 2vw, 13px)',
-                                    color: '#1890ff'
-                                  }}
-                                >
-                                  🔗 Xem file
-                                </a>
-                              )
-                            }
-                          />
-                        </List.Item>
-                      )}
-                    />
-                  </div>
-                )}
-
-                {/* Failed Files */}
-                {uploadResults.failed_files?.length > 0 && (
-                  <div>
-                    <Title 
-                      level={5} 
-                      style={{ 
-                        color: '#f5222d',
-                        fontSize: 'clamp(14px, 2.5vw, 16px)',
-                        marginBottom: '12px'
-                      }}
-                    >
-                      ❌ File tải lên thất bại:
-                    </Title>
-                    <List
-                      size="small"
-                      style={{ 
-                        background: 'rgba(245, 34, 45, 0.05)',
-                        borderRadius: '8px',
-                        padding: '8px'
-                      }}
-                      dataSource={uploadResults.failed_files}
-                      renderItem={(item) => (
-                        <List.Item
-                          style={{
-                            padding: 'clamp(8px, 2vw, 12px)',
-                            background: 'rgba(255, 255, 255, 0.8)',
-                            borderRadius: '6px',
-                            marginBottom: '4px',
-                            border: '1px solid rgba(245, 34, 45, 0.2)'
-                          }}
-                        >
-                          <List.Item.Meta
-                            avatar={<ExclamationCircleOutlined style={{ color: '#f5222d', fontSize: '16px' }} />}
-                            title={
-                              <Text style={{ 
-                                fontSize: 'clamp(13px, 2.5vw, 15px)',
-                                color: '#D2691E',
-                                fontWeight: '500'
-                              }}>
-                                📄 {item.filename}
-                              </Text>
-                            }
-                            description={
-                              <Text 
-                                type="danger" 
-                                style={{ 
-                                  fontSize: 'clamp(12px, 2vw, 13px)'
-                                }}
-                              >
-                                ⚠️ {item.error}
-                              </Text>
-                            }
-                          />
-                        </List.Item>
-                      )}
-                    />
-                  </div>
-                )}
-              </Space>
-            </Card>
-          )}
-        </div>
-      </Card>
-
-      {/* Upload Progress */}
-      {Object.keys(uploadProgress).length > 0 && (
-        <Card 
-          title={
-            <span className="text-lg font-semibold" style={{ color: '#D2691E' }}>
-              <SyncOutlined spin /> Upload Progress
-            </span>
-          }
-          className="mb-4"
-          bodyStyle={{ padding: '24px' }}
-        >
-          {Object.entries(uploadProgress).map(([taskId, progress]) => (
-            <div key={taskId} style={{ marginBottom: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <span className="font-medium">{progress.filename}</span>
-                <Tag color={progress.status === 'uploading' ? 'processing' : 'default'}>
-                  {progress.status === 'uploading' ? 'Uploading' : progress.status}
-                </Tag>
-              </div>
-              <Progress 
-                percent={progress.progress || 0} 
-                status={progress.status === 'failed' ? 'exception' : 'active'}
-                showInfo={true}
-                format={percent => `${percent}%`}
-              />
-            </div>
-          ))}
-        </Card>
-      )}
-
-      {/* Documents Table */}
-      <Card 
-        title={
-          <span className="text-lg font-semibold" style={{ color: '#D2691E' }}>
-            Danh sách tài liệu
-          </span>
-        }
-        bodyStyle={{ padding: '24px' }}
       >
         {loading ? (
           <div className="text-center py-5">
@@ -1296,6 +551,58 @@ const DocumentManagement = () => {
           />
         )}
       </Card>
+
+      {/* Quick Actions */}
+      <Card 
+        className="mb-4"
+        title={
+          <span style={{ 
+            color: '#D2691E', 
+            fontWeight: '600',
+            fontSize: 'clamp(16px, 3vw, 20px)',
+            fontFamily: "'MaisonNeue', 'Inter', sans-serif"
+          }}>
+            ⚡ Thao tác nhanh
+          </span>
+        }
+        style={{
+          borderRadius: 'clamp(12px, 2.5vw, 16px)',
+          border: '2px solid #F4E4BC',
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 8px 32px rgba(210, 105, 30, 0.1)'
+        }}
+        bodyStyle={{ 
+          padding: 'clamp(20px, 4vw, 32px)' 
+        }}
+      >
+        <div style={{ 
+          display: 'flex', 
+          gap: 'clamp(12px, 3vw, 16px)',
+          flexWrap: 'wrap',
+          justifyContent: window.innerWidth <= 768 ? 'center' : 'flex-start'
+        }}>
+          <Button 
+            icon={<ReloadOutlined />} 
+            onClick={() => setNeedsRefresh(true)}
+            loading={loading}
+            size="large"
+            className="refresh-btn"
+            style={{ 
+              height: 'clamp(40px, 8vw, 48px)',
+              fontSize: 'clamp(13px, 2.5vw, 16px)',
+              padding: '0 clamp(16px, 4vw, 24px)',
+              borderRadius: 'clamp(8px, 2vw, 12px)',
+              minWidth: window.innerWidth <= 768 ? '120px' : 'auto',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+          >
+            {window.innerWidth <= 480 ? 'Làm mới' : 'Làm mới danh sách'}
+          </Button>
+        </div>
+      </Card>
+
+
     </div>
   );
 };
