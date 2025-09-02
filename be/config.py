@@ -13,6 +13,10 @@ class Config:
     GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
     GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
     
+    # MongoDB Configuration
+    MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
+    MONGODB_DATABASE = os.getenv("MONGODB_DATABASE", "dvc_ai_db")
+    
     # Redis Configuration
     REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
     

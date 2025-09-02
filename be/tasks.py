@@ -6,8 +6,12 @@ from celery_app import celery_app
 from services.gcs_service import gcs_service
 from websocket_manager import websocket_manager
 import logging
+import uuid
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
+
+from database import add_document
 
 def send_websocket_message(user_id: str, message: dict):
     """
@@ -15,8 +19,54 @@ def send_websocket_message(user_id: str, message: dict):
     """
     try:
         logger.info(f"WebSocket message for user {user_id}: {message['type']}")
-        # WebSocket sending is handled asynchronously in production
-        pass
+        
+        # Create event loop in thread if needed
+        def run_async():
+            try:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                
+                # Send WebSocket message based on type
+                if message['type'] == 'file_upload_progress':
+                    loop.run_until_complete(
+                        websocket_manager.sio.emit('file_upload_progress', message)
+                    )
+                elif message['type'] == 'file_upload_complete':
+                    loop.run_until_complete(
+                        websocket_manager.sio.emit('file_upload_complete', message)
+                    )
+                elif message['type'] == 'file_upload_error':
+                    loop.run_until_complete(
+                        websocket_manager.sio.emit('file_upload_error', message)
+                    )
+                elif message['type'] == 'bulk_upload_progress':
+                    loop.run_until_complete(
+                        websocket_manager.sio.emit('bulk_upload_progress', message)
+                    )
+                elif message['type'] == 'bulk_upload_complete':
+                    loop.run_until_complete(
+                        websocket_manager.sio.emit('bulk_upload_complete', message)
+                    )
+                elif message['type'] == 'bulk_upload_error':
+                    loop.run_until_complete(
+                        websocket_manager.sio.emit('bulk_upload_error', message)
+                    )
+                    
+                logger.info(f"WebSocket message sent successfully: {message['type']}")
+                
+            except Exception as e:
+                logger.error(f"Error in async WebSocket send: {e}")
+            finally:
+                try:
+                    loop.close()
+                except:
+                    pass
+        
+        # Run in separate thread to avoid blocking
+        thread = threading.Thread(target=run_async)
+        thread.daemon = True
+        thread.start()
+        
     except Exception as e:
         logger.error(f"Error sending WebSocket message: {e}")
         # Don't raise exception to avoid breaking the task
@@ -67,6 +117,19 @@ def process_file_upload(self, file_path: str, filename: str, user_id: str, task_
             meta={'current': 75, 'total': 100, 'status': 'Finalizing...'}
         )
         
+        # Get file information
+        file_size = os.path.getsize(file_path) if os.path.exists(file_path) else 0
+        file_extension = os.path.splitext(filename)[1].lower()
+        
+        # Add document to database
+        document = add_document(
+            filename=filename,
+            file_type=file_extension,
+            size=file_size,
+            public_url=public_url,
+            stored_filename=filename
+        )
+        
         # Clean up local file
         try:
             os.remove(file_path)
@@ -80,13 +143,15 @@ def process_file_upload(self, file_path: str, filename: str, user_id: str, task_
             'filename': filename,
             'status': 'completed',
             'public_url': public_url,
-            'progress': 100
+            'progress': 100,
+            'document_id': document['id']
         })
         
         return {
             'status': 'completed',
             'filename': filename,
             'public_url': public_url,
+            'document_id': document['id'],
             'message': f'File {filename} uploaded successfully'
         }
         
@@ -144,11 +209,26 @@ def process_bulk_upload(self, file_paths: list, user_id: str, bulk_task_id: str)
             filename = file_info['filename']
             
             try:
+                # Get file info before upload
+                file_size = os.path.getsize(file_path) if os.path.exists(file_path) else 0
+                file_extension = os.path.splitext(filename)[1].lower()
+                
                 # Upload individual file
                 public_url = gcs_service.upload_file(file_path, f"documents/{filename}")
+                
+                # Add document to database
+                document = add_document(
+                    filename=filename,
+                    file_type=file_extension,
+                    size=file_size,
+                    public_url=public_url,
+                    stored_filename=filename
+                )
+                
                 successful_uploads.append({
                     'filename': filename,
-                    'public_url': public_url
+                    'public_url': public_url,
+                    'document_id': document['id']
                 })
                 
                 # Clean up local file

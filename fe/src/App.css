@@ -1,4 +1,118 @@
 /* Additional styles for App component */
+
+/* Bulk Upload Enhanced Styling */
+.earth-dragger {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.earth-dragger:hover {
+  border-color: #A0522D !important;
+  background: linear-gradient(135deg, #FDF5E6 0%, rgba(222, 184, 135, 0.4) 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(210, 105, 30, 0.15);
+}
+
+.earth-dragger.ant-upload-drag-hover {
+  border-color: #A0522D !important;
+  background: linear-gradient(135deg, #FDF5E6 0%, rgba(222, 184, 135, 0.5) 100%) !important;
+}
+
+.upload-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.upload-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 48px rgba(210, 105, 30, 0.15) !important;
+}
+
+.file-list-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.file-list-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 32px rgba(210, 105, 30, 0.12);
+}
+
+.file-remove-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.file-remove-btn:hover {
+  background: rgba(160, 82, 45, 0.1) !important;
+  color: #8B4513 !important;
+  transform: scale(1.1);
+}
+
+.clear-btn:hover {
+  background: rgba(222, 184, 135, 0.2) !important;
+  border-color: #CD853F !important;
+  color: #8B4513 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(160, 82, 45, 0.2);
+}
+
+/* Progress enhancements */
+.ant-progress-bg {
+  background: linear-gradient(90deg, #D2691E 0%, #CD853F 100%) !important;
+}
+
+/* Enhanced responsive typography */
+@media (max-width: 480px) {
+  .earth-dragger .ant-upload-drag-icon {
+    margin-bottom: 8px !important;
+  }
+  
+  .earth-dragger .ant-upload-text {
+    margin: 8px 0 4px 0 !important;
+  }
+  
+  .earth-dragger .ant-upload-hint {
+    margin: 4px 0 0 0 !important;
+    line-height: 1.4 !important;
+  }
+}
+
+/* Animation for status tags */
+.ant-tag {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ant-tag-processing {
+  animation: pulse-processing 2s infinite;
+}
+
+@keyframes pulse-processing {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+/* Enhanced card styling */
+.ant-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ant-card-head-title {
+  font-family: 'MaisonNeue', 'Inter', sans-serif !important;
+}
+
+/* File type specific styling */
+.file-type-pdf {
+  border-left: 4px solid #ff4d4f;
+}
+
+.file-type-docx {
+  border-left: 4px solid #1890ff;
+}
+
+.file-type-image {
+  border-left: 4px solid #52c41a;
+}
+
+.file-type-text {
+  border-left: 4px solid #722ed1;
+}
 .app-container {
   min-height: 100vh;
   background-color: #f5f7fa;

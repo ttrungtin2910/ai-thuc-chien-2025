@@ -17,7 +17,7 @@
 ### 🏗️ Kiến trúc hệ thống
 - **Frontend:** ReactJS + Custom CSS + MaisonNeue font
 - **Backend:** Python FastAPI + Celery (threads pool) + Redis
-- **Database:** In-memory (có thể mở rộng)
+- **Database:** MongoDB với fallback in-memory storage
 - **Storage:** Google Cloud Storage + Local uploads
 - **Authentication:** JWT tokens
 - **Real-time:** WebSocket + Socket.IO (ASGI integrated)
@@ -162,6 +162,10 @@ PROJECT_ID=your-google-cloud-project-id
 GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account-key.json
 GCS_BUCKET_NAME=your-bucket-name
 
+# MongoDB Configuration (Optional - fallback to in-memory if not available)
+MONGODB_URL=mongodb://localhost:27017
+MONGODB_DATABASE=dvc_ai_db
+
 # Redis Configuration
 REDIS_URL=redis://localhost:6379/0
 CELERY_BROKER_URL=redis://localhost:6379/0
@@ -179,6 +183,144 @@ WEBSOCKET_CORS_ORIGINS=http://localhost:3000
 ```env
 REACT_APP_API_URL=http://localhost:8001
 REACT_APP_APP_NAME=DVC.AI
+```
+
+## 🗄️ MongoDB Setup (Recommended)
+
+### 🐳 Option 1: Docker MongoDB (Khuyến nghị)
+
+**Yêu cầu:** Docker & Docker Compose đã cài đặt
+
+```bash
+# 1. Start MongoDB với Docker
+cd be
+docker-compose -f docker-compose-mongodb.yml up -d
+
+# 2. Verify MongoDB đang chạy
+docker ps | grep mongodb
+
+# 3. Test connection
+python -c "from database import get_database_status; print(get_database_status())"
+
+# 4. Stop MongoDB (khi cần)
+docker-compose -f docker-compose-mongodb.yml down
+```
+
+**Tính năng Docker MongoDB:**
+- ✅ **Isolated environment** - Không ảnh hưởng system
+- ✅ **Data persistence** - Volume mount `/data/db`
+- ✅ **Web admin interface** - Mongo Express tại http://localhost:8081
+- ✅ **Health checks** - Auto-restart nếu unhealthy
+- ✅ **Easy cleanup** - `docker-compose down -v`
+
+**Mongo Express Admin Panel:**
+- 🌐 **URL:** http://localhost:8081
+- 👤 **Username:** admin
+- 🔐 **Password:** admin123
+- 📊 **Database:** dvc_ai_db
+
+### 💻 Option 2: Native Installation
+
+**Windows:**
+```bash
+# Option 1: Download from official site
+# https://www.mongodb.com/try/download/community
+
+# Option 2: Using Chocolatey
+choco install mongodb
+
+# Start MongoDB service
+net start MongoDB
+```
+
+**macOS:**
+```bash
+# Using Homebrew
+brew tap mongodb/brew
+brew install mongodb-community
+brew services start mongodb/brew/mongodb-community
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt-get update
+sudo apt-get install -y mongodb
+sudo systemctl start mongodb
+sudo systemctl enable mongodb
+```
+
+### Kiểm tra MongoDB
+```bash
+# Test MongoDB setup
+cd be
+python setup_mongodb.py
+
+# Verify connection
+python -c "from database import get_database_status; print(get_database_status())"
+```
+
+### Tính năng MongoDB
+- ✅ **Persistent storage** - Documents được lưu vĩnh viễn
+- ✅ **Scalability** - Dễ dàng scale với MongoDB cluster
+- ✅ **Performance** - Indexed queries for faster retrieval
+- ✅ **Backup & Recovery** - MongoDB built-in backup tools
+- ✅ **Fallback mechanism** - Auto-fallback to in-memory nếu MongoDB không available
+
+### Không có MongoDB?
+Không sao! Hệ thống tự động fallback về **in-memory storage**:
+- ✅ Application vẫn hoạt động bình thường
+- ⚠️ Documents sẽ mất khi restart server
+- 💡 Suitable cho development và testing
+
+### 🎯 Quick Start với Docker MongoDB
+```bash
+# 1. Clone project và cd vào backend
+cd be
+
+# 2. Start MongoDB với Docker (automatic setup)
+python setup_mongodb.py
+
+# 3. Start backend server
+python main.py
+
+# 4. Start frontend (terminal mới)
+cd ../fe
+npm start
+```
+
+### 🔧 Docker MongoDB Management
+```bash
+# Xem status containers
+docker ps | grep mongodb
+
+# Xem logs MongoDB
+docker-compose -f docker-compose-mongodb.yml logs mongodb
+
+# Restart MongoDB
+docker-compose -f docker-compose-mongodb.yml restart mongodb
+
+# Stop MongoDB
+docker-compose -f docker-compose-mongodb.yml down
+
+# Reset database (xóa tất cả data)
+docker-compose -f docker-compose-mongodb.yml down -v
+
+# View database với Mongo Express
+# http://localhost:8081 (admin/admin123)
+```
+
+### 🔐 Production MongoDB Security
+Cho production, enable authentication trong `docker-compose-mongodb.yml`:
+```yaml
+environment:
+  MONGO_INITDB_ROOT_USERNAME: admin
+  MONGO_INITDB_ROOT_PASSWORD: your-secure-password
+  MONGO_INITDB_DATABASE: dvc_ai_db
+```
+
+Và update `config.py`:
+```python
+MONGODB_URL = "mongodb://admin:your-secure-password@localhost:27017"
 ```
 
 ## 📱 Responsive Design
@@ -350,6 +492,42 @@ celery -A celery_app.celery_app inspect registered
 - CORS configuration
 - HTTPS enforcement
 
+## 🚀 Version 3.0.0 - MongoDB Integration
+
+### ✨ New Features (September 2025):
+
+1. **🗄️ MongoDB Integration**
+   - **MongoDB với Docker**: Containerized MongoDB setup
+   - **Fallback mechanism**: Auto-fallback to in-memory nếu MongoDB không available
+   - **Data persistence**: Documents được lưu vĩnh viễn
+   - **Performance indexes**: Auto-created indexes cho faster queries
+
+2. **🐳 Docker MongoDB Stack**
+   - **MongoDB 7.0**: Latest stable version
+   - **Mongo Express**: Web-based admin interface (localhost:8081)
+   - **Data volumes**: Persistent storage với Docker volumes
+   - **Health checks**: Auto-restart containers
+   - **One-command setup**: `python setup_mongodb.py`
+
+3. **🎯 Merged Upload Interface**
+   - **Single upload area**: Loại bỏ tabs riêng biệt
+   - **Smart detection**: 1 file = upload ngay, nhiều file = bulk processing
+   - **Enhanced UI/UX**: Improved styling với theme "Mệnh Thổ"
+   - **Real-time progress**: WebSocket updates cho upload status
+
+4. **🔧 System Improvements**
+   - **Auto-restart scripts**: Intelligent server management
+   - **Better error handling**: Graceful degradation
+   - **Clean architecture**: Centralized database module
+   - **Production ready**: Security và performance optimizations
+
+### 🛠️ Technical Stack Updates:
+- **Database**: MongoDB 7.0 (primary) + In-memory (fallback)
+- **Containerization**: Docker Compose cho MongoDB stack
+- **Process Management**: psutil cho process handling
+- **Real-time**: Enhanced WebSocket integration
+- **UI Framework**: Ant Design với custom theme
+
 ## 🔧 Các vấn đề đã sửa và cải tiến
 
 ### ✅ Lỗi đã khắc phục (September 2025):
@@ -436,9 +614,10 @@ MIT License - Xem file LICENSE để biết chi tiết.
 
 ---
 
-**Phiên bản:** 2.1.0 (Production Ready)  
+**Phiên bản:** 3.0.0 (MongoDB Integration)  
 **Cập nhật:** September 2025  
 **Tác giả:** AI Assistant  
-**Status:** ✅ All major issues fixed  
-**Compatibility:** Windows + Conda optimized  
-**Brand:** DVC.AI - Document Management with AI**
+**Status:** ✅ MongoDB + Docker integration complete  
+**Features:** MongoDB, Docker, Merged Upload UI, Real-time WebSocket  
+**Compatibility:** Windows + Docker + Conda optimized  
+**Brand:** DVC.AI - Document Management with AI & MongoDB**

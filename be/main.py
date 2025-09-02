@@ -76,7 +76,9 @@ fake_users = {
     }
 }
 
-fake_documents = []
+# Import database functions
+from database import get_documents, get_document_by_id
+from database import delete_document as delete_document_from_db
 
 # Utility functions
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -186,33 +188,37 @@ async def upload_document(
     )
 
 @app.get("/api/documents", response_model=List[DocumentInfo])
-async def get_documents(username: str = Depends(verify_token)):
+async def get_documents_endpoint(username: str = Depends(verify_token)):
+    documents = get_documents()
     return [
         DocumentInfo(
             id=doc["id"],
             filename=doc["filename"],
             file_type=doc["file_type"],
             upload_date=doc["upload_date"],
-            size=doc["size"]
+            size=doc["size"],
+            public_url=doc.get("public_url"),
+            status=doc.get("status")
         )
-        for doc in fake_documents
+        for doc in documents
     ]
 
 @app.delete("/api/documents/{document_id}")
-async def delete_document(document_id: str, username: str = Depends(verify_token)):
-    document = next((doc for doc in fake_documents if doc["id"] == document_id), None)
+async def delete_document_endpoint(document_id: str, username: str = Depends(verify_token)):
+    document = get_document_by_id(document_id)
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
     
-    # Xóa file khỏi disk
-    file_path = os.path.join(UPLOAD_DIR, document["stored_filename"])
+    # Xóa file khỏi disk nếu có
+    file_path = os.path.join(UPLOAD_DIR, document.get("stored_filename", ""))
     if os.path.exists(file_path):
         os.remove(file_path)
     
-    # Xóa khỏi fake database
-    fake_documents.remove(document)
-    
-    return {"message": "Document deleted successfully"}
+    # Xóa khỏi database
+    if delete_document_from_db(document_id):
+        return {"message": "Document deleted successfully"}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to delete document")
 
 @app.post("/api/documents/bulk-upload", response_model=BulkUploadResponse)
 async def bulk_upload_documents(

@@ -14,13 +14,11 @@ import {
   MessageOutlined, 
   UserOutlined, 
   LogoutOutlined,
-  SettingOutlined,
-  CloudUploadOutlined
+  SettingOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import DocumentManagement from '../components/DocumentManagement';
 import ChatBot from '../components/ChatBot';
-import BulkUpload from '../components/BulkUpload';
 import dongsondrum from '../assets/dongson-drum.svg';
 
 const { Header, Content } = Layout;
@@ -62,32 +60,22 @@ const MainPage = () => {
   const tabItems = [
     {
       key: 'documents',
-              label: (
-          <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <FileTextOutlined />
-            Quản lý Tài liệu
-          </span>
-        ),
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <FileTextOutlined />
+          Quản lý Tài liệu
+        </span>
+      ),
       children: <DocumentManagement />
     },
     {
-      key: 'bulk-upload',
-              label: (
-          <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <CloudUploadOutlined />
-            Upload Đồng loạt
-          </span>
-        ),
-      children: <BulkUpload />
-    },
-    {
       key: 'chatbot',
-              label: (
-          <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <MessageOutlined />
-            Hỗ trợ Trực tuyến
-          </span>
-        ),
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <MessageOutlined />
+          Hỗ trợ Trực tuyến
+        </span>
+      ),
       children: <ChatBot />
     }
   ];

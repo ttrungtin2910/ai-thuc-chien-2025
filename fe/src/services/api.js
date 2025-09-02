@@ -74,6 +74,15 @@ export const documentsAPI = {
     return response.data;
   },
   
+  bulkUploadDocuments: async (formData) => {
+    const response = await api.post('/api/documents/bulk-upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+  
   deleteDocument: async (documentId) => {
     const response = await api.delete(`/api/documents/${documentId}`);
     return response.data;
