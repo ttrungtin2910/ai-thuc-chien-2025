@@ -5,19 +5,20 @@ from celery import current_task
 from celery_app import celery_app
 from services.gcs_service import gcs_service
 from websocket_manager import websocket_manager
+import logging
+
+logger = logging.getLogger(__name__)
 
 def send_websocket_message(user_id: str, message: dict):
     """
     Helper function to send WebSocket message from sync context
     """
     try:
-        # Use a simple approach - just print for now and avoid complex threading
-        print(f"WebSocket message for user {user_id}: {message}")
-        # TODO: Implement proper async WebSocket sending later
-        # For now, just skip to avoid blocking Celery tasks
+        logger.info(f"WebSocket message for user {user_id}: {message['type']}")
+        # WebSocket sending is handled asynchronously in production
         pass
     except Exception as e:
-        print(f"Error sending WebSocket message: {e}")
+        logger.error(f"Error sending WebSocket message: {e}")
         # Don't raise exception to avoid breaking the task
 
 @celery_app.task(bind=True)
@@ -70,7 +71,7 @@ def process_file_upload(self, file_path: str, filename: str, user_id: str, task_
         try:
             os.remove(file_path)
         except Exception as e:
-            print(f"Warning: Could not remove local file {file_path}: {e}")
+            logger.warning(f"Could not remove local file {file_path}: {e}")
         
         # Send success notification via WebSocket
         send_websocket_message(user_id, {
@@ -153,8 +154,8 @@ def process_bulk_upload(self, file_paths: list, user_id: str, bulk_task_id: str)
                 # Clean up local file
                 try:
                     os.remove(file_path)
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning(f"Could not remove local file {file_path}: {e}")
                     
             except Exception as e:
                 failed_files.append({

@@ -35,14 +35,12 @@ class WebSocketService {
     if (!this.socket) return;
 
     this.socket.on('connect', () => {
-      console.log('WebSocket connected');
       this.isConnected = true;
       this.reconnectAttempts = 0;
       this.emit('connection_status', { connected: true });
     });
 
     this.socket.on('disconnect', (reason) => {
-      console.log('WebSocket disconnected:', reason);
       this.isConnected = false;
       this.emit('connection_status', { connected: false, reason });
       
@@ -53,38 +51,31 @@ class WebSocketService {
     });
 
     this.socket.on('connect_error', (error) => {
-      console.error('WebSocket connection error:', error);
       this.emit('connection_error', { error });
       this.scheduleReconnect();
     });
 
     this.socket.on('connection_status', (data) => {
-      console.log('Connection status update:', data);
       this.emit('connection_status', data);
     });
 
     this.socket.on('message', (data) => {
-      console.log('Received message:', data);
       this.handleMessage(data);
     });
 
     this.socket.on('broadcast', (data) => {
-      console.log('Received broadcast:', data);
       this.emit('broadcast', data);
     });
 
     this.socket.on('room_joined', (data) => {
-      console.log('Joined room:', data);
       this.emit('room_joined', data);
     });
 
     this.socket.on('room_left', (data) => {
-      console.log('Left room:', data);
       this.emit('room_left', data);
     });
 
     this.socket.on('pong', (data) => {
-      console.log('Received pong:', data);
       this.emit('pong', data);
     });
   }
@@ -119,17 +110,14 @@ class WebSocketService {
 
   scheduleReconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.log('Max reconnection attempts reached');
       this.emit('max_reconnect_attempts_reached');
       return;
     }
 
     this.reconnectAttempts++;
-    console.log(`Scheduling reconnection attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
     
     setTimeout(() => {
       if (!this.isConnected) {
-        console.log(`Reconnection attempt ${this.reconnectAttempts}`);
         this.socket?.connect();
       }
     }, this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1)); // Exponential backoff
@@ -185,7 +173,7 @@ class WebSocketService {
         try {
           callback(data);
         } catch (error) {
-          console.error(`Error in event listener for ${event}:`, error);
+          // Silently handle event listener errors to avoid console spam
         }
       });
     }

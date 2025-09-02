@@ -120,7 +120,7 @@ const BulkUpload = () => {
       setFileList(info.fileList);
     },
     onDrop: (e) => {
-      console.log('Dropped files', e.dataTransfer.files);
+      // Handle dropped files
     },
     accept: '.pdf,.docx,.doc,.txt,.png,.jpg,.jpeg',
     maxCount: 50,

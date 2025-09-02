@@ -4,6 +4,9 @@ from typing import Optional
 from google.cloud import storage
 from google.oauth2 import service_account
 from config import Config
+import logging
+
+logger = logging.getLogger(__name__)
 
 class GCSService:
     def __init__(self):
@@ -28,13 +31,13 @@ class GCSService:
             if self.client and self.bucket_name:
                 self.bucket = self.client.bucket(self.bucket_name)
                 self.enabled = True
-                print(f"GCS Service initialized successfully with bucket: {self.bucket_name}")
+                logger.info(f"GCS Service initialized successfully with bucket: {self.bucket_name}")
             else:
-                print("GCS Service: Missing bucket name or project configuration")
+                logger.warning("GCS Service: Missing bucket name or project configuration")
                 
         except Exception as e:
-            print(f"GCS Service initialization failed: {e}")
-            print("File upload will use local storage only")
+            logger.error(f"GCS Service initialization failed: {e}")
+            logger.info("File upload will use local storage only")
             self.client = None
             self.bucket = None
             self.enabled = False
@@ -53,7 +56,7 @@ class GCSService:
         if not self.enabled or not self.bucket:
             # Return local file path if GCS not available
             filename = os.path.basename(file_path)
-            print(f"GCS not available, keeping file locally: {filename}")
+            logger.info(f"GCS not available, keeping file locally: {filename}")
             return f"local://{file_path}"
         
         if not destination_path:
@@ -91,7 +94,7 @@ class GCSService:
             local_path = os.path.join(temp_dir, filename)
             with open(local_path, 'wb') as f:
                 f.write(file_content)
-            print(f"GCS not available, saved file locally: {filename}")
+            logger.info(f"GCS not available, saved file locally: {filename}")
             return f"local://{local_path}"
         
         # Generate unique filename
@@ -122,7 +125,7 @@ class GCSService:
             True if successful, False otherwise
         """
         if not self.enabled or not self.bucket:
-            print("GCS not available, cannot delete file")
+            logger.warning("GCS not available, cannot delete file")
             return False
         
         try:
@@ -130,7 +133,7 @@ class GCSService:
             blob.delete()
             return True
         except Exception as e:
-            print(f"Error deleting file {blob_name}: {e}")
+            logger.error(f"Error deleting file {blob_name}: {e}")
             return False
     
     def list_files(self, prefix: str = "uploads/") -> list:
@@ -144,7 +147,7 @@ class GCSService:
             List of blob names
         """
         if not self.enabled or not self.bucket:
-            print("GCS not available, cannot list files")
+            logger.warning("GCS not available, cannot list files")
             return []
         
         blobs = self.bucket.list_blobs(prefix=prefix)
