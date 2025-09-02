@@ -14,17 +14,18 @@ import {
   Empty,
   Spin,
   Progress,
-  notification
+  notification,
+  Skeleton
 } from 'antd';
 import {
-  DeleteOutlined,
-  FileTextOutlined,
-  FilePdfOutlined,
-  FileWordOutlined,
+  DeleteFilled,
+  FileTextFilled,
+  FilePdfFilled,
+  FileWordFilled,
   DownloadOutlined,
   ReloadOutlined,
-  CheckCircleOutlined,
-  ExclamationCircleOutlined
+  CheckCircleFilled,
+  ExclamationCircleFilled
 } from '@ant-design/icons';
 import { documentsAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -33,7 +34,7 @@ import moment from 'moment';
 
 const { Title, Text } = Typography;
 
-const DocumentManagement = () => {
+const DocumentManagement = React.memo(() => {
   const { user } = useAuth();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -161,11 +162,11 @@ const DocumentManagement = () => {
   const getFileTypeIcon = (fileType) => {
     switch (fileType) {
       case '.pdf':
-        return <FilePdfOutlined style={{ color: '#ff4d4f', fontSize: '18px' }} />;
+        return <FilePdfFilled style={{ color: '#ff4d4f', fontSize: '18px', borderRadius: '4px' }} />;
       case '.docx':
-        return <FileWordOutlined style={{ color: '#1890ff', fontSize: '18px' }} />;
+        return <FileWordFilled style={{ color: '#1890ff', fontSize: '18px', borderRadius: '4px' }} />;
       default:
-        return <FileTextOutlined style={{ color: '#666', fontSize: '18px' }} />;
+        return <FileTextFilled style={{ color: '#666', fontSize: '18px', borderRadius: '4px' }} />;
     }
   };
 
@@ -230,7 +231,7 @@ const DocumentManagement = () => {
       render: (date) => (
         <div className="text-sm">
           <div className="font-medium">{moment(date).format('DD/MM/YYYY')}</div>
-          <div className="text-xs" style={{ color: '#8B4513', opacity: 0.8 }}>
+          <div className="text-xs" style={{ color: '#6B3410', opacity: 0.8 }}>
             {moment(date).format('HH:mm')}
           </div>
         </div>
@@ -279,7 +280,7 @@ const DocumentManagement = () => {
       title: <span className="font-semibold text-sm">Thao tác</span>,
       key: 'action',
       render: (_, record) => (
-        <div style={{ 
+        <div className="action-group-secondary" style={{ 
           display: 'flex', 
           gap: 'clamp(4px, 1.5vw, 8px)',
           flexWrap: 'wrap',
@@ -289,17 +290,17 @@ const DocumentManagement = () => {
             icon={<DownloadOutlined />}
             size="small"
             onClick={() => message.info('Tính năng download đang phát triển')}
+            aria-label={`Tải xuống file ${record.filename}`}
+            className="action-btn-download secondary-action btn-secondary-action hover-scale btn-press interactive-feedback"
             style={{ 
               fontSize: 'clamp(11px, 2.5vw, 12px)',
               height: 'clamp(28px, 6vw, 32px)',
               padding: '0 clamp(6px, 1.5vw, 8px)',
-              borderRadius: '6px',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              borderRadius: '8px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}
-            className="action-btn-download"
           >
             <span className="hidden-xs">Tải xuống</span>
           </Button>
@@ -317,21 +318,21 @@ const DocumentManagement = () => {
             okType="danger"
           >
             <Button
-              icon={<DeleteOutlined />}
+              icon={<DeleteFilled />}
               size="small"
               danger
               type="text"
+              aria-label={`Xóa file ${record.filename}`}
+              className="action-btn-delete tertiary-action btn-danger-action"
               style={{ 
                 fontSize: 'clamp(11px, 2.5vw, 12px)',
                 height: 'clamp(28px, 6vw, 32px)',
                 padding: '0 clamp(6px, 1.5vw, 8px)',
-                borderRadius: '6px',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}
-              className="action-btn-delete"
             >
               <span className="hidden-xs">Xóa</span>
             </Button>
@@ -374,7 +375,7 @@ const DocumentManagement = () => {
           className="text-base lh-relaxed"
           style={{
             fontSize: 'clamp(14px, 2.5vw, 16px)',
-            color: '#8B4513',
+            color: '#6B3410',
             display: 'block',
             marginBottom: '24px'
           }}
@@ -387,7 +388,7 @@ const DocumentManagement = () => {
       <Row gutter={[window.innerWidth <= 768 ? 12 : 16, window.innerWidth <= 768 ? 12 : 16]} className="mb-4">
         <Col xs={24} sm={12} md={6} lg={6} xl={6}>
           <Card 
-            className="text-center stats-card" 
+            className="text-center stats-card card-animate hover-lift" 
             style={{ 
               height: '100%',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -395,22 +396,29 @@ const DocumentManagement = () => {
               borderRadius: 'clamp(8px, 2vw, 12px)'
             }}
           >
-            <Statistic
-              title={<span className="text-sm font-medium" style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>Tổng số tài liệu</span>}
-              value={documents.length}
-              prefix={<FileTextOutlined style={{ fontSize: 'clamp(16px, 3vw, 20px)' }} />}
-              valueStyle={{ 
-                color: '#D2691E', 
-                fontSize: 'clamp(24px, 5vw, 32px)',
-                fontWeight: '600',
-                fontFamily: "'MaisonNeue', 'Inter', sans-serif"
-              }}
-            />
+            {loading ? (
+              <div style={{ padding: '16px' }}>
+                <Skeleton.Avatar active size="small" style={{ marginBottom: '8px' }} />
+                <Skeleton active paragraph={{ rows: 1 }} />
+              </div>
+            ) : (
+              <Statistic
+                title={<span className="text-sm font-medium" style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>Tổng số tài liệu</span>}
+                value={documents.length}
+                prefix={<FileTextFilled style={{ fontSize: 'clamp(16px, 3vw, 20px)', padding: '4px', background: 'rgba(210, 105, 30, 0.1)', borderRadius: '6px' }} />}
+                valueStyle={{ 
+                  color: '#D2691E', 
+                  fontSize: 'clamp(24px, 5vw, 32px)',
+                  fontWeight: '600',
+                  fontFamily: "'MaisonNeue', 'Inter', sans-serif"
+                }}
+              />
+            )}
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6} lg={6} xl={6}>
           <Card 
-            className="text-center stats-card" 
+            className="text-center stats-card card-animate hover-lift" 
             style={{ 
               height: '100%',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -418,22 +426,29 @@ const DocumentManagement = () => {
               borderRadius: 'clamp(8px, 2vw, 12px)'
             }}
           >
-            <Statistic
-              title={<span className="text-sm font-medium" style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>File PDF</span>}
-              value={pdfCount}
-              prefix={<FilePdfOutlined style={{ fontSize: 'clamp(16px, 3vw, 20px)' }} />}
-              valueStyle={{ 
-                color: '#ff4d4f', 
-                fontSize: 'clamp(24px, 5vw, 32px)',
-                fontWeight: '600',
-                fontFamily: "'MaisonNeue', 'Inter', sans-serif"
-              }}
-            />
+            {loading ? (
+              <div style={{ padding: '16px' }}>
+                <Skeleton.Avatar active size="small" style={{ marginBottom: '8px' }} />
+                <Skeleton active paragraph={{ rows: 1 }} />
+              </div>
+            ) : (
+              <Statistic
+                title={<span className="text-sm font-medium" style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>File PDF</span>}
+                value={pdfCount}
+                prefix={<FilePdfFilled style={{ fontSize: 'clamp(16px, 3vw, 20px)', padding: '4px', background: 'rgba(255, 77, 79, 0.1)', borderRadius: '6px' }} />}
+                valueStyle={{ 
+                  color: '#ff4d4f', 
+                  fontSize: 'clamp(24px, 5vw, 32px)',
+                  fontWeight: '600',
+                  fontFamily: "'MaisonNeue', 'Inter', sans-serif"
+                }}
+              />
+            )}
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6} lg={6} xl={6}>
           <Card 
-            className="text-center stats-card" 
+            className="text-center stats-card card-animate hover-lift" 
             style={{ 
               height: '100%',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -441,22 +456,29 @@ const DocumentManagement = () => {
               borderRadius: 'clamp(8px, 2vw, 12px)'
             }}
           >
-            <Statistic
-              title={<span className="text-sm font-medium" style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>File DOCX</span>}
-              value={docxCount}
-              prefix={<FileWordOutlined style={{ fontSize: 'clamp(16px, 3vw, 20px)' }} />}
-              valueStyle={{ 
-                color: '#1890ff', 
-                fontSize: 'clamp(24px, 5vw, 32px)',
-                fontWeight: '600',
-                fontFamily: "'MaisonNeue', 'Inter', sans-serif"
-              }}
-            />
+            {loading ? (
+              <div style={{ padding: '16px' }}>
+                <Skeleton.Avatar active size="small" style={{ marginBottom: '8px' }} />
+                <Skeleton active paragraph={{ rows: 1 }} />
+              </div>
+            ) : (
+              <Statistic
+                title={<span className="text-sm font-medium" style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>File DOCX</span>}
+                value={docxCount}
+                prefix={<FileWordFilled style={{ fontSize: 'clamp(16px, 3vw, 20px)', padding: '4px', background: 'rgba(24, 144, 255, 0.1)', borderRadius: '6px' }} />}
+                valueStyle={{ 
+                  color: '#1890ff', 
+                  fontSize: 'clamp(24px, 5vw, 32px)',
+                  fontWeight: '600',
+                  fontFamily: "'MaisonNeue', 'Inter', sans-serif"
+                }}
+              />
+            )}
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6} lg={6} xl={6}>
           <Card 
-            className="text-center stats-card" 
+            className="text-center stats-card card-animate hover-lift" 
             style={{ 
               height: '100%',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -464,17 +486,24 @@ const DocumentManagement = () => {
               borderRadius: 'clamp(8px, 2vw, 12px)'
             }}
           >
-            <Statistic
-              title={<span className="text-sm font-medium" style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>Tổng dung lượng</span>}
-              value={formatFileSize(totalSize)}
-              prefix={<DownloadOutlined style={{ fontSize: 'clamp(16px, 3vw, 20px)' }} />}
-              valueStyle={{ 
-                color: '#52c41a', 
-                fontSize: 'clamp(20px, 4.5vw, 24px)',
-                fontWeight: '600',
-                fontFamily: "'MaisonNeue', 'Inter', sans-serif"
-              }}
-            />
+            {loading ? (
+              <div style={{ padding: '16px' }}>
+                <Skeleton.Avatar active size="small" style={{ marginBottom: '8px' }} />
+                <Skeleton active paragraph={{ rows: 1 }} />
+              </div>
+            ) : (
+              <Statistic
+                title={<span className="text-sm font-medium" style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>Tổng dung lượng</span>}
+                value={formatFileSize(totalSize)}
+                prefix={<DownloadOutlined style={{ fontSize: 'clamp(16px, 3vw, 20px)', padding: '4px', background: 'rgba(82, 196, 26, 0.1)', borderRadius: '6px' }} />}
+                valueStyle={{ 
+                  color: '#52c41a', 
+                  fontSize: 'clamp(20px, 4.5vw, 24px)',
+                  fontWeight: '600',
+                  fontFamily: "'MaisonNeue', 'Inter', sans-serif"
+                }}
+              />
+            )}
           </Card>
         </Col>
       </Row>
@@ -504,10 +533,12 @@ const DocumentManagement = () => {
         }}
       >
         {loading ? (
-          <div className="text-center py-5">
-            <Spin size="large" />
-            <div className="mt-2 text-sm" style={{ color: '#8B4513' }}>
-              Đang tải danh sách tài liệu...
+          <div style={{ padding: '20px' }}>
+            <Skeleton active paragraph={{ rows: 6 }} />
+            <div style={{ marginTop: '16px' }}>
+              <Skeleton.Button active style={{ width: '100px', marginRight: '8px' }} />
+              <Skeleton.Button active style={{ width: '80px', marginRight: '8px' }} />
+              <Skeleton.Button active style={{ width: '120px' }} />
             </div>
           </div>
         ) : documents.length === 0 ? (
@@ -515,7 +546,7 @@ const DocumentManagement = () => {
             description={
               <div className="text-center">
                 <div className="text-base font-medium mb-1">Chưa có tài liệu nào</div>
-                <div className="text-sm" style={{ color: '#8B4513' }}>
+                <div className="text-sm" style={{ color: '#6B3410' }}>
                   Tải lên tài liệu đầu tiên để bắt đầu
                 </div>
               </div>
@@ -576,7 +607,7 @@ const DocumentManagement = () => {
           padding: 'clamp(20px, 4vw, 32px)' 
         }}
       >
-        <div style={{ 
+        <div className="action-group-primary" style={{ 
           display: 'flex', 
           gap: 'clamp(12px, 3vw, 16px)',
           flexWrap: 'wrap',
@@ -587,14 +618,14 @@ const DocumentManagement = () => {
             onClick={() => setNeedsRefresh(true)}
             loading={loading}
             size="large"
-            className="refresh-btn"
+            className="refresh-btn primary-action btn-primary-action"
+            aria-label="Làm mới danh sách tài liệu"
             style={{ 
               height: 'clamp(40px, 8vw, 48px)',
               fontSize: 'clamp(13px, 2.5vw, 16px)',
               padding: '0 clamp(16px, 4vw, 24px)',
-              borderRadius: 'clamp(8px, 2vw, 12px)',
-              minWidth: window.innerWidth <= 768 ? '120px' : 'auto',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              borderRadius: 'clamp(10px, 2vw, 12px)',
+              minWidth: window.innerWidth <= 768 ? '120px' : 'auto'
             }}
           >
             {window.innerWidth <= 480 ? 'Làm mới' : 'Làm mới danh sách'}
@@ -605,6 +636,6 @@ const DocumentManagement = () => {
 
     </div>
   );
-};
+});
 
 export default DocumentManagement;

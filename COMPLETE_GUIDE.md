@@ -13,36 +13,83 @@
 - ✅ **Google Cloud Storage** - Lưu trữ file trên cloud (uniform bucket access)
 - ✅ **Celery Background Tasks** - Xử lý background tương thích Windows
 - ✅ **UI/UX hiện đại** - Font MaisonNeue, thiết kế responsive
+- ✅ **Milvus Vector Database** - Vector search cho RAG
+- ✅ **RAG System** - Retrieval-Augmented Generation với OpenAI API
+- ✅ **Microservice Architecture** - Cấu trúc module hóa, dễ bảo trì
 
-### 🏗️ Kiến trúc hệ thống
+### 🏗️ Kiến trúc hệ thống (Microservice Style)
 - **Frontend:** ReactJS + Custom CSS + MaisonNeue font
-- **Backend:** Python FastAPI + Celery (threads pool) + Redis
+- **Backend:** Python FastAPI (Microservice Architecture) + Celery (threads pool) + Redis
 - **Database:** MongoDB với fallback in-memory storage
+- **Vector Database:** Milvus cho RAG và semantic search
 - **Storage:** Google Cloud Storage + Local uploads
-- **Authentication:** JWT tokens
+- **Authentication:** JWT tokens với centralized security module
 - **Real-time:** WebSocket + Socket.IO (ASGI integrated)
+- **AI/ML:** OpenAI API (Direct) + RAG Pipeline + Vector Search
 - **Environment:** Windows-compatible với Conda
+- **Architecture:** Modular design với separation of concerns
 
-## 📁 Cấu trúc dự án
+## 📁 Cấu trúc dự án (Microservice Architecture)
 
 ```
 d:\02-VLU\02-AI-ThucChien\
-├── be/                     # Backend FastAPI
-│   ├── main.py            # FastAPI application
+├── be/                     # Backend FastAPI (Microservice Style)
+│   ├── main.py            # Application entry point
+│   ├── app/               # Main application package
+│   │   ├── __init__.py
+│   │   ├── main.py        # FastAPI app configuration
+│   │   ├── api/           # API routes (separated by feature)
+│   │   │   ├── __init__.py
+│   │   │   ├── auth.py    # Authentication routes
+│   │   │   ├── documents.py # Document management routes
+│   │   │   ├── chatbot.py # Chatbot routes
+│   │   │   ├── rag.py     # RAG (AI) routes
+│   │   │   └── websocket.py # WebSocket routes
+│   │   ├── core/          # Core business logic & utilities
+│   │   │   ├── __init__.py
+│   │   │   ├── config.py  # Configuration management
+│   │   │   ├── security.py # Authentication & JWT
+│   │   │   └── websocket.py # WebSocket manager
+│   │   ├── models/        # Pydantic models
+│   │   │   ├── __init__.py
+│   │   │   ├── auth.py    # Auth models
+│   │   │   ├── documents.py # Document models
+│   │   │   ├── chatbot.py # Chatbot models
+│   │   │   └── rag.py     # RAG models
+│   │   ├── services/      # External services integration
+│   │   │   ├── __init__.py
+│   │   │   ├── gcs_service.py # Google Cloud Storage
+│   │   │   ├── milvus_service.py # Vector database
+│   │   │   ├── database.py # MongoDB service
+│   │   │   └── rag_service.py # RAG service
+│   │   ├── utils/         # Utility functions
+│   │   │   ├── __init__.py
+│   │   │   └── document_processor.py # Document processing
+│   │   └── workers/       # Background task workers
+│   │       ├── __init__.py
+│   │       ├── celery_app.py # Celery configuration
+│   │       └── tasks.py   # Background tasks
+│   ├── scripts/           # Standalone scripts & tools
+│   │   ├── __init__.py
+│   │   ├── dev.py         # Development manager
+│   │   ├── setup_mongodb.py # MongoDB setup
+│   │   ├── start_redis.py # Redis startup
+│   │   ├── start_worker.py # Worker startup
+│   │   ├── load_documents_to_milvus.py # Milvus loader
+│   │   └── test_rag_system.py # RAG testing
+│   ├── docker/            # Docker & deployment configs
+│   │   ├── docker-compose.yml # Redis
+│   │   ├── docker-compose-mongodb.yml # MongoDB
+│   │   ├── docker-compose-milvus.yml # Milvus Vector DB
+│   │   ├── start_milvus.bat # Milvus startup (Windows)
+│   │   └── start_milvus.sh # Milvus startup (Linux/macOS)
+│   ├── docs/              # Documentation
+│   │   └── MILVUS_SETUP_GUIDE.md # Milvus setup guide
+│   ├── data/              # Data storage
+│   │   └── uploads/       # File uploads
+│   ├── database/          # Database credentials
 │   ├── requirements.txt   # Python dependencies
 │   ├── environment.yml    # Conda environment
-│   ├── celery_app.py      # Celery configuration
-│   ├── tasks.py           # Background tasks
-│   ├── websocket_manager.py # WebSocket handling
-│   ├── services/          # External services
-│   │   └── gcs_service.py # Google Cloud Storage
-│   ├── uploads/           # Local file storage
-│   ├── docker-compose.yml # Redis container
-│   ├── docker-compose-mongodb.yml # MongoDB container
-│   ├── dev.py             # Development environment manager
-│   ├── start_redis.py     # Redis startup script
-│   ├── start_worker.py    # Celery worker startup
-│   ├── setup_mongodb.py   # MongoDB setup script
 │   └── env.example        # Environment template
 ├── fe/                     # Frontend ReactJS
 │   ├── public/
@@ -57,7 +104,8 @@ d:\02-VLU\02-AI-ThucChien\
 │   │   └── assets/        # Images & icons
 │   ├── package.json
 │   └── build/             # Production build
-└── uploads/                # Global uploads
+└── data/                   # Global data directory
+    └── thutuccongdan/     # Document corpus for RAG
 ```
 
 ## 🎨 Thiết kế Theme Mệnh Thổ
@@ -82,6 +130,35 @@ d:\02-VLU\02-AI-ThucChien\
 - **Font chính**: MaisonNeue (6 weights từ Thin đến Bold)
 - **Fallback**: Inter từ Google Fonts
 - **Font stack**: `'MaisonNeue', 'Inter', -apple-system, sans-serif`
+
+## 🏛️ Microservice Architecture Benefits
+
+### ✨ Tính năng mới (Version 3.1.0)
+- **🎯 Separation of Concerns**: Mỗi module có trách nhiệm riêng biệt
+- **📦 Modularity**: Dễ dàng thêm/sửa/xóa tính năng
+- **🔧 Maintainability**: Code organized, dễ debug và maintain
+- **🚀 Scalability**: Có thể scale từng service riêng biệt
+- **🧪 Testability**: Test từng module độc lập
+- **👥 Team Development**: Nhiều dev có thể làm việc song song
+
+### 📋 Module Organization
+- **`app/api/`**: REST API endpoints, organized by feature
+- **`app/core/`**: Core business logic, configuration, security
+- **`app/models/`**: Pydantic models for validation
+- **`app/services/`**: External service integrations (GCS, Milvus, DB)
+- **`app/utils/`**: Utility functions and helpers
+- **`app/workers/`**: Background task workers
+- **`scripts/`**: Standalone maintenance scripts
+- **`docker/`**: Container and deployment configs
+- **`docs/`**: Documentation and guides
+
+### 🔄 Import Strategy
+```python
+# Relative imports within app package
+from ..core.config import Config
+from ..services.database import get_documents
+from ..models.auth import LoginRequest
+```
 
 ## 🛠️ Cài đặt và Chạy
 
@@ -118,22 +195,22 @@ npm install
 #### Cách 1: Quick Start với Development Manager (Khuyến nghị)
 ```bash
 cd be
-python dev.py start
+python scripts/dev.py start
 ```
 
 #### Cách 2: Manual Start từng service
 ```bash
 # Terminal 1: Start Redis
 cd be
-python start_redis.py
+python scripts/start_redis.py
 
 # Terminal 2: Start MongoDB
 cd be
-python setup_mongodb.py
+python scripts/setup_mongodb.py
 
 # Terminal 3: Start Celery Worker
 cd be
-python start_worker.py
+python scripts/start_worker.py
 
 # Terminal 4: Start Backend API
 cd be
@@ -148,12 +225,12 @@ npm start
 ```bash
 # Terminal 1: Start Redis và MongoDB
 cd be
-docker-compose up -d redis
-docker-compose -f docker-compose-mongodb.yml up -d
+docker-compose -f docker/docker-compose.yml up -d redis
+docker-compose -f docker/docker-compose-mongodb.yml up -d
 
 # Terminal 2: Start Celery Worker
 cd be
-celery -A celery_app.celery_app worker --loglevel=info --pool=threads --concurrency=2
+celery -A app.workers.celery_app.celery_app worker --loglevel=info --pool=threads --concurrency=2
 
 # Terminal 3: Start Backend API
 cd be
@@ -400,24 +477,35 @@ MONGODB_URL = "mongodb://admin:your-secure-password@localhost:27017"
 - **Paddings**: .p-0 to .p-5 (0px to 40px)
 - **Gaps**: .gap-1 to .gap-4 (8px to 32px)
 
-## 📋 API Documentation
+## 📋 API Documentation (Microservice Structure)
 
-### Authentication
+### Authentication (`app/api/auth.py`)
 - `POST /api/auth/login` - Đăng nhập
 - `GET /api/auth/me` - Lấy thông tin user
 
-### Document Management
-- `GET /api/documents` - Lấy danh sách tài liệu
+### Document Management (`app/api/documents.py`)
+- `GET /api/documents/` - Lấy danh sách tài liệu
 - `POST /api/documents/upload` - Upload tài liệu đơn lẻ
 - `POST /api/documents/bulk-upload` - Upload nhiều tài liệu
 - `DELETE /api/documents/{id}` - Xóa tài liệu
 
-### WebSocket
+### RAG System (`app/api/rag.py`)
+- `POST /api/rag/query` - Query RAG system với câu hỏi
+- `GET /api/rag/stats` - Thống kê vector database
+- `POST /api/rag/connect` - Kết nối đến Milvus
+
+### WebSocket (`app/api/websocket.py`)
 - `GET /api/websocket/status` - Trạng thái kết nối WebSocket
 - **Events**: `file_upload_progress`, `file_upload_complete`, `bulk_upload_progress`
 
-### Chatbot
+### Chatbot (`app/api/chatbot.py`)
 - `POST /api/chatbot/message` - Gửi tin nhắn đến chatbot
+
+### API Models
+- **Auth Models**: `app/models/auth.py`
+- **Document Models**: `app/models/documents.py`
+- **RAG Models**: `app/models/rag.py`
+- **Chatbot Models**: `app/models/chatbot.py`
 
 ## 🚀 Deployment
 
@@ -537,41 +625,44 @@ celery -A celery_app.celery_app inspect registered
 - CORS configuration
 - HTTPS enforcement
 
-## 🚀 Version 3.0.0 - MongoDB Integration
+## 🚀 Version 3.1.0 - Microservice Architecture & RAG System
 
-### ✨ New Features (September 2025):
+### ✨ New Features (Version 3.1.0):
 
-1. **🗄️ MongoDB Integration**
-   - **MongoDB với Docker**: Containerized MongoDB setup
-   - **Fallback mechanism**: Auto-fallback to in-memory nếu MongoDB không available
-   - **Data persistence**: Documents được lưu vĩnh viễn
-   - **Performance indexes**: Auto-created indexes cho faster queries
+1. **🏛️ Microservice Architecture**
+   - **Modular design**: Tách biệt API routes, models, services
+   - **Separation of concerns**: Mỗi module có trách nhiệm riêng
+   - **Easy maintenance**: Code structure rõ ràng, dễ debug
+   - **Scalable development**: Team có thể làm việc song song
 
-2. **🐳 Docker MongoDB Stack**
-   - **MongoDB 7.0**: Latest stable version
-   - **Mongo Express**: Web-based admin interface (localhost:8081)
-   - **Data volumes**: Persistent storage với Docker volumes
-   - **Health checks**: Auto-restart containers
-   - **One-command setup**: `python setup_mongodb.py`
+2. **🤖 RAG (Retrieval-Augmented Generation)**
+   - **Milvus Vector Database**: Vector search với embedding model
+   - **OpenAI API Integration**: GPT-4o cho text generation, text-embedding-3-large cho embeddings
+   - **Document Processing**: Chunk documents thành vectors
+   - **Intelligent Q&A**: Semantic search + AI generation
 
-3. **🎯 Merged Upload Interface**
-   - **Single upload area**: Loại bỏ tabs riêng biệt
-   - **Smart detection**: 1 file = upload ngay, nhiều file = bulk processing
-   - **Enhanced UI/UX**: Improved styling với theme "Mệnh Thổ"
-   - **Real-time progress**: WebSocket updates cho upload status
+3. **📦 Enhanced Service Organization**
+   - **app/api/**: API routes organized by feature
+   - **app/core/**: Core logic, config, security
+   - **app/services/**: External service integrations
+   - **scripts/**: Maintenance và setup tools
+   - **docker/**: Container configurations
 
-4. **🔧 System Improvements**
-   - **Auto-restart scripts**: Intelligent server management
-   - **Better error handling**: Graceful degradation
-   - **Clean architecture**: Centralized database module
-   - **Production ready**: Security và performance optimizations
+4. **🔧 Advanced Features**
+   - **Vector Database**: Milvus with Docker setup
+   - **Document Corpus**: Thủ tục công dân dataset
+   - **RAG Pipeline**: End-to-end question answering
+   - **Microservice APIs**: RESTful endpoints for each service
 
 ### 🛠️ Technical Stack Updates:
+- **Architecture**: Microservice-style FastAPI application
 - **Database**: MongoDB 7.0 (primary) + In-memory (fallback)
-- **Containerization**: Docker Compose cho MongoDB stack
-- **Process Management**: psutil cho process handling
+- **Vector Database**: Milvus 2.3.3 với Docker Compose
+- **AI/ML**: OpenAI API (GPT-4o + text-embedding-3-large)
+- **Containerization**: Docker Compose cho full stack
+- **Process Management**: Celery workers với threads pool
 - **Real-time**: Enhanced WebSocket integration
-- **UI Framework**: Ant Design với custom theme
+- **Code Organization**: Modular imports với relative paths
 
 ## 🔧 Các vấn đề đã sửa và cải tiến
 
@@ -668,10 +759,10 @@ MIT License - Xem file LICENSE để biết chi tiết.
 
 ---
 
-**Phiên bản:** 3.0.0 (MongoDB Integration)  
+**Phiên bản:** 3.2.0 (OpenAI Integration & Production Ready)  
 **Cập nhật:** September 2025  
 **Tác giả:** AI Assistant  
-**Status:** ✅ MongoDB + Docker integration complete  
-**Features:** MongoDB, Docker, Merged Upload UI, Real-time WebSocket  
+**Status:** ✅ Microservice Architecture + RAG + OpenAI API Integration complete  
+**Features:** Microservices, RAG, Milvus Vector DB, OpenAI API, Modular Design  
 **Compatibility:** Windows + Docker + Conda optimized  
-**Brand:** DVC.AI - Document Management with AI & MongoDB**
+**Brand:** DVC.AI - Intelligent Document Management with OpenAI Integration**

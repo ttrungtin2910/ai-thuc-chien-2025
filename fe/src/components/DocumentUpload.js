@@ -18,11 +18,11 @@ import {
 } from 'antd';
 import {
   UploadOutlined,
-  DeleteOutlined,
+  DeleteFilled,
   InboxOutlined,
   SyncOutlined,
-  CheckCircleOutlined,
-  ExclamationCircleOutlined,
+  CheckCircleFilled,
+  ExclamationCircleFilled,
   CloudUploadOutlined,
   ReloadOutlined
 } from '@ant-design/icons';
@@ -33,7 +33,7 @@ import websocketService from '../services/websocket';
 const { Title, Text } = Typography;
 const { Dragger } = Upload;
 
-const DocumentUpload = () => {
+const DocumentUpload = React.memo(() => {
   const { user } = useAuth();
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
@@ -290,11 +290,11 @@ const DocumentUpload = () => {
   const getFileIcon = (status) => {
     switch (status) {
       case 'completed':
-        return <CheckCircleOutlined style={{ color: '#52c41a' }} />;
+        return <CheckCircleFilled style={{ color: '#52c41a', padding: '2px', background: 'rgba(82, 196, 26, 0.1)', borderRadius: '50%' }} />;
       case 'failed':
-        return <ExclamationCircleOutlined style={{ color: '#f5222d' }} />;
+        return <ExclamationCircleFilled style={{ color: '#f5222d', padding: '2px', background: 'rgba(245, 34, 45, 0.1)', borderRadius: '50%' }} />;
       case 'uploading':
-        return <SyncOutlined spin style={{ color: '#1890ff' }} />;
+        return <SyncOutlined spin style={{ color: '#1890ff', padding: '2px', background: 'rgba(24, 144, 255, 0.1)', borderRadius: '50%' }} />;
       default:
         return null;
     }
@@ -367,7 +367,7 @@ const DocumentUpload = () => {
           className="text-base lh-relaxed"
           style={{
             fontSize: 'clamp(14px, 2.5vw, 16px)',
-            color: '#8B4513',
+            color: '#6B3410',
             display: 'block',
             marginBottom: '24px'
           }}
@@ -432,7 +432,7 @@ const DocumentUpload = () => {
             {...combinedUploadProps} 
             style={{ 
               marginBottom: '24px',
-              borderRadius: '12px',
+              borderRadius: '16px',
               border: '2px dashed #D2691E',
               background: 'linear-gradient(135deg, #FDF5E6 0%, rgba(222, 184, 135, 0.3) 100%)'
             }}
@@ -493,7 +493,7 @@ const DocumentUpload = () => {
                   letterSpacing: '0.01em',
                   fontSize: 'clamp(13px, 2.5vw, 16px)',
                   padding: '0 clamp(16px, 4vw, 24px)',
-                  borderRadius: 'clamp(8px, 2vw, 12px)',
+                  borderRadius: 'clamp(12px, 2vw, 16px)',
                   minWidth: window.innerWidth <= 768 ? '140px' : 'auto',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
@@ -537,7 +537,7 @@ const DocumentUpload = () => {
                     </Text>
                     <div style={{ 
                       fontSize: 'clamp(12px, 2.5vw, 14px)',
-                      color: '#8B4513',
+                      color: '#6B3410',
                       marginTop: '4px' 
                     }}>
                       Tổng dung lượng: {(fileList.reduce((sum, file) => sum + file.size, 0) / 1024 / 1024).toFixed(2)} MB
@@ -555,16 +555,12 @@ const DocumentUpload = () => {
                       onClick={handleBulkUpload}
                       loading={uploading}
                       disabled={fileList.length === 0}
-                      className="btn-government upload-btn"
+                      className="btn-government upload-btn primary-action btn-primary-action"
                       size="large"
                       style={{
                         height: 'clamp(40px, 8vw, 48px)',
                         fontSize: 'clamp(14px, 2.5vw, 16px)',
-                        fontWeight: '600',
-                        borderRadius: 'clamp(8px, 2vw, 12px)',
-                        background: 'linear-gradient(135deg, #D2691E 0%, #A0522D 100%)',
-                        border: 'none',
-                        boxShadow: '0 4px 16px rgba(210, 105, 30, 0.3)',
+                        borderRadius: 'clamp(12px, 2vw, 16px)',
                         width: window.innerWidth <= 768 ? '100%' : 'auto',
                         minWidth: window.innerWidth <= 768 ? '120px' : '160px'
                       }}
@@ -572,21 +568,18 @@ const DocumentUpload = () => {
                       {uploading ? '🔄 Đang tải lên...' : '⬆️ Tải lên tất cả'}
                     </Button>
                     <Button 
-                      icon={<DeleteOutlined />}
+                      icon={<DeleteFilled />}
                       onClick={handleClearAll}
                       disabled={uploading}
                       size="large"
+                      className="clear-btn secondary-action btn-secondary-action"
                       style={{
                         height: 'clamp(40px, 8vw, 48px)',
                         fontSize: 'clamp(14px, 2.5vw, 16px)',
-                        borderRadius: 'clamp(8px, 2vw, 12px)',
-                        color: '#A0522D',
-                        borderColor: '#DEB887',
-                        background: 'rgba(255, 255, 255, 0.9)',
+                        borderRadius: 'clamp(10px, 2vw, 12px)',
                         width: window.innerWidth <= 768 ? '100%' : 'auto',
                         minWidth: window.innerWidth <= 768 ? '120px' : '140px'
                       }}
-                      className="clear-btn"
                     >
                       🗑️ Xóa tất cả
                     </Button>
@@ -620,22 +613,23 @@ const DocumentUpload = () => {
                       actions={[
                         getFileIcon(progressData?.status),
                         !uploading && (
-                          <Button 
-                            type="text" 
-                            size="small"
-                            icon={<DeleteOutlined />}
-                            onClick={() => handleRemoveFile(file)}
-                            style={{
-                              color: '#A0522D',
-                              borderRadius: '6px',
-                              height: 'clamp(28px, 6vw, 32px)',
-                              width: 'clamp(28px, 6vw, 32px)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
-                            }}
-                            className="file-remove-btn"
-                          />
+                                                  <Button 
+                          type="text" 
+                          size="small"
+                          icon={<DeleteFilled />}
+                          onClick={() => handleRemoveFile(file)}
+                          aria-label={`Xóa file ${file.name} khỏi danh sách`}
+                          style={{
+                            color: '#A0522D',
+                            borderRadius: '8px',
+                            height: 'clamp(28px, 6vw, 32px)',
+                            width: 'clamp(28px, 6vw, 32px)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                          className="file-remove-btn"
+                        />
                         )
                       ].filter(Boolean)}
                     >
@@ -666,7 +660,7 @@ const DocumentUpload = () => {
                               display: 'flex', 
                               gap: 'clamp(12px, 3vw, 20px)',
                               fontSize: 'clamp(12px, 2vw, 13px)',
-                              color: '#8B4513'
+                              color: '#6B3410'
                             }}>
                               <span>📏 {(file.size / 1024 / 1024).toFixed(2)} MB</span>
                               <span>📅 {file.type || 'Unknown'}</span>
@@ -726,7 +720,7 @@ const DocumentUpload = () => {
                 }}>
                   <Text style={{ 
                     fontSize: 'clamp(14px, 2.5vw, 16px)',
-                    color: '#8B4513',
+                    color: '#6B3410',
                     fontWeight: '500'
                   }}>
                     Tiến trình xử lý:
@@ -810,7 +804,7 @@ const DocumentUpload = () => {
                     </div>
                     <div style={{ 
                       fontSize: 'clamp(12px, 2vw, 14px)',
-                      color: '#8B4513'
+                      color: '#6B3410'
                     }}>
                       📁 Tổng file
                     </div>
@@ -897,7 +891,7 @@ const DocumentUpload = () => {
                           }}
                         >
                           <List.Item.Meta
-                            avatar={<CheckCircleOutlined style={{ color: '#52c41a', fontSize: '16px' }} />}
+                            avatar={<CheckCircleFilled style={{ color: '#52c41a', fontSize: '16px', padding: '4px', background: 'rgba(82, 196, 26, 0.1)', borderRadius: '50%' }} />}
                             title={
                               <Text style={{ 
                                 fontSize: 'clamp(13px, 2.5vw, 15px)',
@@ -961,7 +955,7 @@ const DocumentUpload = () => {
                           }}
                         >
                           <List.Item.Meta
-                            avatar={<ExclamationCircleOutlined style={{ color: '#f5222d', fontSize: '16px' }} />}
+                            avatar={<ExclamationCircleFilled style={{ color: '#f5222d', fontSize: '16px', padding: '4px', background: 'rgba(245, 34, 45, 0.1)', borderRadius: '50%' }} />}
                             title={
                               <Text style={{ 
                                 fontSize: 'clamp(13px, 2.5vw, 15px)',
@@ -1024,6 +1018,6 @@ const DocumentUpload = () => {
       )}
     </div>
   );
-};
+});
 
 export default DocumentUpload;

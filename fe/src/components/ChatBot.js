@@ -14,10 +14,10 @@ import {
 } from 'antd';
 import {
   SendOutlined,
-  RobotOutlined,
+  RobotFilled,
   UserOutlined,
   ReloadOutlined,
-  MessageOutlined
+  MessageFilled
 } from '@ant-design/icons';
 import { chatbotAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -26,7 +26,7 @@ import moment from 'moment';
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
-const ChatBot = () => {
+const ChatBot = React.memo(() => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -130,10 +130,11 @@ const ChatBot = () => {
       }}>
         <Avatar
           size={window.innerWidth <= 768 ? 'small' : 'default'}
-          icon={message.type === 'user' ? <UserOutlined /> : <RobotOutlined />}
+          icon={message.type === 'user' ? <UserOutlined /> : <RobotFilled />}
           style={{
             backgroundColor: message.type === 'user' ? '#D2691E' : '#52c41a',
-            flexShrink: 0
+            flexShrink: 0,
+            border: '2px solid rgba(255, 255, 255, 0.8)'
           }}
         />
         
@@ -141,7 +142,7 @@ const ChatBot = () => {
           background: message.type === 'user' ? '#D2691E' : (message.isError ? '#fff2f0' : '#f6ffed'),
           color: message.type === 'user' ? 'white' : (message.isError ? '#a8071a' : '#389e0d'),
           padding: 'clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px)',
-          borderRadius: 'clamp(8px, 2vw, 16px)',
+          borderRadius: 'clamp(12px, 2vw, 18px)',
           border: message.isError ? '1px solid #ffccc7' : '1px solid transparent',
           maxWidth: '100%',
           wordBreak: 'break-word',
@@ -222,12 +223,12 @@ const ChatBot = () => {
             background: '#fafafa'
           }}>
             <Space>
-              <Avatar icon={<RobotOutlined />} style={{ backgroundColor: '#52c41a' }} />
+              <Avatar icon={<RobotFilled />} style={{ backgroundColor: '#52c41a', border: '2px solid rgba(255, 255, 255, 0.8)' }} />
               <div>
                 <Text strong>Trợ lý ảo</Text>
                 <br />
                 <Text type="secondary" style={{ fontSize: '12px' }}>
-                  <Tag color="green" size="small">Trực tuyến</Tag>
+                  <Tag color="green" size="small" style={{ borderRadius: '8px' }}>Trực tuyến</Tag>
                 </Text>
               </div>
             </Space>
@@ -237,6 +238,7 @@ const ChatBot = () => {
               size="small"
               type="text"
               onClick={clearChat}
+              aria-label="Xóa cuộc trò chuyện"
               style={{ float: 'right' }}
             >
               Xóa cuộc trò chuyện
@@ -292,7 +294,7 @@ const ChatBot = () => {
                 autoSize={{ minRows: 1, maxRows: window.innerWidth <= 768 ? 3 : 4 }}
                 style={{ 
                   flex: 1,
-                  borderRadius: 'clamp(8px, 2vw, 12px)',
+                  borderRadius: 'clamp(12px, 2vw, 16px)',
                   fontSize: 'clamp(13px, 2.5vw, 14px)',
                   transition: 'all 0.3s ease'
                 }}
@@ -305,10 +307,11 @@ const ChatBot = () => {
                 loading={loading}
                 disabled={!inputMessage.trim()}
                 className="btn-government"
+                aria-label="Gửi tin nhắn"
                 style={{ 
                   height: 'auto',
                   minHeight: 'clamp(36px, 8vw, 44px)',
-                  borderRadius: 'clamp(8px, 2vw, 12px)',
+                  borderRadius: 'clamp(12px, 2vw, 16px)',
                   fontSize: 'clamp(12px, 2.5vw, 14px)',
                   padding: 'clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px)',
                   display: 'flex',
@@ -342,11 +345,11 @@ const ChatBot = () => {
                   textAlign: 'left',
                   whiteSpace: 'normal',
                   border: '1px solid #f0f0f0',
-                  borderRadius: '6px'
+                  borderRadius: '10px'
                 }}
                 block
               >
-                <MessageOutlined style={{ marginRight: '8px', color: '#D2691E' }} />
+                <MessageFilled style={{ marginRight: '8px', color: '#D2691E', padding: '2px', background: 'rgba(210, 105, 30, 0.1)', borderRadius: '4px' }} />
                 {question}
               </Button>
             ))}
@@ -365,6 +368,6 @@ const ChatBot = () => {
       </div>
     </div>
   );
-};
+});
 
 export default ChatBot;

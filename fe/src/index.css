@@ -29,7 +29,7 @@ code {
 :root {
   --primary-color: #D2691E;
   --primary-light: #DEB887;
-  --primary-dark: #8B4513;
+  --primary-dark: #6B3410;
   --header-bg-start: #2C1810;
   --header-bg-end: #4A2C20;
   --secondary-color: #FDF5E6;
@@ -41,7 +41,7 @@ code {
   --dark-color: #343a40;
   --border-color: #F4E4BC;
   --text-primary: #2F1B14;
-  --text-secondary: #8B4513;
+  --text-secondary: #6B3410;
   --shadow: 0 2px 8px rgba(210, 105, 30, 0.2);
   --border-radius: 6px;
 }
@@ -439,24 +439,91 @@ code {
     max-width: calc(100vw - 32px);
   }
   
-  /* Mobile-specific button improvements */
+  /* Enhanced mobile touch targets - minimum 44px */
   .ant-btn {
-    min-height: 40px;
+    min-height: 44px;
     border-radius: 8px;
+    min-width: 44px;
+    padding: 0 16px;
+  }
+  
+  .ant-btn-sm {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0 12px;
   }
   
   .ant-input, .ant-input-group-addon, .ant-input-wrapper {
     border-radius: 8px;
+    min-height: 44px;
   }
   
-  /* Improve touch targets */
+  /* Improve touch targets for interactive elements */
   .ant-table-tbody > tr > td {
     padding: 12px 8px;
+    min-height: 48px;
   }
   
   .ant-tabs-tab {
     padding: 12px 16px;
     margin: 0 4px;
+    min-height: 48px;
+  }
+  
+  /* Action buttons in tables */
+  .action-btn-download,
+  .action-btn-delete {
+    min-height: 44px !important;
+    min-width: 44px !important;
+    padding: 0 8px !important;
+  }
+  
+  /* File management buttons */
+  .file-remove-btn {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+  
+  /* Upload area improvements */
+  .ant-upload-btn {
+    min-height: 44px;
+    padding: 0 16px;
+  }
+  
+  /* Icon containers */
+  .icon-container {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 8px;
+  }
+  
+  /* Navigation elements */
+  .ant-dropdown-menu-item {
+    min-height: 48px;
+    padding: 8px 16px;
+  }
+  
+  /* Form elements */
+  .ant-select .ant-select-selector {
+    min-height: 44px;
+  }
+  
+  .ant-input-password {
+    min-height: 44px;
+  }
+  
+  /* Pagination controls */
+  .ant-pagination-item {
+    min-width: 44px;
+    min-height: 44px;
+    line-height: 42px;
+  }
+  
+  .ant-pagination-prev,
+  .ant-pagination-next {
+    min-width: 44px;
+    min-height: 44px;
+    line-height: 42px;
   }
 }
 
@@ -547,6 +614,328 @@ code {
 .font-medium { font-weight: 500; }
 .font-semibold { font-weight: 600; }
 .font-bold { font-weight: 700; }
+
+/* Enhanced Visual Hierarchy - Primary/Secondary Actions */
+.primary-action {
+  font-weight: 600 !important;
+  font-size: 1em !important;
+  border-width: 2px !important;
+  box-shadow: 0 2px 8px rgba(210, 105, 30, 0.2) !important;
+  transform: translateY(0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.primary-action:hover,
+.primary-action:focus {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 16px rgba(210, 105, 30, 0.3) !important;
+}
+
+.secondary-action {
+  font-weight: 400 !important;
+  font-size: 0.95em !important;
+  opacity: 0.9;
+  border-width: 1px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.secondary-action:hover,
+.secondary-action:focus {
+  opacity: 1;
+  transform: translateY(-1px) !important;
+}
+
+.tertiary-action {
+  font-weight: 400 !important;
+  font-size: 0.9em !important;
+  opacity: 0.8;
+  background: transparent !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.tertiary-action:hover,
+.tertiary-action:focus {
+  opacity: 1;
+  background: rgba(210, 105, 30, 0.05) !important;
+  border-color: rgba(210, 105, 30, 0.3) !important;
+}
+
+/* Action Groups */
+.action-group-primary {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.action-group-secondary {
+  display: flex;
+  gap: 6px;
+  opacity: 0.95;
+}
+
+.action-group-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Consistent Action Styling */
+.btn-primary-action {
+  background: linear-gradient(135deg, #D2691E 0%, #A0522D 100%) !important;
+  border: 2px solid #D2691E !important;
+  color: white !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 8px rgba(210, 105, 30, 0.25) !important;
+}
+
+.btn-secondary-action {
+  background: rgba(210, 105, 30, 0.08) !important;
+  border: 1px solid rgba(210, 105, 30, 0.3) !important;
+  color: #D2691E !important;
+  font-weight: 500 !important;
+}
+
+.btn-danger-action {
+  background: rgba(245, 34, 45, 0.08) !important;
+  border: 1px solid rgba(245, 34, 45, 0.3) !important;
+  color: #f5222d !important;
+  font-weight: 500 !important;
+}
+
+/* Enhanced Micro-interactions and Animations */
+@keyframes successPulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(82, 196, 26, 0.4); }
+  50% { transform: scale(1.05); box-shadow: 0 0 0 8px rgba(82, 196, 26, 0.2); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(82, 196, 26, 0); }
+}
+
+@keyframes errorShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+@keyframes uploadProgress {
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Animation utility classes */
+.animate-success {
+  animation: successPulse 0.6s ease-out;
+}
+
+.animate-error {
+  animation: errorShake 0.5s ease-out;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.animate-fade-in-left {
+  animation: fadeInLeft 0.5s ease-out;
+}
+
+.animate-bounce-in {
+  animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Enhanced hover effects */
+.hover-lift {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(210, 105, 30, 0.15);
+}
+
+.hover-scale {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+.hover-glow {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(210, 105, 30, 0.3);
+}
+
+/* Button press effect */
+.btn-press {
+  transition: all 0.1s ease;
+}
+
+.btn-press:active {
+  transform: scale(0.98);
+}
+
+/* Loading shimmer effect */
+.shimmer-loading {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: uploadProgress 1.5s infinite;
+}
+
+/* Card entrance animations */
+.card-animate {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.card-animate:nth-child(1) { animation-delay: 0.1s; }
+.card-animate:nth-child(2) { animation-delay: 0.2s; }
+.card-animate:nth-child(3) { animation-delay: 0.3s; }
+.card-animate:nth-child(4) { animation-delay: 0.4s; }
+
+/* Status indicator animations */
+.status-processing {
+  position: relative;
+  overflow: hidden;
+}
+
+.status-processing::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: uploadProgress 2s infinite;
+}
+
+/* Interactive feedback */
+.interactive-feedback {
+  position: relative;
+  overflow: hidden;
+}
+
+.interactive-feedback::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(210, 105, 30, 0.2);
+  transition: all 0.6s ease;
+  transform: translate(-50%, -50%);
+}
+
+.interactive-feedback:active::before {
+  width: 200px;
+  height: 200px;
+}
+
+/* File upload drop zone enhancements */
+.drop-zone-enhanced {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.drop-zone-enhanced.drag-over {
+  transform: scale(1.02);
+  box-shadow: 0 0 30px rgba(210, 105, 30, 0.3);
+  border-color: #D2691E !important;
+}
+
+.drop-zone-enhanced.drag-over::after {
+  content: '🎯 Thả file vào đây!';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(210, 105, 30, 0.9);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  animation: bounceIn 0.4s ease;
+  z-index: 10;
+}
+
+/* Progress bar enhancements */
+.progress-enhanced .ant-progress-bg {
+  background: linear-gradient(90deg, #D2691E, #CD853F, #D2691E) !important;
+  background-size: 200% 100% !important;
+  animation: uploadProgress 2s infinite !important;
+}
+
+/* Success state animations */
+.success-celebration {
+  position: relative;
+}
+
+.success-celebration::after {
+  content: '✨';
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  font-size: 16px;
+  animation: bounceIn 0.6s ease;
+  pointer-events: none;
+}
+
+/* Notification enhancements */
+.notification-enhanced {
+  border-left: 4px solid #D2691E;
+  animation: fadeInLeft 0.5s ease;
+}
+
+.notification-success {
+  border-left-color: #52c41a;
+  animation: fadeInUp 0.5s ease;
+}
+
+.notification-error {
+  border-left-color: #f5222d;
+  animation: errorShake 0.5s ease;
+}
 
 /* Better container widths */
 .container-sm { max-width: 640px; margin: 0 auto; }

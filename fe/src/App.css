@@ -41,14 +41,14 @@
 
 .file-remove-btn:hover {
   background: rgba(160, 82, 45, 0.1) !important;
-  color: #8B4513 !important;
+  color: #6B3410 !important;
   transform: scale(1.1);
 }
 
 .clear-btn:hover {
   background: rgba(222, 184, 135, 0.2) !important;
   border-color: #CD853F !important;
-  color: #8B4513 !important;
+  color: #6B3410 !important;
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(160, 82, 45, 0.2);
 }
@@ -286,5 +286,262 @@
   .ant-message {
     top: 16px;
     margin: 0 16px;
+  }
+}
+
+/* ==== ICON STANDARDIZATION & ROUNDED DESIGN ==== */
+
+/* Consistent icon styling with rounded backgrounds */
+.rounded-icon {
+  padding: 4px;
+  background: rgba(210, 105, 30, 0.1);
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rounded-icon:hover {
+  background: rgba(210, 105, 30, 0.2);
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(210, 105, 30, 0.2);
+}
+
+/* Status icons with rounded design */
+.status-icon-success {
+  padding: 3px;
+  background: rgba(82, 196, 26, 0.1);
+  border-radius: 50%;
+  border: 1px solid rgba(82, 196, 26, 0.2);
+}
+
+.status-icon-error {
+  padding: 3px;
+  background: rgba(245, 34, 45, 0.1);
+  border-radius: 50%;
+  border: 1px solid rgba(245, 34, 45, 0.2);
+}
+
+.status-icon-processing {
+  padding: 3px;
+  background: rgba(24, 144, 255, 0.1);
+  border-radius: 50%;
+  border: 1px solid rgba(24, 144, 255, 0.2);
+}
+
+/* File type icons with rounded containers */
+.file-icon-container {
+  display: inline-flex;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  border: 1px solid rgba(210, 105, 30, 0.1);
+  transition: all 0.3s ease;
+}
+
+.file-icon-container:hover {
+  background: rgba(210, 105, 30, 0.05);
+  border-color: rgba(210, 105, 30, 0.2);
+  transform: translateY(-1px);
+}
+
+/* ==== CONSISTENT BORDER RADIUS SYSTEM ==== */
+
+/* Small radius for compact elements */
+.radius-sm {
+  border-radius: 6px !important;
+}
+
+/* Medium radius for buttons and inputs */
+.radius-md {
+  border-radius: 10px !important;
+}
+
+/* Large radius for cards and containers */
+.radius-lg {
+  border-radius: 16px !important;
+}
+
+/* Extra large radius for major containers */
+.radius-xl {
+  border-radius: 20px !important;
+}
+
+/* ==== COMPONENT OVERRIDES ==== */
+
+/* Ant Design button consistent styling */
+.ant-btn {
+  border-radius: 10px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ant-btn-sm {
+  border-radius: 8px !important;
+}
+
+.ant-btn-lg {
+  border-radius: 12px !important;
+}
+
+/* Input components */
+.ant-input,
+.ant-input-password {
+  border-radius: 10px !important;
+}
+
+/* Select components */
+.ant-select .ant-select-selector {
+  border-radius: 10px !important;
+}
+
+/* Card components */
+.ant-card {
+  border-radius: 16px !important;
+}
+
+.ant-card-head {
+  border-radius: 16px 16px 0 0 !important;
+}
+
+/* Table components */
+.ant-table {
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.ant-table-thead > tr:first-child > th:first-child {
+  border-radius: 12px 0 0 0 !important;
+}
+
+.ant-table-thead > tr:first-child > th:last-child {
+  border-radius: 0 12px 0 0 !important;
+}
+
+/* Tags with rounded design */
+.ant-tag {
+  border-radius: 8px !important;
+  padding: 2px 8px;
+  border: 1px solid;
+}
+
+/* Progress bars */
+.ant-progress-inner {
+  border-radius: 8px !important;
+}
+
+.ant-progress-bg {
+  border-radius: 8px !important;
+}
+
+/* Upload dragger */
+.ant-upload-drag {
+  border-radius: 16px !important;
+}
+
+/* Tabs */
+.ant-tabs-tab {
+  border-radius: 10px 10px 0 0 !important;
+  margin-right: 4px !important;
+}
+
+/* Modal */
+.ant-modal-content {
+  border-radius: 16px !important;
+}
+
+.ant-modal-header {
+  border-radius: 16px 16px 0 0 !important;
+}
+
+/* Dropdown */
+.ant-dropdown {
+  border-radius: 12px !important;
+}
+
+/* Notification */
+.ant-notification-notice {
+  border-radius: 12px !important;
+}
+
+/* Message */
+.ant-message-notice-content {
+  border-radius: 10px !important;
+}
+
+/* Avatar improvements */
+.ant-avatar {
+  transition: all 0.3s ease;
+}
+
+.ant-avatar:hover {
+  box-shadow: 0 2px 8px rgba(210, 105, 30, 0.2);
+}
+
+/* ==== ICON HOVER EFFECTS ==== */
+
+/* General icon hover effect */
+.anticon {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.anticon:hover {
+  color: #D2691E !important;
+  transform: scale(1.1);
+}
+
+/* Specific icon containers */
+.icon-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.icon-container:hover {
+  background: rgba(210, 105, 30, 0.1);
+}
+
+/* Action button icons */
+.action-btn-download:hover .anticon,
+.action-btn-delete:hover .anticon,
+.refresh-btn:hover .anticon {
+  transform: scale(1.1);
+}
+
+/* ==== RESPONSIVE BORDER RADIUS ==== */
+
+@media (max-width: 768px) {
+  .ant-card {
+    border-radius: 12px !important;
+  }
+  
+  .ant-btn {
+    border-radius: 8px !important;
+  }
+  
+  .ant-input {
+    border-radius: 8px !important;
+  }
+  
+  .radius-lg {
+    border-radius: 12px !important;
+  }
+  
+  .radius-xl {
+    border-radius: 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .ant-card {
+    border-radius: 10px !important;
+  }
+  
+  .radius-lg {
+    border-radius: 10px !important;
+  }
+  
+  .radius-xl {
+    border-radius: 12px !important;
   }
 }

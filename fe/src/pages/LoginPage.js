@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, message, Card, Typography, Space } from 'antd';
-import { UserOutlined, LockOutlined, SafetyOutlined } from '@ant-design/icons';
+import { UserOutlined, LockFilled, SafetyOutlined } from '@ant-design/icons';
 import logo from '../assets/logo.png';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -66,9 +66,9 @@ const LoginPage = () => {
             ]}
           >
             <Input 
-              prefix={<UserOutlined />} 
+              prefix={<UserOutlined style={{ color: '#D2691E' }} />} 
               placeholder="Nhập tên đăng nhập"
-              style={{ borderRadius: '6px' }}
+              style={{ borderRadius: '10px' }}
             />
           </Form.Item>
 
@@ -83,9 +83,9 @@ const LoginPage = () => {
             ]}
           >
             <Input.Password
-              prefix={<LockOutlined />}
+              prefix={<LockFilled style={{ color: '#D2691E' }} />}
               placeholder="Nhập mật khẩu"
-              style={{ borderRadius: '6px' }}
+              style={{ borderRadius: '10px' }}
             />
           </Form.Item>
 
@@ -99,7 +99,8 @@ const LoginPage = () => {
               style={{ 
                 height: '48px', 
                 fontSize: '16px',
-                fontWeight: '600'
+                fontWeight: '600',
+                borderRadius: '12px'
               }}
             >
               Đăng nhập
@@ -111,7 +112,7 @@ const LoginPage = () => {
           marginTop: '24px', 
           padding: '16px', 
           background: '#f8f9fa', 
-          borderRadius: '6px',
+          borderRadius: '12px',
           border: '1px solid #dee2e6'
         }}>
           <Text type="secondary" style={{ fontSize: '13px' }}>

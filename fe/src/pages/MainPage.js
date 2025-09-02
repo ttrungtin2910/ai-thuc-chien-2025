@@ -7,15 +7,17 @@ import {
   Space, 
   Avatar, 
   Dropdown,
-  message 
+  message,
+  Breadcrumb 
 } from 'antd';
 import { 
-  FileTextOutlined, 
+  FileTextFilled, 
   UploadOutlined,
-  MessageOutlined, 
+  MessageFilled, 
   UserOutlined, 
   LogoutOutlined,
-  SettingOutlined
+  SettingFilled,
+  HomeOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import DocumentManagement from '../components/DocumentManagement';
@@ -29,6 +31,53 @@ const { Title, Text } = Typography;
 const MainPage = () => {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('documents');
+
+  // Breadcrumb configuration
+  const getBreadcrumbItems = () => {
+    const baseItems = [
+      {
+        href: '/',
+        title: (
+          <Space>
+            <HomeOutlined />
+            <span>Trang chủ</span>
+          </Space>
+        ),
+      }
+    ];
+
+    switch (activeTab) {
+      case 'documents':
+        return [...baseItems, {
+          title: (
+            <Space>
+              <FileTextFilled />
+              <span>Quản lý Tài liệu</span>
+            </Space>
+          ),
+        }];
+      case 'upload':
+        return [...baseItems, {
+          title: (
+            <Space>
+              <UploadOutlined />
+              <span>Tải lên Tài liệu</span>
+            </Space>
+          ),
+        }];
+      case 'chat':
+        return [...baseItems, {
+          title: (
+            <Space>
+              <MessageFilled />
+              <span>Hỗ trợ Trực tuyến</span>
+            </Space>
+          ),
+        }];
+      default:
+        return baseItems;
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -44,7 +93,7 @@ const MainPage = () => {
     },
     {
       key: 'settings',
-      icon: <SettingOutlined />,
+      icon: <SettingFilled style={{ color: '#D2691E' }} />,
       label: 'Cài đặt',
       onClick: () => message.info('Tính năng đang phát triển')
     },
@@ -64,7 +113,7 @@ const MainPage = () => {
       key: 'documents',
       label: (
         <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <FileTextOutlined />
+          <FileTextFilled style={{ padding: '2px', background: 'rgba(210, 105, 30, 0.1)', borderRadius: '4px' }} />
           Quản lý Tài liệu
         </span>
       ),
@@ -74,7 +123,7 @@ const MainPage = () => {
       key: 'upload',
       label: (
         <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <UploadOutlined />
+          <UploadOutlined style={{ padding: '2px', background: 'rgba(210, 105, 30, 0.1)', borderRadius: '4px' }} />
           Tải lên Tài liệu
         </span>
       ),
@@ -84,7 +133,7 @@ const MainPage = () => {
       key: 'chatbot',
       label: (
         <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <MessageOutlined />
+          <MessageFilled style={{ padding: '2px', background: 'rgba(210, 105, 30, 0.1)', borderRadius: '4px' }} />
           Hỗ trợ Trực tuyến
         </span>
       ),
@@ -170,7 +219,7 @@ const MainPage = () => {
                     color: '#ffffff', 
                     height: 'auto',
                     padding: 'clamp(4px, 1vw, 8px) clamp(8px, 2vw, 12px)',
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
                     fontSize: 'clamp(12px, 2.5vw, 14px)',
@@ -183,7 +232,7 @@ const MainPage = () => {
                     icon={<UserOutlined />} 
                     style={{ 
                       backgroundColor: 'rgba(255, 255, 255, 0.25)',
-                      color: '#8B4513',
+                      color: '#6B3410',
                       flexShrink: 0,
                       border: '1px solid rgba(255, 255, 255, 0.3)'
                     }}
@@ -209,14 +258,43 @@ const MainPage = () => {
         background: '#f5f7fa',
         minHeight: 'calc(100vh - 80px)'
       }}>
+        {/* Breadcrumb Navigation */}
+        <div style={{ 
+          maxWidth: '1600px',
+          margin: '0 auto',
+          marginBottom: 'clamp(12px, 2vw, 16px)'
+        }}>
+          <Breadcrumb
+            items={getBreadcrumbItems()}
+            style={{
+              padding: 'clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px)',
+              background: 'rgba(255, 255, 255, 0.9)',
+              borderRadius: 'clamp(8px, 1.5vw, 12px)',
+              border: '1px solid rgba(210, 105, 30, 0.1)',
+              fontSize: 'clamp(13px, 2.5vw, 14px)',
+              fontFamily: "'MaisonNeue', 'Inter', sans-serif",
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
+            }}
+            separator={
+              <span style={{ 
+                color: '#D2691E', 
+                fontWeight: '500',
+                margin: '0 4px'
+              }}>
+                /
+              </span>
+            }
+          />
+        </div>
+
         <div style={{ 
           background: 'white', 
-          borderRadius: 'clamp(6px, 1.5vw, 12px)',
+          borderRadius: 'clamp(10px, 1.5vw, 16px)',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
           overflow: 'hidden',
           maxWidth: '1600px',
           margin: '0 auto',
-          minHeight: 'calc(100vh - clamp(128px, 20vw, 176px))'
+          minHeight: 'calc(100vh - clamp(160px, 24vw, 208px))'
         }}>
           <Tabs
             activeKey={activeTab}
