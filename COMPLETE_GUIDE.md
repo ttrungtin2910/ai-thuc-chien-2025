@@ -1,0 +1,444 @@
+# 🌍 DVC.AI - Hướng dẫn hoàn chỉnh
+
+## 🎯 Tổng quan dự án
+
+**DVC.AI** (Trợ lý dịch vụ công và cổng Kiến thức) là hệ thống quản lý tài liệu thông minh với thiết kế theme **Mệnh Thổ** ấm áp, sử dụng AI để hỗ trợ dịch vụ công.
+
+### 🚀 Tính năng chính
+- ✅ **Đăng nhập bảo mật** với JWT authentication
+- ✅ **Quản lý tài liệu** - Upload, xem, xóa file PDF và DOCX
+- ✅ **Chatbot hỗ trợ** - Tương tác với trợ lý ảo
+- ✅ **Upload đồng loạt** - Hỗ trợ nhiều file cùng lúc với progress tracking
+- ✅ **WebSocket real-time** - Theo dõi tiến trình upload (Socket.IO)
+- ✅ **Google Cloud Storage** - Lưu trữ file trên cloud (uniform bucket access)
+- ✅ **Celery Background Tasks** - Xử lý background tương thích Windows
+- ✅ **UI/UX hiện đại** - Font MaisonNeue, thiết kế responsive
+
+### 🏗️ Kiến trúc hệ thống
+- **Frontend:** ReactJS + Custom CSS + MaisonNeue font
+- **Backend:** Python FastAPI + Celery (threads pool) + Redis
+- **Database:** In-memory (có thể mở rộng)
+- **Storage:** Google Cloud Storage + Local uploads
+- **Authentication:** JWT tokens
+- **Real-time:** WebSocket + Socket.IO (ASGI integrated)
+- **Environment:** Windows-compatible với Conda
+
+## 📁 Cấu trúc dự án
+
+```
+d:\02-VLU\02-AI-ThucChien\
+├── be/                     # Backend FastAPI
+│   ├── main.py            # FastAPI application
+│   ├── requirements.txt   # Python dependencies
+│   ├── environment.yml    # Conda environment
+│   ├── celery_app.py      # Celery configuration
+│   ├── tasks.py           # Background tasks
+│   ├── websocket_manager.py # WebSocket handling
+│   ├── services/          # External services
+│   │   └── gcs_service.py # Google Cloud Storage
+│   ├── uploads/           # Local file storage
+│   ├── docker-compose.yml # Redis container
+│   ├── dev.py             # Development script
+│   ├── start_redis.py     # Redis startup
+│   ├── start_worker.py    # Celery worker
+│   └── env.example        # Environment template
+├── fe/                     # Frontend ReactJS
+│   ├── public/
+│   │   ├── fonts/         # MaisonNeue fonts
+│   │   ├── fonts.css      # Font configuration
+│   │   └── index.html
+│   ├── src/
+│   │   ├── components/    # React components
+│   │   ├── contexts/      # React contexts
+│   │   ├── pages/         # Page components
+│   │   ├── services/      # API services
+│   │   └── assets/        # Images & icons
+│   ├── package.json
+│   └── build/             # Production build
+└── uploads/                # Global uploads
+```
+
+## 🎨 Thiết kế Theme Mệnh Thổ
+
+### 🌍 Bảng màu chính
+```css
+--primary-color: #D2691E;        /* Cam đất chocolate - ấm áp, tin cậy */
+--primary-light: #DEB887;        /* Vàng đất burlywood - nhẹ nhàng */
+--primary-dark: #A0522D;         /* Nâu đất sienna - ổn định */
+--secondary-color: #FDF5E6;      /* Be kem old lace - thanh nhã */
+--accent-color: #CD853F;         /* Vàng đất sandy brown - nổi bật */
+--border-color: #F4E4BC;         /* Màu lúa mì nhạt - tinh tế */
+```
+
+### 🥁 Biểu tượng Trống đồng Đông Sơn
+- **Logo chính**: Icon 64x64px trên màn hình login
+- **Header**: Icon 40x40px màu trắng
+- **Background**: Pattern 800x800px với opacity thấp
+- **Ý nghĩa**: Kết nối truyền thống văn hóa với công nghệ AI
+
+### 🔤 Typography - MaisonNeue
+- **Font chính**: MaisonNeue (6 weights từ Thin đến Bold)
+- **Fallback**: Inter từ Google Fonts
+- **Font stack**: `'MaisonNeue', 'Inter', -apple-system, sans-serif`
+
+## 🛠️ Cài đặt và Chạy
+
+### Bước 1: Setup Backend (FastAPI)
+
+```bash
+# Di chuyển vào thư mục backend
+cd be
+
+# Tạo môi trường Conda (khuyến nghị)
+conda env create -f environment.yml
+conda activate document-management-be
+
+# Hoặc sử dụng pip
+pip install -r requirements.txt
+
+# Cấu hình environment
+cp env.example .env
+# Chỉnh sửa .env với thông tin Google Cloud và JWT
+```
+
+### Bước 2: Setup Frontend (ReactJS)
+
+```bash
+# Mở terminal mới, di chuyển vào thư mục frontend
+cd fe
+
+# Cài đặt dependencies
+npm install
+```
+
+### Bước 3: Chạy hệ thống
+
+#### Cách 1: Quick Start (Khuyến nghị)
+```bash
+cd be
+python dev.py start
+```
+
+#### Cách 2: Manual Start
+```bash
+# Terminal 1: Start Redis
+cd be
+python start_redis.py
+
+# Terminal 2: Start Celery Worker
+cd be
+python start_worker.py
+
+# Terminal 3: Start Backend API
+cd be
+python main.py
+
+# Terminal 4: Start Frontend
+cd fe
+npm start
+```
+
+### Bước 4: Truy cập ứng dụng
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8001
+- **API Docs**: http://localhost:8001/docs
+- **WebSocket**: ws://localhost:8001/ws
+
+### Tài khoản mặc định
+- **Username:** `admin`
+- **Password:** `password123`
+
+## 🔧 Cấu hình nâng cao
+
+### Environment Variables (Backend)
+```bash
+# JWT Security
+SECRET_KEY=your-very-secure-secret-key-here
+ALGORITHM=HS256
+
+# Google Cloud Configuration
+PROJECT_ID=your-google-cloud-project-id
+GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account-key.json
+GCS_BUCKET_NAME=your-bucket-name
+
+# Redis Configuration
+REDIS_URL=redis://localhost:6379/0
+CELERY_BROKER_URL=redis://localhost:6379/0
+CELERY_RESULT_BACKEND=redis://localhost:6379/0
+
+# Upload Configuration
+MAX_FILE_SIZE_MB=100
+ALLOWED_EXTENSIONS=.pdf,.docx,.doc,.txt,.png,.jpg,.jpeg
+
+# WebSocket Configuration
+WEBSOCKET_CORS_ORIGINS=http://localhost:3000
+```
+
+### Environment Variables (Frontend)
+```env
+REACT_APP_API_URL=http://localhost:8001
+REACT_APP_APP_NAME=DVC.AI
+```
+
+## 📱 Responsive Design
+
+### Breakpoints
+```css
+/* Mobile */
+@media (max-width: 767px)
+
+/* Tablet */  
+@media (min-width: 768px) and (max-width: 991px)
+
+/* Small Desktop */
+@media (min-width: 992px) and (max-width: 1199px)
+
+/* Desktop */
+@media (min-width: 1200px) and (max-width: 1919px)
+- max-width: 1200px, centered
+
+/* Large Desktop/2K */
+@media (min-width: 1920px) and (max-width: 2559px)
+- max-width: 1600px, centered
+
+/* 4K+ Ultra Wide */
+@media (min-width: 2560px)
+- max-width: 1800px, centered
+```
+
+### Spacing System
+- **Base unit**: 8px
+- **Margins**: .mb-0 to .mb-5 (0px to 40px)
+- **Paddings**: .p-0 to .p-5 (0px to 40px)
+- **Gaps**: .gap-1 to .gap-4 (8px to 32px)
+
+## 📋 API Documentation
+
+### Authentication
+- `POST /api/auth/login` - Đăng nhập
+- `GET /api/auth/me` - Lấy thông tin user
+
+### Document Management
+- `GET /api/documents` - Lấy danh sách tài liệu
+- `POST /api/documents/upload` - Upload tài liệu đơn lẻ
+- `POST /api/documents/bulk-upload` - Upload nhiều tài liệu
+- `DELETE /api/documents/{id}` - Xóa tài liệu
+
+### WebSocket
+- `GET /api/websocket/status` - Trạng thái kết nối WebSocket
+- **Events**: `file_upload_progress`, `file_upload_complete`, `bulk_upload_progress`
+
+### Chatbot
+- `POST /api/chatbot/message` - Gửi tin nhắn đến chatbot
+
+## 🚀 Deployment
+
+### Backend Deployment
+```bash
+# Using uvicorn
+uvicorn main:app --host 0.0.0.0 --port 8000
+
+# Using Docker
+docker build -t dvc-ai-backend .
+docker run -p 8000:8000 dvc-ai-backend
+```
+
+### Frontend Deployment
+```bash
+# Build production
+npm run build
+
+# Serve with nginx/apache
+# Copy build/ folder to web server
+```
+
+### Production Environment
+- Sử dụng Redis cluster thay vì Docker container
+- Cấu hình Google Cloud Storage production bucket
+- Setup monitoring và logging
+- SSL/TLS certificates
+- Load balancing nếu cần
+
+## 🐛 Troubleshooting
+
+### Backend không start được
+```bash
+# Kiểm tra Python version
+python --version  # Cần >= 3.8
+
+# Kiểm tra dependencies
+pip list
+
+# Kiểm tra port 8001
+netstat -an | grep 8001
+
+# Kiểm tra Redis connection
+docker exec -it dvc-ai-redis redis-cli ping
+```
+
+### Frontend không kết nối được backend
+```bash
+# Kiểm tra backend đang chạy
+curl http://localhost:8001
+
+# Kiểm tra CORS configuration
+# Xem console browser để debug
+```
+
+### File upload lỗi
+- Kiểm tra file format (chỉ PDF, DOCX, DOC, TXT, PNG, JPG, JPEG)
+- Kiểm tra file size (< 100MB)
+- Kiểm tra quyền write vào thư mục uploads/
+- Kiểm tra Google Cloud Storage credentials
+
+### WebSocket connection issues
+- Kiểm tra CORS origins trong .env
+- Verify frontend connects to correct URL
+- Check browser console for connection errors
+- Ensure Socket.IO versions compatibility
+
+## 📊 Performance & Monitoring
+
+### Redis Monitoring
+```bash
+# Check Redis status
+docker exec -it dvc-ai-redis redis-cli info
+
+# Monitor memory usage
+docker exec -it dvc-ai-redis redis-cli info memory
+
+# View Redis logs
+docker compose logs redis
+```
+
+### Celery Monitoring
+```bash
+# Check worker status
+celery -A celery_app.celery_app status
+
+# View active tasks
+celery -A celery_app.celery_app inspect active
+
+# Monitor task queue
+celery -A celery_app.celery_app inspect registered
+```
+
+### System Performance
+- Monitor file upload speeds
+- Track WebSocket connection stability
+- Monitor Google Cloud Storage usage
+- Check system resource utilization
+
+## 🔒 Security Considerations
+
+### JWT Security
+- Sử dụng strong secret keys
+- Rotate credentials regularly
+- Implement token expiration
+- Validate token claims
+
+### File Upload Security
+- File type validation
+- File size limits
+- Virus scanning (recommended)
+- Secure file storage
+
+### API Security
+- Rate limiting
+- Input validation
+- CORS configuration
+- HTTPS enforcement
+
+## 🔧 Các vấn đề đã sửa và cải tiến
+
+### ✅ Lỗi đã khắc phục (September 2025):
+
+1. **Celery Worker Error trên Windows**
+   - **Lỗi**: `ValueError: not enough values to unpack (expected 3, got 0)`
+   - **Nguyên nhân**: Prefork pool không tương thích Windows
+   - **Giải pháp**: Sử dụng threads pool (`worker_pool='threads'`)
+
+2. **WebSocket 403 Forbidden**
+   - **Lỗi**: `connection rejected (403 Forbidden)`
+   - **Nguyên nhân**: CORS configuration và ASGI integration
+   - **Giải pháp**: Cập nhật CORS và sử dụng `socketio.ASGIApp()`
+
+3. **Google Cloud Storage ACL Error**
+   - **Lỗi**: `Cannot get legacy ACL when uniform bucket-level access enabled`
+   - **Nguyên nhân**: GCS policy mới
+   - **Giải pháp**: Loại bỏ `blob.make_public()`, dùng uniform access
+
+4. **Threading Conflicts trong Tasks**
+   - **Lỗi**: AsyncIO conflicts trong sync context
+   - **Giải pháp**: Simplified WebSocket helper function
+
+### 🚀 Cải tiến mới:
+
+- **Windows Compatibility**: Tối ưu hóa cho môi trường Windows
+- **Conda Environment**: Hướng dẫn sử dụng conda cho stability
+- **Real-time Progress**: WebSocket tracking cho file uploads
+- **Modern UI**: Font MaisonNeue và responsive design
+
+## 🛠️ Troubleshooting
+
+### Lỗi thường gặp:
+
+**1. Celery Worker không start được:**
+```bash
+# Đảm bảo đang trong conda environment
+conda activate document-management-be
+cd be
+python start_worker.py
+
+# Kiểm tra output phải có: "2 (thread)" NOT "(prefork)"
+```
+
+**2. WebSocket không kết nối được:**
+```bash
+# Kiểm tra backend logs xem có "connection open"
+# Frontend console không có lỗi CORS
+```
+
+**3. Redis connection failed:**
+```bash
+# Start Redis trước
+python start_redis.py
+
+# Test connection
+python -c "import redis; print(redis.Redis().ping())"
+```
+
+## 📈 Tính năng sẽ phát triển
+
+- [ ] **Database integration** (PostgreSQL/MongoDB)
+- [ ] **File preview** cho PDF và DOCX
+- [ ] **Advanced search** và filtering
+- [ ] **User management** và phân quyền
+- [ ] **Document versioning**
+- [ ] **Email notifications**
+- [ ] **Advanced chatbot** với AI/NLP
+- [ ] **Audit logs** và reporting
+- [ ] **Multi-language support**
+- [ ] **Dark mode** theme
+- [ ] **Mobile app** (React Native)
+
+## 📞 Hỗ trợ
+
+- **Email:** support@domain.gov.vn
+- **Hotline:** 1900-xxxx
+- **Documentation:** http://localhost:8001/docs
+- **GitHub Issues:** [Repository URL]
+
+## 📄 License
+
+MIT License - Xem file LICENSE để biết chi tiết.
+
+---
+
+**Phiên bản:** 2.1.0 (Production Ready)  
+**Cập nhật:** September 2025  
+**Tác giả:** AI Assistant  
+**Status:** ✅ All major issues fixed  
+**Compatibility:** Windows + Conda optimized  
+**Brand:** DVC.AI - Document Management with AI**

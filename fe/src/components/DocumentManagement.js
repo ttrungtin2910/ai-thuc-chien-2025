@@ -13,7 +13,9 @@ import {
   Col,
   Statistic,
   Empty,
-  Spin
+  Spin,
+  Progress,
+  notification
 } from 'antd';
 import {
   UploadOutlined,
@@ -22,22 +24,83 @@ import {
   FilePdfOutlined,
   FileWordOutlined,
   DownloadOutlined,
-  ReloadOutlined
+  ReloadOutlined,
+  SyncOutlined
 } from '@ant-design/icons';
 import { documentsAPI } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
+import websocketService from '../services/websocket';
 import moment from 'moment';
 
 const { Title, Text } = Typography;
 const { Dragger } = Upload;
 
 const DocumentManagement = () => {
+  const { user } = useAuth();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({});
 
   useEffect(() => {
     fetchDocuments();
-  }, []);
+    
+    // Connect WebSocket if user is available
+    if (user?.username && !websocketService.isSocketConnected()) {
+      websocketService.connect(user.username);
+    }
+    
+    // Setup WebSocket event listeners
+    const handleFileProgress = (data) => {
+      setUploadProgress(prev => ({
+        ...prev,
+        [data.task_id]: data
+      }));
+    };
+    
+    const handleFileComplete = (data) => {
+      setUploadProgress(prev => {
+        const newProgress = { ...prev };
+        delete newProgress[data.task_id];
+        return newProgress;
+      });
+      
+      notification.success({
+        message: 'Upload Complete',
+        description: `File ${data.filename} uploaded successfully`,
+        duration: 3
+      });
+      
+      // Refresh documents list
+      fetchDocuments();
+    };
+    
+    const handleFileError = (data) => {
+      setUploadProgress(prev => {
+        const newProgress = { ...prev };
+        delete newProgress[data.task_id];
+        return newProgress;
+      });
+      
+      notification.error({
+        message: 'Upload Failed',
+        description: `File ${data.filename} upload failed: ${data.error}`,
+        duration: 5
+      });
+      
+      setUploading(false);
+    };
+    
+    websocketService.on('file_upload_progress', handleFileProgress);
+    websocketService.on('file_upload_complete', handleFileComplete);
+    websocketService.on('file_upload_error', handleFileError);
+    
+    return () => {
+      websocketService.off('file_upload_progress', handleFileProgress);
+      websocketService.off('file_upload_complete', handleFileComplete);
+      websocketService.off('file_upload_error', handleFileError);
+    };
+  }, [user?.username]);
 
   const fetchDocuments = async () => {
     setLoading(true);
@@ -54,31 +117,35 @@ const DocumentManagement = () => {
 
   const handleUpload = async (file) => {
     // Kiểm tra loại file
-    const allowedTypes = ['.pdf', '.docx'];
+    const allowedTypes = ['.pdf', '.docx', '.doc', '.txt', '.png', '.jpg', '.jpeg'];
     const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
     
     if (!allowedTypes.includes(fileExtension)) {
-      message.error('Chỉ hỗ trợ file PDF và DOCX!');
+      message.error('Chỉ hỗ trợ file PDF, DOCX, DOC, TXT, PNG, JPG, JPEG!');
       return false;
     }
 
-    // Kiểm tra kích thước file (10MB)
-    const maxSize = 10 * 1024 * 1024;
+    // Kiểm tra kích thước file (100MB - configurable)
+    const maxSize = 100 * 1024 * 1024;
     if (file.size > maxSize) {
-      message.error('Kích thước file không được vượt quá 10MB!');
+      message.error('Kích thước file không được vượt quá 100MB!');
       return false;
     }
 
     setUploading(true);
     try {
-      await documentsAPI.uploadDocument(file);
-      message.success(`File ${file.name} đã được tải lên thành công!`);
-      fetchDocuments(); // Refresh danh sách
+      const response = await documentsAPI.uploadDocument(file);
+      
+      message.success({
+        content: `File ${file.name} đã được gửi để xử lý. Bạn sẽ nhận được thông báo khi hoàn thành.`,
+        duration: 3
+      });
+      
+      console.log('Upload task started:', response.data);
     } catch (error) {
+      setUploading(false);
       message.error(`Tải lên thất bại: ${error.response?.data?.detail || 'Lỗi không xác định'}`);
       console.error('Upload error:', error);
-    } finally {
-      setUploading(false);
     }
 
     return false; // Prevent default upload behavior
@@ -247,7 +314,7 @@ const DocumentManagement = () => {
     multiple: true,
     beforeUpload: handleUpload,
     showUploadList: false,
-    accept: '.pdf,.docx',
+    accept: '.pdf,.docx,.doc,.txt,.png,.jpg,.jpeg',
   };
 
   const totalSize = documents.reduce((sum, doc) => sum + doc.size, 0);
@@ -390,7 +457,7 @@ const DocumentManagement = () => {
             Kéo thả file vào đây hoặc nhấp để chọn file
           </p>
           <p className="ant-upload-hint text-sm lh-relaxed" style={{ margin: '8px 0' }}>
-            Hỗ trợ file PDF và DOCX • Kích thước tối đa: 10MB
+            Hỗ trợ file PDF, DOCX, DOC, TXT, PNG, JPG, JPEG • Kích thước tối đa: 100MB
           </p>
         </Dragger>
         
@@ -440,6 +507,36 @@ const DocumentManagement = () => {
           </Button>
         </div>
       </Card>
+
+      {/* Upload Progress */}
+      {Object.keys(uploadProgress).length > 0 && (
+        <Card 
+          title={
+            <span className="text-lg font-semibold" style={{ color: '#D2691E' }}>
+              <SyncOutlined spin /> Upload Progress
+            </span>
+          }
+          className="mb-4"
+          bodyStyle={{ padding: '24px' }}
+        >
+          {Object.entries(uploadProgress).map(([taskId, progress]) => (
+            <div key={taskId} style={{ marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <span className="font-medium">{progress.filename}</span>
+                <Tag color={progress.status === 'uploading' ? 'processing' : 'default'}>
+                  {progress.status === 'uploading' ? 'Uploading' : progress.status}
+                </Tag>
+              </div>
+              <Progress 
+                percent={progress.progress || 0} 
+                status={progress.status === 'failed' ? 'exception' : 'active'}
+                showInfo={true}
+                format={percent => `${percent}%`}
+              />
+            </div>
+          ))}
+        </Card>
+      )}
 
       {/* Documents Table */}
       <Card 

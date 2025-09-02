@@ -5,17 +5,24 @@ from pydantic import BaseModel
 from typing import Optional, List
 import uvicorn
 import os
+import uuid
 from datetime import datetime, timedelta
 import jwt
 import hashlib
 import json
+import aiofiles
+import socketio
+from config import Config
+from services.gcs_service import gcs_service
+from websocket_manager import websocket_manager
+from tasks import process_file_upload, process_bulk_upload
 
 app = FastAPI(title="Document Management API", version="1.0.0")
 
 # Cấu hình CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React app URL
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # React app URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,11 +30,11 @@ app.add_middleware(
 
 # Security
 security = HTTPBearer()
-SECRET_KEY = "your-secret-key-here"
-ALGORITHM = "HS256"
+SECRET_KEY = Config.SECRET_KEY
+ALGORITHM = Config.ALGORITHM
 
 # Thư mục lưu trữ file upload
-UPLOAD_DIR = "uploads"
+UPLOAD_DIR = Config.UPLOAD_DIR
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # Models
@@ -46,6 +53,18 @@ class DocumentInfo(BaseModel):
     file_type: str
     upload_date: str
     size: int
+    public_url: Optional[str] = None
+    status: Optional[str] = None
+
+class BulkUploadResponse(BaseModel):
+    task_id: str
+    message: str
+    total_files: int
+
+class FileUploadResponse(BaseModel):
+    task_id: str
+    message: str
+    filename: str
 
 # Fake database cho demo
 fake_users = {
@@ -116,53 +135,55 @@ async def get_current_user(username: str = Depends(verify_token)):
         "role": user["role"]
     }
 
-@app.post("/api/documents/upload")
+@app.post("/api/documents/upload", response_model=FileUploadResponse)
 async def upload_document(
     file: UploadFile = File(...),
     username: str = Depends(verify_token)
 ):
     # Kiểm tra loại file
-    allowed_extensions = ['.pdf', '.docx']
     file_extension = os.path.splitext(file.filename)[1].lower()
     
-    if file_extension not in allowed_extensions:
+    if file_extension not in Config.ALLOWED_EXTENSIONS:
         raise HTTPException(
             status_code=400, 
-            detail="Only PDF and DOCX files are allowed"
+            detail=f"Only {', '.join(Config.ALLOWED_EXTENSIONS)} files are allowed"
+        )
+    
+    # Kiểm tra kích thước file
+    content = await file.read()
+    file_size_mb = len(content) / (1024 * 1024)
+    
+    if file_size_mb > Config.MAX_FILE_SIZE_MB:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File size exceeds {Config.MAX_FILE_SIZE_MB}MB limit"
         )
     
     # Tạo tên file unique
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{timestamp}_{file.filename}"
-    file_path = os.path.join(UPLOAD_DIR, filename)
+    unique_filename = f"{timestamp}_{file.filename}"
+    file_path = os.path.join(UPLOAD_DIR, unique_filename)
     
-    # Lưu file
-    with open(file_path, "wb") as buffer:
-        content = await file.read()
-        buffer.write(content)
+    # Lưu file tạm thời
+    async with aiofiles.open(file_path, "wb") as buffer:
+        await buffer.write(content)
     
-    # Lưu thông tin document vào fake database
-    document_info = {
-        "id": f"doc_{len(fake_documents) + 1}",
-        "filename": file.filename,
-        "stored_filename": filename,
-        "file_type": file_extension,
-        "upload_date": datetime.now().isoformat(),
-        "size": len(content),
-        "uploaded_by": username
-    }
-    fake_documents.append(document_info)
+    # Tạo task ID
+    task_id = str(uuid.uuid4())
     
-    return {
-        "message": "File uploaded successfully",
-        "document": DocumentInfo(
-            id=document_info["id"],
-            filename=document_info["filename"],
-            file_type=document_info["file_type"],
-            upload_date=document_info["upload_date"],
-            size=document_info["size"]
-        )
-    }
+    # Gửi task đến Celery queue
+    process_file_upload.delay(
+        file_path=file_path,
+        filename=file.filename,
+        user_id=username,
+        task_id=task_id
+    )
+    
+    return FileUploadResponse(
+        task_id=task_id,
+        message="File upload started. You will receive real-time updates via WebSocket.",
+        filename=file.filename
+    )
 
 @app.get("/api/documents", response_model=List[DocumentInfo])
 async def get_documents(username: str = Depends(verify_token)):
@@ -193,6 +214,90 @@ async def delete_document(document_id: str, username: str = Depends(verify_token
     
     return {"message": "Document deleted successfully"}
 
+@app.post("/api/documents/bulk-upload", response_model=BulkUploadResponse)
+async def bulk_upload_documents(
+    files: List[UploadFile] = File(...),
+    username: str = Depends(verify_token)
+):
+    if not files:
+        raise HTTPException(status_code=400, detail="No files provided")
+    
+    if len(files) > 50:  # Limit số lượng file
+        raise HTTPException(status_code=400, detail="Maximum 50 files allowed per bulk upload")
+    
+    file_paths = []
+    total_size = 0
+    
+    for file in files:
+        # Kiểm tra loại file
+        file_extension = os.path.splitext(file.filename)[1].lower()
+        if file_extension not in Config.ALLOWED_EXTENSIONS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"File {file.filename}: Only {', '.join(Config.ALLOWED_EXTENSIONS)} files are allowed"
+            )
+        
+        # Kiểm tra kích thước file
+        content = await file.read()
+        file_size_mb = len(content) / (1024 * 1024)
+        total_size += file_size_mb
+        
+        if file_size_mb > Config.MAX_FILE_SIZE_MB:
+            raise HTTPException(
+                status_code=400,
+                detail=f"File {file.filename}: Size exceeds {Config.MAX_FILE_SIZE_MB}MB limit"
+            )
+    
+    # Kiểm tra tổng kích thước
+    if total_size > Config.MAX_FILE_SIZE_MB * 10:  # 10x limit for bulk
+        raise HTTPException(
+            status_code=400,
+            detail=f"Total size exceeds {Config.MAX_FILE_SIZE_MB * 10}MB limit"
+        )
+    
+    # Lưu tất cả file tạm thời
+    for file in files:
+        await file.seek(0)  # Reset file pointer
+        content = await file.read()
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        unique_filename = f"{timestamp}_{file.filename}"
+        file_path = os.path.join(UPLOAD_DIR, unique_filename)
+        
+        async with aiofiles.open(file_path, "wb") as buffer:
+            await buffer.write(content)
+        
+        file_paths.append({
+            'path': file_path,
+            'filename': file.filename
+        })
+    
+    # Tạo bulk task ID
+    bulk_task_id = str(uuid.uuid4())
+    
+    # Gửi bulk task đến Celery queue
+    process_bulk_upload.delay(
+        file_paths=file_paths,
+        user_id=username,
+        bulk_task_id=bulk_task_id
+    )
+    
+    return BulkUploadResponse(
+        task_id=bulk_task_id,
+        message="Bulk upload started. You will receive real-time updates via WebSocket.",
+        total_files=len(files)
+    )
+
+@app.get("/api/websocket/status")
+async def websocket_status(username: str = Depends(verify_token)):
+    """Get WebSocket connection status"""
+    user_sessions = websocket_manager.user_sessions.get(username, set())
+    return {
+        "connected": len(user_sessions) > 0,
+        "session_count": len(user_sessions),
+        "sessions": list(user_sessions)
+    }
+
 # Chatbot API (placeholder for future development)
 @app.post("/api/chatbot/message")
 async def chatbot_message(
@@ -205,5 +310,8 @@ async def chatbot_message(
         "timestamp": datetime.now().isoformat()
     }
 
+# Create combined ASGI app
+combined_asgi_app = socketio.ASGIApp(websocket_manager.sio, app)
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(combined_asgi_app, host="0.0.0.0", port=8001)

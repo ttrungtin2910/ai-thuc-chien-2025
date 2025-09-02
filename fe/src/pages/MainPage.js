@@ -14,11 +14,13 @@ import {
   MessageOutlined, 
   UserOutlined, 
   LogoutOutlined,
-  SettingOutlined
+  SettingOutlined,
+  CloudUploadOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import DocumentManagement from '../components/DocumentManagement';
 import ChatBot from '../components/ChatBot';
+import BulkUpload from '../components/BulkUpload';
 import dongsondrum from '../assets/dongson-drum.svg';
 
 const { Header, Content } = Layout;
@@ -67,6 +69,16 @@ const MainPage = () => {
           </span>
         ),
       children: <DocumentManagement />
+    },
+    {
+      key: 'bulk-upload',
+              label: (
+          <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <CloudUploadOutlined />
+            Upload Đồng loạt
+          </span>
+        ),
+      children: <BulkUpload />
     },
     {
       key: 'chatbot',
