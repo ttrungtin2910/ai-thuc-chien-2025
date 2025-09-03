@@ -78,6 +78,31 @@ class WebSocketService {
     this.socket.on('pong', (data) => {
       this.emit('pong', data);
     });
+
+    // Enhanced chat events
+    this.socket.on('chat_response', (data) => {
+      this.emit('chat_response', data);
+    });
+
+    this.socket.on('typing', (data) => {
+      this.emit('typing', data);
+    });
+
+    this.socket.on('session_joined', (data) => {
+      this.emit('session_joined', data);
+    });
+
+    this.socket.on('session_left', (data) => {
+      this.emit('session_left', data);
+    });
+
+    this.socket.on('chat_history', (data) => {
+      this.emit('chat_history', data);
+    });
+
+    this.socket.on('error', (data) => {
+      this.emit('error', data);
+    });
   }
 
   handleMessage(data) {
@@ -190,6 +215,41 @@ class WebSocketService {
 
   isSocketConnected() {
     return this.socket && this.isConnected;
+  }
+
+  // Enhanced chat methods
+  sendChatMessage(message, sessionId) {
+    if (this.socket && this.isConnected) {
+      this.socket.emit('chat_message', {
+        message: message,
+        session_id: sessionId
+      });
+    }
+  }
+
+  joinChatSession(sessionId) {
+    if (this.socket && this.isConnected) {
+      this.socket.emit('join_chat_session', {
+        session_id: sessionId
+      });
+    }
+  }
+
+  leaveChatSession(sessionId) {
+    if (this.socket && this.isConnected) {
+      this.socket.emit('leave_chat_session', {
+        session_id: sessionId
+      });
+    }
+  }
+
+  getChatHistory(sessionId, limit = 20) {
+    if (this.socket && this.isConnected) {
+      this.socket.emit('get_chat_history', {
+        session_id: sessionId,
+        limit: limit
+      });
+    }
   }
 }
 

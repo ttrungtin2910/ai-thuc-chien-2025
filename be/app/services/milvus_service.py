@@ -41,13 +41,17 @@ class MilvusService:
             logger.error(f"Failed to connect to Milvus: {e}")
             return False
     
-    def create_collection(self, dimension: int = 3072):
+    def create_collection(self, dimension: int = None):
         """
         Create collection for storing document embeddings
         
         Args:
-            dimension: Vector dimension (3072 for text-embedding-3-large)
+            dimension: Vector dimension (auto-detected from OpenAI service, default 3072 for text-embedding-3-large)
         """
+        if dimension is None:
+            # Auto-detect dimension from OpenAI service
+            dimension = openai_service.get_embedding_dimension()
+            logger.info(f"Using embedding dimension: {dimension} for model: {openai_service.embedding_model}")
         try:
             # Check if collection exists
             if utility.has_collection(self.collection_name):

@@ -94,7 +94,7 @@ class OpenAIService:
             )
             
             embeddings = [data.embedding for data in response.data]
-            logger.info(f"Generated embeddings for {len(texts)} texts")
+            logger.info(f"Generated embeddings for {len(texts)} texts using model: {self.embedding_model}")
             return embeddings
             
         except Exception as e:

@@ -89,10 +89,50 @@ export const documentsAPI = {
   }
 };
 
-// Chatbot API
+// Chatbot API - Enhanced for Virtual Assistant
 export const chatbotAPI = {
-  sendMessage: async (message) => {
-    const response = await api.post('/api/chatbot/message', { message });
+  sendMessage: async (messageData) => {
+    // Support both old string format and new object format
+    const payload = typeof messageData === 'string' 
+      ? { message: messageData }
+      : messageData;
+    
+    const response = await api.post('/api/chatbot/message', payload);
+    return response.data;
+  },
+
+  getSessionInfo: async (sessionId) => {
+    const response = await api.get(`/api/chatbot/session/${sessionId}`);
+    return response.data;
+  },
+
+  getChatHistory: async (sessionId, limit = 20) => {
+    const response = await api.get(`/api/chatbot/history/${sessionId}?limit=${limit}`);
+    return response.data;
+  },
+
+  createNewSession: async () => {
+    const response = await api.post('/api/chatbot/session/new');
+    return response.data;
+  },
+
+  deleteSession: async (sessionId) => {
+    const response = await api.delete(`/api/chatbot/session/${sessionId}`);
+    return response.data;
+  },
+
+  getUserSessions: async () => {
+    const response = await api.get('/api/chatbot/sessions');
+    return response.data;
+  },
+
+  getChatbotStatus: async () => {
+    const response = await api.get('/api/chatbot/status');
+    return response.data;
+  },
+
+  cleanupOldSessions: async () => {
+    const response = await api.post('/api/chatbot/cleanup');
     return response.data;
   }
 };
