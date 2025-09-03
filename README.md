@@ -1,109 +1,188 @@
-# 🌍 DVC.AI - Trợ lý dịch vụ công và cổng Kiến thức
+# 🌍 DVC.AI - Document Management & Virtual Assistant System
 
-Trợ lý AI thông minh cho dịch vụ công và hệ thống quản lý kiến thức, với thiết kế tone màu mệnh thổ ấm áp.
+[![Version](https://img.shields.io/badge/version-3.3.0-orange.svg)](https://github.com/ttrungtin2910/ai-thuc-chien-2025)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://python.org)
+[![React](https://img.shields.io/badge/react-18.0+-61dafb.svg)](https://reactjs.org)
+[![FastAPI](https://img.shields.io/badge/fastapi-0.100+-009688.svg)](https://fastapi.tiangolo.com)
+
+**DVC.AI** là hệ thống quản lý tài liệu thông minh tích hợp trợ lý ảo, được thiết kế đặc biệt để hỗ trợ công dân trong việc tra cứu và thực hiện các thủ tục hành chính tại Việt Nam.
 
 ## 🚀 Tính năng chính
 
-### Chức năng cơ bản
-- ✅ **Đăng nhập** bảo mật với JWT authentication
-- ✅ **Quản lý tài liệu** - Upload, xem, xóa file PDF và DOCX
-- ✅ **Chatbot hỗ trợ** - Tương tác với trợ lý ảo
-- ✅ **Upload đồng loạt** - Hỗ trợ nhiều file cùng lúc
-- ✅ **WebSocket real-time** - Theo dõi tiến trình upload
-- ✅ **Google Cloud Storage** - Lưu trữ file trên cloud
-- ✅ **UI/UX chính phủ** - Thiết kế nghiêm túc, hiện đại
+- ✅ **Chat AI Real-time** - Trợ lý ảo với Markdown rendering và WebSocket
+- ✅ **RAG System** - Retrieval-Augmented Generation với Milvus Vector DB
+- ✅ **Document Management** - Upload, quản lý file PDF/DOCX với Google Cloud Storage
+- ✅ **Microservice Architecture** - Kiến trúc modular, dễ mở rộng và bảo trì
+- ✅ **Authentication** - Bảo mật JWT với session management
+- ✅ **Real-time Upload** - Progress tracking với WebSocket và Celery
+- ✅ **Modern UI/UX** - Theme Mệnh Thổ với font MaisonNeue
 
-### Công nghệ sử dụng
-- **Frontend:** ReactJS + Ant Design + MaisonNeue font
-- **Backend:** Python FastAPI + Celery + Redis
-- **Database:** In-memory (có thể mở rộng)
-- **Storage:** Google Cloud Storage + Local uploads
-- **Authentication:** JWT tokens
-- **Real-time:** WebSocket + Socket.IO
+## 🏗️ Kiến trúc hệ thống
 
-## 📚 Hướng dẫn chi tiết
-
-**📖 Xem hướng dẫn hoàn chỉnh tại:** [`COMPLETE_GUIDE.md`](COMPLETE_GUIDE.md)
-
-File này chứa tất cả thông tin chi tiết về:
-- Cài đặt và cấu hình
-- API documentation
-- Theme design system
-- Responsive design
-- Troubleshooting
-- Deployment
-- Security considerations
-
-## 🛠️ Quick Start
-
-### 1. Clone repository
-```bash
-git clone [repository-url]
-cd 02-AI-ThucChien
+```
+📁 DVC.AI System
+├── 🖥️  Frontend (ReactJS)           # Modern UI với Markdown support
+├── ⚡ Backend (FastAPI)             # Microservice architecture
+├── 🧠 AI Services                   # OpenAI + Langraph + RAG
+├── 🗄️  Databases                    # MongoDB + Milvus Vector DB
+├── ☁️  Cloud Storage                # Google Cloud Storage
+└── 🔄 Real-time Communication      # WebSocket + Socket.IO
 ```
 
-### 2. Start Backend
+## 📋 Cấu trúc dự án
+
+```
+📦 ai-thuc-chien-2025/
+├── 📁 fe/                          # Frontend ReactJS
+│   ├── 📁 src/components/           # Chat, Document Management
+│   ├── 📁 public/fonts/             # MaisonNeue font family
+│   └── 📄 package.json              # Dependencies
+├── 📁 be/                           # Backend FastAPI
+│   ├── 📁 app/                      # Main application
+│   │   ├── 📁 api/                  # API routes (auth, chat, docs, rag)
+│   │   ├── 📁 core/                 # Configuration & WebSocket
+│   │   ├── 📁 services/             # AI, Database, Storage services
+│   │   └── 📁 models/               # Data models
+│   ├── 📁 scripts/                  # Utility scripts
+│   └── 📄 requirements.txt          # Python dependencies
+├── 📁 docs/                         # 📚 All Documentation
+└── 📁 data/                         # Sample data & documents
+```
+
+## 🚀 Bắt đầu nhanh
+
+### 1️⃣ Clone Repository
+```bash
+git clone https://github.com/ttrungtin2910/ai-thuc-chien-2025.git
+cd ai-thuc-chien-2025
+```
+
+### 2️⃣ Setup Backend
 ```bash
 cd be
-python dev.py start
+conda create -n document-management-be python=3.9
+conda activate document-management-be
+pip install -r requirements.txt
+
+# Copy and configure environment
+cp env.example .env
+# Edit .env file với OpenAI API key và các cấu hình khác
 ```
 
-### 3. Start Frontend
+### 3️⃣ Setup Frontend
 ```bash
 cd fe
 npm install
 npm start
 ```
 
-### 4. Truy cập ứng dụng
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8001
-- **API Docs**: http://localhost:8001/docs
+### 4️⃣ Start Services
+```bash
+# Terminal 1: Backend
+cd be && python -m app.main
 
-### Tài khoản mặc định
-- **Username:** `admin`
-- **Password:** `password123`
+# Terminal 2: Frontend  
+cd fe && npm start
 
-## 🎨 Theme Mệnh Thổ
-
-Dự án sử dụng theme **Mệnh Thổ (Earth Element)** với:
-- **Màu chính**: #D2691E (Cam đất chocolate)
-- **Biểu tượng**: Trống đồng Đông Sơn
-- **Font**: MaisonNeue (chính thức công ty)
-- **Design**: Responsive, chuyên nghiệp, chính phủ
-
-## 📁 Cấu trúc dự án
-
-```
-├── be/                     # Backend FastAPI
-├── fe/                     # Frontend ReactJS
-├── uploads/                # Global uploads
-├── COMPLETE_GUIDE.md       # Hướng dẫn hoàn chỉnh
-└── README.md               # File này
+# Terminal 3: Vector Database (Optional)
+cd be && ./start_milvus.sh
 ```
 
-## 🚀 Deployment
+🌐 **Access:** Frontend tại http://localhost:3000, Backend API tại http://localhost:8001
 
-Xem hướng dẫn chi tiết trong [`COMPLETE_GUIDE.md`](COMPLETE_GUIDE.md) để biết:
-- Production deployment
-- Environment configuration
-- Security setup
-- Performance optimization
+## 📚 Tài liệu chi tiết
 
-## 📞 Hỗ trợ
+### 📖 Hướng dẫn chính
+- **[📋 Complete Guide](docs/COMPLETE_GUIDE.md)** - Hướng dẫn toàn diện từ A-Z
+- **[⚡ Quick Start](docs/QUICK_START.md)** - Khởi động nhanh trong 5 phút
+- **[🏗️ Microservice Structure](docs/MICROSERVICE_STRUCTURE.md)** - Kiến trúc chi tiết
 
-- **Documentation**: [`COMPLETE_GUIDE.md`](COMPLETE_GUIDE.md)
-- **API Docs**: http://localhost:8001/docs
-- **Email**: support@domain.gov.vn
+### 🤖 AI & Machine Learning
+- **[🧠 Virtual Assistant Guide](docs/VIRTUAL_ASSISTANT_GUIDE.md)** - Trợ lý ảo với Langraph
+- **[🔍 Vector Database Structure](docs/VECTOR_DB_STRUCTURE.md)** - Milvus và RAG system
+
+### ⚙️ Cài đặt & Cấu hình
+- **[🗄️ Milvus Setup Guide](docs/MILVUS_SETUP_GUIDE.md)** - Cài đặt Vector Database
+
+## 🛠️ Công nghệ sử dụng
+
+### Frontend
+- **React 18** - Modern UI library
+- **Ant Design** - UI components
+- **ReactMarkdown** - Markdown rendering cho chat
+- **Socket.IO Client** - Real-time communication
+
+### Backend
+- **FastAPI** - High-performance web framework
+- **Langraph** - AI workflow orchestration
+- **OpenAI API** - GPT-4o cho chat và text-embedding-3-large
+- **Milvus** - Vector database cho RAG
+- **MongoDB** - Document database
+- **Socket.IO** - WebSocket real-time
+- **Celery** - Background task processing
+
+### Infrastructure
+- **Google Cloud Storage** - File storage
+- **Docker** - Containerization
+- **Redis** - Caching và message broker
+- **Conda** - Environment management
+
+## 🔧 Environment Variables
+
+Tạo file `.env` trong thư mục `be/`:
+
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY=your-openai-api-key-here
+OPENAI_CHAT_MODEL=gpt-4o
+OPENAI_EMBEDDING_MODEL=text-embedding-3-large
+
+# Database URLs
+MONGODB_URL=mongodb://localhost:27017
+MILVUS_HOST=localhost
+MILVUS_PORT=19530
+
+# Security
+SECRET_KEY=your-secret-key-here
+
+# Storage (Optional)
+GCS_BUCKET_NAME=your-bucket-name
+GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account.json
+```
+
+## 🤝 Đóng góp
+
+Chúng tôi hoan nghênh mọi đóng góp! Vui lòng:
+
+1. **Fork** repository
+2. **Tạo feature branch** (`git checkout -b feature/amazing-feature`)
+3. **Commit changes** (`git commit -m 'Add amazing feature'`)
+4. **Push to branch** (`git push origin feature/amazing-feature`)
+5. **Tạo Pull Request**
+
+## 📧 Liên hệ
+
+- **GitHub**: [@ttrungtin2910](https://github.com/ttrungtin2910)
+- **Email**: support@dvc.gov.vn
+- **Issues**: [GitHub Issues](https://github.com/ttrungtin2910/ai-thuc-chien-2025/issues)
 
 ## 📄 License
 
-MIT License - Xem file LICENSE để biết chi tiết.
+Dự án được phân phối dưới giấy phép MIT. Xem file [LICENSE](LICENSE) để biết thêm chi tiết.
 
 ---
 
-**Phiên bản:** 2.0.0  
-**Cập nhật:** December 2024  
-**Tác giả:** AI Assistant  
-**Theme:** Mệnh Thổ (Earth Element)  
-**Brand:** DVC.AI - Trợ lý dịch vụ công và cổng Kiến thức**
+## 🎯 Roadmap
+
+- [ ] **Multi-language Support** - Hỗ trợ tiếng Anh
+- [ ] **Advanced Analytics** - Dashboard thống kê
+- [ ] **Mobile App** - Ứng dụng di động
+- [ ] **Voice Chat** - Chat bằng giọng nói
+- [ ] **Document OCR** - Nhận dạng văn bản từ ảnh
+
+---
+
+**© 2025 DVC.AI - Hệ thống quản lý tài liệu và trợ lý ảo thông minh**
+
+*Được phát triển với ❤️ tại Việt Nam*
