@@ -413,9 +413,8 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
         padding: 'clamp(16px, 3vw, 24px)',
         display: 'flex', 
         flexDirection: 'column',
-        height: '100vh',
-        maxHeight: '100vh',
-        overflow: 'hidden'
+        minHeight: '100vh',
+        overflow: 'auto'
       }}
     >
       <div className="mb-4">
@@ -448,8 +447,8 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
             flex: 1, 
             display: 'flex', 
             flexDirection: 'column',
-            height: window.innerWidth <= 992 ? '70vh' : '75vh',
-            maxHeight: window.innerWidth <= 992 ? '70vh' : '75vh'
+            height: window.innerWidth <= 992 ? '75vh' : '80vh',
+            maxHeight: window.innerWidth <= 992 ? '75vh' : '80vh'
           }}
           bodyStyle={{ 
             display: 'flex', 
@@ -461,23 +460,22 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
         >
           {/* Chat Header */}
           <div style={{
-            padding: '20px 28px',
+            padding: '12px 20px',
             borderBottom: '1px solid #f0f0f0',
             background: '#fafafa',
             flexShrink: 0, // Prevent header from shrinking
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            minHeight: '80px'
+            minHeight: '50px'
           }}>
-            <Space align="center" size="large">
+            <Space align="center" size="small">
               <Avatar 
                 icon={<RobotFilled />} 
-                size="large"
+                size="small"
                 style={{ 
                   backgroundColor: '#52c41a', 
-                  border: '2px solid rgba(255, 255, 255, 0.8)',
-                  fontSize: '24px'
+                  border: '2px solid rgba(255, 255, 255, 0.8)'
                 }} 
               />
               <div style={{ lineHeight: '1.2' }}>
@@ -485,43 +483,42 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
                   strong 
                   style={{ 
                     fontFamily: "'MaisonNeue', 'Inter', sans-serif", 
-                    fontSize: '18px',
+                    fontSize: '14px',
                     color: '#333',
                     display: 'block',
-                    marginBottom: '4px'
+                    marginBottom: '1px'
                   }}
                 >
                   DVC.AI Trợ lý ảo
                 </Text>
-                <div>
-                  <Tag 
-                    color={isWebSocketConnected ? "green" : "orange"} 
-                    style={{ 
-                      borderRadius: '12px',
-                      fontSize: '11px',
-                      padding: '2px 8px',
-                      fontWeight: '500'
-                    }}
-                  >
-                    {isWebSocketConnected ? 'Trực tuyến' : 'Kết nối HTTP'}
-                  </Tag>
-                </div>
+                <Tag 
+                  color={isWebSocketConnected ? "green" : "orange"} 
+                  size="small"
+                  style={{ 
+                    borderRadius: '6px',
+                    fontSize: '10px',
+                    padding: '0 4px',
+                    lineHeight: '14px'
+                  }}
+                >
+                  {isWebSocketConnected ? 'Trực tuyến' : 'Kết nối HTTP'}
+                </Tag>
               </div>
             </Space>
             
             <Button
-              icon={<ReloadOutlined style={{ fontSize: '14px' }} />}
-              size="middle"
+              icon={<ReloadOutlined />}
+              size="small"
               type="text"
               onClick={clearChat}
               aria-label="Tạo cuộc trò chuyện mới"
               style={{ 
-                borderRadius: '8px',
+                borderRadius: '4px',
                 color: '#D2691E',
                 border: '1px solid rgba(210, 105, 30, 0.3)',
-                padding: '8px 16px',
-                height: 'auto',
-                fontSize: '14px',
+                padding: '2px 8px',
+                height: '28px',
+                fontSize: '12px',
                 fontWeight: '500',
                 background: 'rgba(210, 105, 30, 0.05)',
                 transition: 'all 0.2s ease'
@@ -535,7 +532,7 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
                 e.target.style.borderColor = 'rgba(210, 105, 30, 0.3)';
               }}
             >
-              Tạo cuộc trò chuyện mới
+              Tạo mới
             </Button>
           </div>
 
@@ -548,9 +545,9 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
               overflowY: 'auto',
               overflowX: 'hidden',
               background: '#fafafa',
-              height: 'calc(100% - 140px)', // Fixed height minus header and input
-              minHeight: 'calc(100% - 140px)',
-              maxHeight: 'calc(100% - 140px)'
+              height: 'calc(100% - 110px)', // Fixed height minus header and input
+              minHeight: 'calc(100% - 110px)',
+              maxHeight: 'calc(100% - 110px)'
             }}
           >
             {messages.length === 0 ? (
