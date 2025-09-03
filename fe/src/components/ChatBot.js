@@ -544,7 +544,6 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
               overflowY: 'auto',
               overflowX: 'hidden',
               background: '#fafafa',
-              flex: 1,
               minHeight: 0
             }}
           >
