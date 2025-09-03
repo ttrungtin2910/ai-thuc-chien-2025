@@ -413,8 +413,8 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
         padding: 'clamp(16px, 3vw, 24px)',
         display: 'flex', 
         flexDirection: 'column',
-        minHeight: '100vh',
-        overflow: 'auto'
+        height: '100vh',
+        overflow: 'hidden'
       }}
     >
       <div className="mb-4">
@@ -439,7 +439,7 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
         gap: 'clamp(12px, 3vw, 24px)', 
         flex: 1,
         flexDirection: window.innerWidth <= 992 ? 'column' : 'row',
-        minHeight: 0
+        overflow: 'hidden'
       }}>
         {/* Chat Area */}
         <Card 
@@ -447,8 +447,7 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
             flex: 1, 
             display: 'flex', 
             flexDirection: 'column',
-            height: window.innerWidth <= 992 ? '75vh' : '80vh',
-            maxHeight: window.innerWidth <= 992 ? '75vh' : '80vh'
+            height: '100%'
           }}
           bodyStyle={{ 
             display: 'flex', 
@@ -545,9 +544,8 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
               overflowY: 'auto',
               overflowX: 'hidden',
               background: '#fafafa',
-              height: 'calc(100% - 110px)', // Fixed height minus header and input
-              minHeight: 'calc(100% - 110px)',
-              maxHeight: 'calc(100% - 110px)'
+              flex: 1,
+              minHeight: 0
             }}
           >
             {messages.length === 0 ? (
