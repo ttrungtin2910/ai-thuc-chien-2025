@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .core.config import Config
-from .core.websocket import websocket_manager
+from .core.websocket_manager import websocket_manager
 from .api import auth, documents, chatbot, rag, websocket
 
 # Create FastAPI application

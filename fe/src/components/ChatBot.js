@@ -19,8 +19,11 @@ import {
   ReloadOutlined,
   MessageFilled
 } from '@ant-design/icons';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { chatbotAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import websocketService from '../services/websocket';
 import moment from 'moment';
 
 const { Title, Text } = Typography;
@@ -30,6 +33,10 @@ const ChatBot = React.memo(() => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [typing, setTyping] = useState(false);
+  const [sessionId, setSessionId] = useState(null);
+  const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
+  const [useWebSocket, setUseWebSocket] = useState(true);
   const messagesEndRef = useRef(null);
   const { user } = useAuth();
 
@@ -42,15 +49,118 @@ const ChatBot = React.memo(() => {
   }, [messages]);
 
   useEffect(() => {
-    // Welcome message
+    // Initialize session ID
+    const newSessionId = `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    setSessionId(newSessionId);
+
+    // Welcome message with Markdown formatting
     const welcomeMessage = {
       id: 1,
       type: 'bot',
-      content: 'Xin chào! Tôi là trợ lý ảo của hệ thống quản lý tài liệu. Tôi có thể giúp bạn:\n\n• Hướng dẫn sử dụng hệ thống\n• Giải đáp thắc mắc về tài liệu\n• Hỗ trợ kỹ thuật cơ bản\n\nBạn cần hỗ trợ gì ạ?',
+      content: `# Xin chào! 👋
+
+Tôi là **DVC.AI**, trợ lý ảo thông minh chuyên về dịch vụ công và thủ tục hành chính Việt Nam.
+
+## 🔍 Tôi có thể giúp bạn:
+
+- **Tìm kiếm thông tin** về thủ tục hành chính
+- **Hướng dẫn quy trình** làm giấy tờ
+- **Tư vấn về hồ sơ** và yêu cầu
+- **Trả lời các câu hỏi** về dịch vụ công
+
+> Bạn có câu hỏi gì về thủ tục hành chính không? 🤔`,
       timestamp: new Date().toISOString(),
     };
     setMessages([welcomeMessage]);
-  }, []);
+
+    return () => {
+      cleanupWebSocket();
+    };
+  }, [user]);
+
+  // Separate effect for WebSocket setup after sessionId is set
+  useEffect(() => {
+    if (user?.username && sessionId) {
+      setupWebSocket();
+    }
+  }, [user, sessionId]);
+
+  const setupWebSocket = () => {
+    try {
+      // Connect to WebSocket
+      websocketService.connect(user.username);
+
+      // Set up event listeners
+      websocketService.on('connection_status', handleConnectionStatus);
+      websocketService.on('chat_response', handleChatResponse);
+      websocketService.on('typing', handleTyping);
+      websocketService.on('error', handleWebSocketError);
+
+      // Join chat session when connected
+      const connectHandler = (data) => {
+        if (data.connected && sessionId) {
+          websocketService.joinChatSession(sessionId);
+        }
+      };
+
+      websocketService.on('connection_status', connectHandler);
+
+    } catch (error) {
+      console.error('Failed to setup WebSocket:', error);
+      setUseWebSocket(false);
+    }
+  };
+
+  const cleanupWebSocket = () => {
+    if (sessionId) {
+      websocketService.leaveChatSession(sessionId);
+    }
+    websocketService.off('connection_status', handleConnectionStatus);
+    websocketService.off('chat_response', handleChatResponse);
+    websocketService.off('typing', handleTyping);
+    websocketService.off('error', handleWebSocketError);
+  };
+
+  const handleConnectionStatus = (data) => {
+    setIsWebSocketConnected(data.connected);
+    if (data.connected && sessionId) {
+      websocketService.joinChatSession(sessionId);
+    }
+  };
+
+  const handleChatResponse = (data) => {
+    if (data.session_id !== sessionId) return;
+
+    const botMessage = {
+      id: Date.now(),
+      type: 'bot',
+      content: data.response,
+      timestamp: data.timestamp,
+      metadata: data.metadata
+    };
+
+    setMessages(prev => [...prev, botMessage]);
+    setLoading(false);
+    setTyping(false);
+  };
+
+  const handleTyping = (data) => {
+    if (data.session_id !== sessionId) return;
+    setTyping(data.typing);
+  };
+
+  const handleWebSocketError = (data) => {
+    const errorMessage = {
+      id: Date.now(),
+      type: 'bot',
+      content: data.message || 'Có lỗi xảy ra trong quá trình xử lý.',
+      timestamp: new Date().toISOString(),
+      isError: true,
+    };
+    setMessages(prev => [...prev, errorMessage]);
+    setLoading(false);
+    setTyping(false);
+  };
 
   const sendMessage = async () => {
     if (!inputMessage.trim()) return;
@@ -63,20 +173,32 @@ const ChatBot = React.memo(() => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const messageText = inputMessage;
     setInputMessage('');
     setLoading(true);
 
     try {
-      const response = await chatbotAPI.sendMessage(inputMessage);
-      
-      const botMessage = {
-        id: Date.now() + 1,
-        type: 'bot',
-        content: response.response,
-        timestamp: response.timestamp,
-      };
+      if (useWebSocket && isWebSocketConnected && sessionId) {
+        // Use WebSocket for real-time communication
+        websocketService.sendChatMessage(messageText, sessionId);
+      } else {
+        // Fall back to HTTP API
+        const response = await chatbotAPI.sendMessage({
+          message: messageText,
+          session_id: sessionId
+        });
+        
+        const botMessage = {
+          id: Date.now() + 1,
+          type: 'bot',
+          content: response.response,
+          timestamp: response.timestamp,
+          metadata: response.metadata
+        };
 
-      setMessages(prev => [...prev, botMessage]);
+        setMessages(prev => [...prev, botMessage]);
+        setLoading(false);
+      }
     } catch (error) {
       const errorMessage = {
         id: Date.now() + 1,
@@ -86,16 +208,28 @@ const ChatBot = React.memo(() => {
         isError: true,
       };
       setMessages(prev => [...prev, errorMessage]);
-    } finally {
       setLoading(false);
     }
   };
 
   const clearChat = () => {
+    // Generate new session ID for fresh conversation
+    const newSessionId = `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    setSessionId(newSessionId);
+
+    // Leave old session and join new one
+    if (isWebSocketConnected) {
+      websocketService.joinChatSession(newSessionId);
+    }
+
     const welcomeMessage = {
       id: 1,
       type: 'bot',
-      content: 'Cuộc trò chuyện đã được xóa. Bạn cần hỗ trợ gì ạ?',
+      content: `## 🔄 Cuộc trò chuyện mới đã được bắt đầu!
+
+Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành chính.
+
+> Bạn có câu hỏi gì không? 😊`,
       timestamp: new Date().toISOString(),
     };
     setMessages([welcomeMessage]);
@@ -109,10 +243,12 @@ const ChatBot = React.memo(() => {
   };
 
   const quickQuestions = [
-    'Làm thế nào để tải lên tài liệu?',
-    'Các định dạng file nào được hỗ trợ?',
-    'Làm sao để xóa tài liệu?',
-    'Hệ thống có giới hạn dung lượng file không?'
+    'Thủ tục làm căn cước công dân như thế nào?',
+    'Cần những giấy tờ gì để đăng ký thường trú?',
+    'Quy trình xin cấp hộ chiếu mới?',
+    'Thời gian xử lý hồ sơ là bao lâu?',
+    'Lệ phí các thủ tục hành chính?',
+    'Địa điểm nộp hồ sơ ở đâu?'
   ];
 
   const MessageItem = ({ message }) => (
@@ -146,20 +282,104 @@ const ChatBot = React.memo(() => {
           border: message.isError ? '1px solid #ffccc7' : '1px solid transparent',
           maxWidth: '100%',
           wordBreak: 'break-word',
-          whiteSpace: 'pre-wrap',
+          whiteSpace: message.type === 'user' ? 'pre-wrap' : 'normal',
           fontSize: 'clamp(13px, 2.5vw, 14px)',
           lineHeight: '1.5',
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
           transition: 'all 0.2s ease'
         }}>
-          <div>{message.content}</div>
+          <div className={message.type === 'bot' ? 'bot-message-content' : ''}>
+            {message.type === 'bot' ? (
+              <ReactMarkdown 
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  // Custom styling for markdown elements
+                  h1: ({children}) => <h1 style={{fontSize: '1.3em', fontWeight: 'bold', margin: '12px 0 8px 0', color: 'inherit'}}>{children}</h1>,
+                  h2: ({children}) => <h2 style={{fontSize: '1.2em', fontWeight: 'bold', margin: '10px 0 6px 0', color: 'inherit'}}>{children}</h2>,
+                  h3: ({children}) => <h3 style={{fontSize: '1.1em', fontWeight: 'bold', margin: '8px 0 4px 0', color: 'inherit'}}>{children}</h3>,
+                  p: ({children}) => <p style={{margin: '4px 0', color: 'inherit'}}>{children}</p>,
+                  ul: ({children}) => <ul style={{margin: '4px 0', paddingLeft: '20px', color: 'inherit'}}>{children}</ul>,
+                  ol: ({children}) => <ol style={{margin: '4px 0', paddingLeft: '20px', color: 'inherit'}}>{children}</ol>,
+                  li: ({children}) => <li style={{margin: '2px 0', color: 'inherit'}}>{children}</li>,
+                  strong: ({children}) => <strong style={{fontWeight: 'bold', color: 'inherit'}}>{children}</strong>,
+                  em: ({children}) => <em style={{fontStyle: 'italic', color: 'inherit'}}>{children}</em>,
+                  code: ({children, ...props}) => {
+                    return props.inline ? (
+                      <code style={{
+                        backgroundColor: 'rgba(0,0,0,0.1)', 
+                        padding: '2px 4px', 
+                        borderRadius: '3px',
+                        fontSize: '0.9em',
+                        color: 'inherit'
+                      }}>
+                        {children}
+                      </code>
+                    ) : (
+                      <pre style={{
+                        backgroundColor: 'rgba(0,0,0,0.1)', 
+                        padding: '8px', 
+                        borderRadius: '6px',
+                        overflow: 'auto',
+                        margin: '8px 0',
+                        fontSize: '0.9em',
+                        color: 'inherit'
+                      }}>
+                        <code>{children}</code>
+                      </pre>
+                    );
+                  },
+                  blockquote: ({children}) => (
+                    <blockquote style={{
+                      borderLeft: '3px solid rgba(0,0,0,0.2)',
+                      paddingLeft: '12px',
+                      margin: '8px 0',
+                      fontStyle: 'italic',
+                      color: 'inherit'
+                    }}>
+                      {children}
+                    </blockquote>
+                  )
+                }}
+              >
+                {message.content}
+              </ReactMarkdown>
+            ) : (
+              message.content
+            )}
+          </div>
           <div style={{
             fontSize: 'clamp(10px, 2vw, 11px)',
             opacity: 0.7,
             marginTop: '6px',
-            textAlign: message.type === 'user' ? 'right' : 'left'
+            textAlign: message.type === 'user' ? 'right' : 'left',
+            display: 'flex',
+            justifyContent: message.type === 'user' ? 'flex-end' : 'flex-start',
+            alignItems: 'center',
+            gap: '4px'
           }}>
             {moment(message.timestamp).format('HH:mm')}
+            {message.metadata?.rag_used && (
+              <span style={{
+                background: 'rgba(82, 196, 26, 0.1)',
+                color: '#52c41a',
+                padding: '1px 4px',
+                borderRadius: '4px',
+                fontSize: '10px'
+              }}>
+                RAG
+              </span>
+            )}
+            {message.metadata?.sources?.length > 0 && (
+              <span style={{
+                background: 'rgba(24, 144, 255, 0.1)',
+                color: '#1890ff',
+                padding: '1px 4px',
+                borderRadius: '4px',
+                fontSize: '10px'
+              }}>
+                {message.metadata.sources.length} nguồn
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -225,10 +445,21 @@ const ChatBot = React.memo(() => {
             <Space>
               <Avatar icon={<RobotFilled />} style={{ backgroundColor: '#52c41a', border: '2px solid rgba(255, 255, 255, 0.8)' }} />
               <div>
-                <Text strong>Trợ lý ảo</Text>
+                <Text strong style={{ fontFamily: "'MaisonNeue', 'Inter', sans-serif" }}>DVC.AI Trợ lý ảo</Text>
                 <br />
                 <Text type="secondary" style={{ fontSize: '12px' }}>
-                  <Tag color="green" size="small" style={{ borderRadius: '8px' }}>Trực tuyến</Tag>
+                  <Tag 
+                    color={isWebSocketConnected ? "green" : "orange"} 
+                    size="small" 
+                    style={{ borderRadius: '8px' }}
+                  >
+                    {isWebSocketConnected ? 'Kết nối Real-time' : 'Kết nối HTTP'}
+                  </Tag>
+                  {sessionId && (
+                    <Tag color="blue" size="small" style={{ borderRadius: '8px', marginLeft: '4px' }}>
+                      Phiên: {sessionId.slice(-8)}
+                    </Tag>
+                  )}
                 </Text>
               </div>
             </Space>
@@ -262,11 +493,11 @@ const ChatBot = React.memo(() => {
                 {messages.map((message) => (
                   <MessageItem key={message.id} message={message} />
                 ))}
-                {loading && (
+                {(loading || typing) && (
                   <div style={{ textAlign: 'center', margin: '16px 0' }}>
                     <Spin size="small" />
                     <Text type="secondary" style={{ marginLeft: '8px' }}>
-                      Đang trả lời...
+                      {typing ? 'DVC.AI đang soạn tin...' : 'Đang xử lý...'}
                     </Text>
                   </div>
                 )}
@@ -325,9 +556,13 @@ const ChatBot = React.memo(() => {
 
         {/* Quick Actions */}
         <Card
-          title="Câu hỏi thường gặp"
+          title={
+            <span style={{ fontFamily: "'MaisonNeue', 'Inter', sans-serif", color: '#D2691E' }}>
+              Câu hỏi thường gặp
+            </span>
+          }
           style={{ 
-            width: window.innerWidth <= 992 ? '100%' : 'clamp(280px, 25vw, 350px)',
+            width: window.innerWidth <= 992 ? '100%' : 'clamp(280px, 25vw, 380px)',
             minHeight: window.innerWidth <= 992 ? 'auto' : '300px'
           }}
           size="small"
@@ -358,11 +593,18 @@ const ChatBot = React.memo(() => {
           <Divider />
 
           <div style={{ textAlign: 'center' }}>
-            <Text type="secondary" style={{ fontSize: '12px' }}>
-              Cần hỗ trợ thêm?<br />
-              Liên hệ: support@domain.gov.vn<br />
-              Hotline: 1900-xxxx
+            <Text type="secondary" style={{ fontSize: '12px', fontFamily: "'MaisonNeue', 'Inter', sans-serif" }}>
+              Trợ lý ảo DVC.AI sử dụng RAG và Langraph<br />
+              <strong>Hỗ trợ 24/7:</strong> support@dvc.gov.vn<br />
+              <strong>Hotline:</strong> 1900-xxxx
             </Text>
+            {isWebSocketConnected && (
+              <div style={{ marginTop: '8px' }}>
+                <Tag color="green" size="small">
+                  ⚡ Real-time Active
+                </Tag>
+              </div>
+            )}
           </div>
         </Card>
       </div>

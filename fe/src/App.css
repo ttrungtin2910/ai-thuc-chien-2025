@@ -1,5 +1,113 @@
 /* Additional styles for App component */
 
+/* Bot Message Markdown Styling */
+.bot-message-content {
+  line-height: 1.6;
+}
+
+.bot-message-content h1 {
+  font-size: 1.3em !important;
+  font-weight: bold !important;
+  margin: 12px 0 8px 0 !important;
+  color: inherit !important;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+  padding-bottom: 4px;
+}
+
+.bot-message-content h2 {
+  font-size: 1.2em !important;
+  font-weight: bold !important;
+  margin: 10px 0 6px 0 !important;
+  color: inherit !important;
+}
+
+.bot-message-content h3 {
+  font-size: 1.1em !important;
+  font-weight: bold !important;
+  margin: 8px 0 4px 0 !important;
+  color: inherit !important;
+}
+
+.bot-message-content p {
+  margin: 4px 0 !important;
+  color: inherit !important;
+}
+
+.bot-message-content ul,
+.bot-message-content ol {
+  margin: 4px 0 !important;
+  padding-left: 20px !important;
+  color: inherit !important;
+}
+
+.bot-message-content li {
+  margin: 2px 0 !important;
+  color: inherit !important;
+}
+
+.bot-message-content strong {
+  font-weight: bold !important;
+  color: inherit !important;
+}
+
+.bot-message-content em {
+  font-style: italic !important;
+  color: inherit !important;
+}
+
+.bot-message-content code {
+  background-color: rgba(0,0,0,0.1) !important;
+  padding: 2px 4px !important;
+  border-radius: 3px !important;
+  font-size: 0.9em !important;
+  color: inherit !important;
+  font-family: 'Courier New', monospace !important;
+}
+
+.bot-message-content pre {
+  background-color: rgba(0,0,0,0.1) !important;
+  padding: 8px !important;
+  border-radius: 6px !important;
+  overflow: auto !important;
+  margin: 8px 0 !important;
+  font-size: 0.9em !important;
+  color: inherit !important;
+}
+
+.bot-message-content pre code {
+  background-color: transparent !important;
+  padding: 0 !important;
+  font-family: 'Courier New', monospace !important;
+}
+
+.bot-message-content blockquote {
+  border-left: 3px solid rgba(82, 196, 26, 0.6) !important;
+  padding-left: 12px !important;
+  margin: 8px 0 !important;
+  font-style: italic !important;
+  color: inherit !important;
+  background-color: rgba(82, 196, 26, 0.05) !important;
+  border-radius: 0 4px 4px 0 !important;
+}
+
+.bot-message-content table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  margin: 8px 0 !important;
+}
+
+.bot-message-content th,
+.bot-message-content td {
+  border: 1px solid rgba(0,0,0,0.2) !important;
+  padding: 4px 8px !important;
+  text-align: left !important;
+}
+
+.bot-message-content th {
+  background-color: rgba(0,0,0,0.1) !important;
+  font-weight: bold !important;
+}
+
 /* Bulk Upload Enhanced Styling */
 .earth-dragger {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

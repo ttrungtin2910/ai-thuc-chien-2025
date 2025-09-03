@@ -7,7 +7,8 @@
 ### 🚀 Tính năng chính
 - ✅ **Đăng nhập bảo mật** với JWT authentication
 - ✅ **Quản lý tài liệu** - Upload, xem, xóa file PDF và DOCX
-- ✅ **Chatbot hỗ trợ** - Tương tác với trợ lý ảo
+- ✅ **Chatbot hỗ trợ** - Tương tác với trợ lý ảo có Markdown rendering
+- ✅ **Virtual Assistant với Langraph** - AI workflow với memory và RAG integration
 - ✅ **Upload đồng loạt** - Hỗ trợ nhiều file cùng lúc với progress tracking
 - ✅ **WebSocket real-time** - Theo dõi tiến trình upload (Socket.IO)
 - ✅ **Google Cloud Storage** - Lưu trữ file trên cloud (uniform bucket access)
@@ -24,7 +25,8 @@
 - **Vector Database:** Milvus cho RAG và semantic search
 - **Storage:** Google Cloud Storage + Local uploads
 - **Authentication:** JWT tokens với centralized security module
-- **Real-time:** WebSocket + Socket.IO (ASGI integrated)
+- **Real-time:** WebSocket + Socket.IO (ASGI integrated) + Real-time Chat
+- **UI Rendering:** ReactMarkdown với GitHub Flavored Markdown support
 - **AI/ML:** OpenAI API (Direct) + RAG Pipeline + Vector Search
 - **Environment:** Windows-compatible với Conda
 - **Architecture:** Modular design với separation of concerns
@@ -757,9 +759,26 @@ python -c "from database import get_database_status; print(get_database_status()
 
 MIT License - Xem file LICENSE để biết chi tiết.
 
+## 💬 Chat System với Markdown Rendering
+
+### 🎨 Tính năng Chat Real-time
+- ✅ **WebSocket Communication**: Socket.IO với session management
+- ✅ **Markdown Support**: ReactMarkdown với GitHub Flavored Markdown  
+- ✅ **Virtual Assistant**: Langraph workflow với conversation memory
+- ✅ **Environment Configuration**: .env file loading với python-dotenv
+
+### 📦 New Dependencies Added
+```bash
+# Frontend
+npm install react-markdown remark-gfm
+
+# Backend đã có sẵn
+python-dotenv==1.0.0
+```
+
 ---
 
-**Phiên bản:** 3.2.0 (OpenAI Integration & Production Ready)  
+**Phiên bản:** 3.3.0 (Chat với Markdown + WebSocket Real-time)  
 **Cập nhật:** September 2025  
 **Tác giả:** AI Assistant  
 **Status:** ✅ Microservice Architecture + RAG + OpenAI API Integration complete  

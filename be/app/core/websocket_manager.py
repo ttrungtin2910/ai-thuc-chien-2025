@@ -110,6 +110,132 @@ class WebSocketManager:
         async def ping(sid, data):
             """Handle ping from client"""
             await self.sio.emit('pong', {'timestamp': data.get('timestamp')}, room=sid)
+        
+        @self.sio.event
+        async def chat_message(sid, data):
+            """Handle real-time chat message"""
+            try:
+                user_id = self.session_users.get(sid, 'anonymous')
+                message = data.get('message', '')
+                session_id = data.get('session_id')
+                
+                if not message.strip():
+                    await self.sio.emit('error', {'message': 'Tin nhắn không được rỗng'}, room=sid)
+                    return
+                
+                # Generate session ID if not provided
+                if not session_id:
+                    session_id = f"ws_{user_id}_{sid}"
+                
+                logger.info(f"Processing real-time chat message from {user_id}")
+                
+                # Import here to avoid circular imports
+                from ..services.virtual_assistant import virtual_assistant
+                
+                # Send typing indicator
+                await self.sio.emit('typing', {'session_id': session_id, 'typing': True}, room=sid)
+                
+                # Process message through virtual assistant
+                response_data = await virtual_assistant.chat(
+                    message=message,
+                    session_id=session_id,
+                    user_id=user_id
+                )
+                
+                # Stop typing indicator
+                await self.sio.emit('typing', {'session_id': session_id, 'typing': False}, room=sid)
+                
+                # Send response back to client
+                await self.sio.emit('chat_response', {
+                    'session_id': session_id,
+                    'response': response_data['response'],
+                    'timestamp': response_data['timestamp'],
+                    'metadata': response_data.get('metadata', {})
+                }, room=sid)
+                
+                logger.debug(f"Chat response sent to {user_id}")
+                
+            except Exception as e:
+                logger.error(f"Error processing chat message: {e}")
+                await self.sio.emit('error', {
+                    'message': f'Lỗi xử lý tin nhắn: {str(e)}',
+                    'session_id': data.get('session_id')
+                }, room=sid)
+        
+        @self.sio.event
+        async def join_chat_session(sid, data):
+            """Join a specific chat session room"""
+            try:
+                session_id = data.get('session_id')
+                if session_id:
+                    room_name = f"chat_{session_id}"
+                    await self.sio.enter_room(sid, room_name)
+                    await self.sio.emit('session_joined', {
+                        'session_id': session_id,
+                        'room': room_name
+                    }, room=sid)
+                    logger.debug(f"Session {sid} joined chat session {session_id}")
+            except Exception as e:
+                logger.error(f"Error joining chat session: {e}")
+                await self.sio.emit('error', {'message': f'Lỗi tham gia phiên chat: {str(e)}'}, room=sid)
+        
+        @self.sio.event
+        async def leave_chat_session(sid, data):
+            """Leave a specific chat session room"""
+            try:
+                session_id = data.get('session_id')
+                if session_id:
+                    room_name = f"chat_{session_id}"
+                    await self.sio.leave_room(sid, room_name)
+                    await self.sio.emit('session_left', {
+                        'session_id': session_id,
+                        'room': room_name
+                    }, room=sid)
+                    logger.debug(f"Session {sid} left chat session {session_id}")
+            except Exception as e:
+                logger.error(f"Error leaving chat session: {e}")
+        
+        @self.sio.event
+        async def get_chat_history(sid, data):
+            """Get chat history for a session via WebSocket"""
+            try:
+                session_id = data.get('session_id')
+                limit = data.get('limit', 20)
+                
+                if not session_id:
+                    await self.sio.emit('error', {'message': 'Session ID required'}, room=sid)
+                    return
+                
+                # Import here to avoid circular imports
+                from ..services.virtual_assistant import virtual_assistant
+                
+                # Get conversation history
+                messages = virtual_assistant.memory_service.get_conversation_history(
+                    session_id=session_id,
+                    limit=limit
+                )
+                
+                # Format messages
+                formatted_messages = []
+                for msg in messages:
+                    formatted_messages.append({
+                        "type": msg.__class__.__name__,
+                        "content": msg.content,
+                        "timestamp": str(msg)  # Can be enhanced with actual timestamps
+                    })
+                
+                await self.sio.emit('chat_history', {
+                    'session_id': session_id,
+                    'messages': formatted_messages,
+                    'total_count': len(formatted_messages)
+                }, room=sid)
+                
+            except Exception as e:
+                logger.error(f"Error getting chat history: {e}")
+                await self.sio.emit('error', {
+                    'message': f'Lỗi lấy lịch sử chat: {str(e)}',
+                    'session_id': data.get('session_id')
+                }, room=sid)
     
     async def send_to_user(self, user_id: str, data: dict):
         """Send message to all sessions of a specific user"""
