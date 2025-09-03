@@ -413,8 +413,9 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
         padding: 'clamp(16px, 3vw, 24px)',
         display: 'flex', 
         flexDirection: 'column',
-        minHeight: '600px',
-        overflow: 'auto'
+        height: '100vh',
+        maxHeight: '100vh',
+        overflow: 'hidden'
       }}
     >
       <div className="mb-4">
@@ -447,26 +448,31 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
             flex: 1, 
             display: 'flex', 
             flexDirection: 'column',
-            minHeight: window.innerWidth <= 992 ? '400px' : 'auto'
+            height: window.innerWidth <= 992 ? '70vh' : '75vh',
+            maxHeight: window.innerWidth <= 992 ? '70vh' : '75vh'
           }}
           bodyStyle={{ 
             display: 'flex', 
             flexDirection: 'column', 
             padding: 0, 
             height: '100%',
-            minHeight: 0
+            overflow: 'hidden'
           }}
         >
           {/* Chat Header */}
           <div style={{
             padding: '16px 24px',
             borderBottom: '1px solid #f0f0f0',
-            background: '#fafafa'
+            background: '#fafafa',
+            flexShrink: 0, // Prevent header from shrinking
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
           }}>
-            <Space>
+            <Space align="center">
               <Avatar icon={<RobotFilled />} style={{ backgroundColor: '#52c41a', border: '2px solid rgba(255, 255, 255, 0.8)' }} />
               <div>
-                <Text strong style={{ fontFamily: "'MaisonNeue', 'Inter', sans-serif" }}>DVC.AI Trợ lý ảo</Text>
+                <Text strong style={{ fontFamily: "'MaisonNeue', 'Inter', sans-serif", fontSize: '16px' }}>DVC.AI Trợ lý ảo</Text>
                 <br />
                 <Text type="secondary" style={{ fontSize: '12px' }}>
                   <Tag 
@@ -474,13 +480,8 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
                     size="small" 
                     style={{ borderRadius: '8px' }}
                   >
-                    {isWebSocketConnected ? 'Kết nối Real-time' : 'Kết nối HTTP'}
+                    {isWebSocketConnected ? 'Trực tuyến' : 'Kết nối HTTP'}
                   </Tag>
-                  {sessionId && (
-                    <Tag color="blue" size="small" style={{ borderRadius: '8px', marginLeft: '4px' }}>
-                      Phiên: {sessionId.slice(-8)}
-                    </Tag>
-                  )}
                 </Text>
               </div>
             </Space>
@@ -490,20 +491,31 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
               size="small"
               type="text"
               onClick={clearChat}
-              aria-label="Xóa cuộc trò chuyện"
-              style={{ float: 'right' }}
+              aria-label="Tạo cuộc trò chuyện mới"
+              style={{ 
+                borderRadius: '6px',
+                color: '#D2691E',
+                border: '1px solid rgba(210, 105, 30, 0.3)'
+              }}
             >
-              Xóa cuộc trò chuyện
+              Tạo cuộc trò chuyện mới
             </Button>
           </div>
 
           {/* Messages */}
-          <div style={{
-            flex: 1,
-            padding: '16px 24px',
-            overflowY: 'auto',
-            background: '#fafafa'
-          }}>
+          <div 
+            className="chat-messages-container"
+            style={{
+              flex: 1,
+              padding: '16px 24px',
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              background: '#fafafa',
+              height: 'calc(100% - 140px)', // Fixed height minus header and input
+              minHeight: 'calc(100% - 140px)',
+              maxHeight: 'calc(100% - 140px)'
+            }}
+          >
             {messages.length === 0 ? (
               <Empty
                 description="Chưa có tin nhắn"
@@ -531,7 +543,8 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
           <div style={{
             padding: 'clamp(12px, 3vw, 16px) clamp(16px, 4vw, 24px)',
             borderTop: '2px solid #f0f0f0',
-            background: 'linear-gradient(135deg, #fafafa 0%, #ffffff 100%)'
+            background: 'linear-gradient(135deg, #fafafa 0%, #ffffff 100%)',
+            flexShrink: 0 // Prevent input area from shrinking
           }}>
             <div style={{ 
               display: 'flex',

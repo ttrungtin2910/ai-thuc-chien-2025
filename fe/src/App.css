@@ -653,3 +653,41 @@
     border-radius: 12px !important;
   }
 }
+
+/* Chat Messages Container Scrollbar Styling */
+.chat-messages-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-messages-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+.chat-messages-container::-webkit-scrollbar-thumb {
+  background: rgba(210, 105, 30, 0.3);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.chat-messages-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(210, 105, 30, 0.5);
+}
+
+/* Smooth scrolling for the chat */
+.chat-messages-container {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
+}
+
+/* Mobile chat optimizations */
+@media (max-width: 768px) {
+  .chat-messages-container::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .chat-messages-container {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain; /* Prevent page scroll when at container boundaries */
+  }
+}
