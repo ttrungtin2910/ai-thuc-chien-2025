@@ -461,41 +461,78 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
         >
           {/* Chat Header */}
           <div style={{
-            padding: '16px 24px',
+            padding: '20px 28px',
             borderBottom: '1px solid #f0f0f0',
             background: '#fafafa',
             flexShrink: 0, // Prevent header from shrinking
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center'
+            alignItems: 'center',
+            minHeight: '80px'
           }}>
-            <Space align="center">
-              <Avatar icon={<RobotFilled />} style={{ backgroundColor: '#52c41a', border: '2px solid rgba(255, 255, 255, 0.8)' }} />
-              <div>
-                <Text strong style={{ fontFamily: "'MaisonNeue', 'Inter', sans-serif", fontSize: '16px' }}>DVC.AI Trợ lý ảo</Text>
-                <br />
-                <Text type="secondary" style={{ fontSize: '12px' }}>
+            <Space align="center" size="large">
+              <Avatar 
+                icon={<RobotFilled />} 
+                size="large"
+                style={{ 
+                  backgroundColor: '#52c41a', 
+                  border: '2px solid rgba(255, 255, 255, 0.8)',
+                  fontSize: '24px'
+                }} 
+              />
+              <div style={{ lineHeight: '1.2' }}>
+                <Text 
+                  strong 
+                  style={{ 
+                    fontFamily: "'MaisonNeue', 'Inter', sans-serif", 
+                    fontSize: '18px',
+                    color: '#333',
+                    display: 'block',
+                    marginBottom: '4px'
+                  }}
+                >
+                  DVC.AI Trợ lý ảo
+                </Text>
+                <div>
                   <Tag 
                     color={isWebSocketConnected ? "green" : "orange"} 
-                    size="small" 
-                    style={{ borderRadius: '8px' }}
+                    style={{ 
+                      borderRadius: '12px',
+                      fontSize: '11px',
+                      padding: '2px 8px',
+                      fontWeight: '500'
+                    }}
                   >
                     {isWebSocketConnected ? 'Trực tuyến' : 'Kết nối HTTP'}
                   </Tag>
-                </Text>
+                </div>
               </div>
             </Space>
             
             <Button
-              icon={<ReloadOutlined />}
-              size="small"
+              icon={<ReloadOutlined style={{ fontSize: '14px' }} />}
+              size="middle"
               type="text"
               onClick={clearChat}
               aria-label="Tạo cuộc trò chuyện mới"
               style={{ 
-                borderRadius: '6px',
+                borderRadius: '8px',
                 color: '#D2691E',
-                border: '1px solid rgba(210, 105, 30, 0.3)'
+                border: '1px solid rgba(210, 105, 30, 0.3)',
+                padding: '8px 16px',
+                height: 'auto',
+                fontSize: '14px',
+                fontWeight: '500',
+                background: 'rgba(210, 105, 30, 0.05)',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'rgba(210, 105, 30, 0.1)';
+                e.target.style.borderColor = 'rgba(210, 105, 30, 0.5)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'rgba(210, 105, 30, 0.05)';
+                e.target.style.borderColor = 'rgba(210, 105, 30, 0.3)';
               }}
             >
               Tạo cuộc trò chuyện mới
