@@ -1,5 +1,5 @@
 """
-Chatbot API Routes - Using Enhanced Virtual Assistant with Advanced Agent Architecture
+Enhanced Chatbot API Routes - Using Advanced Agent Architecture
 """
 
 import uuid
@@ -12,12 +12,12 @@ from ..models.chatbot import ChatMessage, ChatResponse, ChatSessionInfo, ChatHis
 from ..core.security import verify_token
 from ..services.enhanced_virtual_assistant import enhanced_virtual_assistant
 
-router = APIRouter(prefix="/chatbot", tags=["chatbot"])
+router = APIRouter(prefix="/enhanced-chatbot", tags=["enhanced-chatbot"])
 logger = logging.getLogger(__name__)
 
 
 @router.post("/message", response_model=ChatResponse)
-async def chatbot_message(
+async def enhanced_chatbot_message(
     message: ChatMessage,
     username: str = Depends(verify_token)
 ):
@@ -27,7 +27,7 @@ async def chatbot_message(
         # Generate session ID if not provided
         session_id = message.session_id or str(uuid.uuid4())
         
-        logger.info(f"Processing message for user {username}, session {session_id}")
+        logger.info(f"Processing enhanced message for user {username}, session {session_id}")
         
         # Process message through enhanced virtual assistant
         response_data = await enhanced_virtual_assistant.chat(
@@ -44,7 +44,7 @@ async def chatbot_message(
         )
         
     except Exception as e:
-        logger.error(f"Error processing chatbot message: {e}")
+        logger.error(f"Error processing enhanced chatbot message: {e}")
         raise HTTPException(
             status_code=500,
             detail=f"Lỗi xử lý tin nhắn: {str(e)}"
@@ -52,11 +52,11 @@ async def chatbot_message(
 
 
 @router.get("/session/{session_id}", response_model=ChatSessionInfo)
-async def get_session_info(
+async def get_enhanced_session_info(
     session_id: str,
     username: str = Depends(verify_token)
 ):
-    """Get information about a chat session"""
+    """Get information about an enhanced chat session"""
     
     try:
         session_info = enhanced_virtual_assistant.get_session_info(session_id)
@@ -66,11 +66,11 @@ async def get_session_info(
             message_count=session_info.get("message_count", 0),
             last_activity=session_info.get("last_activity"),
             recent_messages=session_info.get("recent_messages", []),
-            rag_connected=session_info.get("rag_connected", False)
+            rag_connected=session_info.get("connected", False)
         )
         
     except Exception as e:
-        logger.error(f"Error getting session info: {e}")
+        logger.error(f"Error getting enhanced session info: {e}")
         raise HTTPException(
             status_code=500,
             detail=f"Lỗi lấy thông tin phiên: {str(e)}"
@@ -78,12 +78,12 @@ async def get_session_info(
 
 
 @router.get("/history/{session_id}", response_model=ChatHistory)
-async def get_chat_history(
+async def get_enhanced_chat_history(
     session_id: str,
     limit: int = 20,
     username: str = Depends(verify_token)
 ):
-    """Get chat history for a session"""
+    """Get chat history for an enhanced session"""
     
     try:
         # Get conversation history from memory service
@@ -98,7 +98,7 @@ async def get_chat_history(
             formatted_messages.append({
                 "type": msg.__class__.__name__,
                 "content": msg.content,
-                "timestamp": datetime.now().isoformat()  # We can enhance this with actual timestamps
+                "timestamp": datetime.now().isoformat()  # Could be enhanced with actual timestamps
             })
         
         return ChatHistory(
@@ -108,87 +108,56 @@ async def get_chat_history(
         )
         
     except Exception as e:
-        logger.error(f"Error getting chat history: {e}")
+        logger.error(f"Error getting enhanced chat history: {e}")
         raise HTTPException(
             status_code=500,
             detail=f"Lỗi lấy lịch sử trò chuyện: {str(e)}"
         )
 
 
+@router.get("/status")
+async def get_enhanced_chatbot_status(username: str = Depends(verify_token)) -> Dict[str, Any]:
+    """Get enhanced chatbot service status"""
+    
+    try:
+        return enhanced_virtual_assistant.get_service_status()
+        
+    except Exception as e:
+        logger.error(f"Error getting enhanced status: {e}")
+        return {
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
+
 @router.post("/session/new")
-async def create_new_session(username: str = Depends(verify_token)) -> Dict[str, str]:
-    """Create a new chat session"""
+async def create_enhanced_session(username: str = Depends(verify_token)) -> Dict[str, str]:
+    """Create a new enhanced chat session"""
     
     try:
         session_id = str(uuid.uuid4())
         
-        logger.info(f"Created new chat session {session_id} for user {username}")
+        logger.info(f"Created new enhanced chat session {session_id} for user {username}")
         
         return {
             "session_id": session_id,
-            "message": "Phiên trò chuyện mới đã được tạo",
+            "message": "Phiên trò chuyện nâng cao mới đã được tạo",
+            "agent_type": "enhanced",
             "timestamp": datetime.now().isoformat()
         }
         
     except Exception as e:
-        logger.error(f"Error creating new session: {e}")
+        logger.error(f"Error creating enhanced session: {e}")
         raise HTTPException(
             status_code=500,
             detail=f"Lỗi tạo phiên mới: {str(e)}"
         )
 
 
-@router.delete("/session/{session_id}")
-async def delete_session(
-    session_id: str,
-    username: str = Depends(verify_token)
-) -> Dict[str, str]:
-    """Delete a chat session and its history"""
-    
-    try:
-        # Note: This is a placeholder. You might want to implement actual session deletion
-        # in the conversation memory service
-        
-        logger.info(f"Session {session_id} deletion requested by user {username}")
-        
-        return {
-            "message": f"Phiên {session_id} đã được đánh dấu để xóa",
-            "timestamp": datetime.now().isoformat()
-        }
-        
-    except Exception as e:
-        logger.error(f"Error deleting session: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Lỗi xóa phiên: {str(e)}"
-        )
-
-
-@router.get("/sessions")
-async def get_user_sessions(username: str = Depends(verify_token)) -> Dict[str, Any]:
-    """Get all active sessions for a user"""
-    
-    try:
-        sessions = enhanced_virtual_assistant.memory_service.get_active_sessions(user_id=username)
-        
-        return {
-            "user_id": username,
-            "sessions": sessions,
-            "total_count": len(sessions),
-            "timestamp": datetime.now().isoformat()
-        }
-        
-    except Exception as e:
-        logger.error(f"Error getting user sessions: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Lỗi lấy danh sách phiên: {str(e)}"
-        )
-
-
 @router.post("/cleanup")
-async def cleanup_old_sessions(username: str = Depends(verify_token)) -> Dict[str, str]:
-    """Clean up old conversation sessions (admin function)"""
+async def cleanup_enhanced_sessions(username: str = Depends(verify_token)) -> Dict[str, str]:
+    """Clean up old enhanced conversation sessions (admin function)"""
     
     try:
         # Only allow admin users to run cleanup
@@ -201,32 +170,15 @@ async def cleanup_old_sessions(username: str = Depends(verify_token)) -> Dict[st
         enhanced_virtual_assistant.cleanup_old_sessions()
         
         return {
-            "message": "Đã dọn dẹp các phiên cũ thành công",
+            "message": "Đã dọn dẹp các phiên nâng cao thành công",
             "timestamp": datetime.now().isoformat()
         }
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in cleanup: {e}")
+        logger.error(f"Error in enhanced cleanup: {e}")
         raise HTTPException(
             status_code=500,
             detail=f"Lỗi dọn dẹp: {str(e)}"
         )
-
-
-@router.get("/status")
-async def get_chatbot_status(username: str = Depends(verify_token)) -> Dict[str, Any]:
-    """Get chatbot service status"""
-    
-    try:
-        # Get enhanced service status
-        return enhanced_virtual_assistant.get_service_status()
-        
-    except Exception as e:
-        logger.error(f"Error getting status: {e}")
-        return {
-            "status": "error",
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
-        }

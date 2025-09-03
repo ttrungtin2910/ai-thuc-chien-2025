@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .core.config import Config
 from .core.websocket_manager import websocket_manager
-from .api import auth, documents, chatbot, rag, websocket
+from .api import auth, documents, chatbot, rag, websocket, enhanced_chatbot
 
 # Create FastAPI application
 app = FastAPI(
@@ -34,6 +34,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix=Config.API_V1_PREFIX)
 app.include_router(documents.router, prefix=Config.API_V1_PREFIX)
 app.include_router(chatbot.router, prefix=Config.API_V1_PREFIX)
+app.include_router(enhanced_chatbot.router, prefix=Config.API_V1_PREFIX)
 app.include_router(rag.router, prefix=Config.API_V1_PREFIX)
 app.include_router(websocket.router, prefix=Config.API_V1_PREFIX)
 
