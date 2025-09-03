@@ -10,14 +10,18 @@ import {
   Empty,
   Spin,
   Divider,
-  Tag
+  Tag,
+  Modal,
+  Descriptions
 } from 'antd';
 import {
   SendOutlined,
   RobotFilled,
   UserOutlined,
   ReloadOutlined,
-  MessageFilled
+  MessageFilled,
+  FileTextOutlined,
+  InfoCircleOutlined
 } from '@ant-design/icons';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -37,6 +41,8 @@ const ChatBot = React.memo(() => {
   const [sessionId, setSessionId] = useState(null);
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
   const [useWebSocket, setUseWebSocket] = useState(true);
+  const [sourcesModalVisible, setSourcesModalVisible] = useState(false);
+  const [selectedSources, setSelectedSources] = useState([]);
   const messagesEndRef = useRef(null);
   const { user } = useAuth();
 
@@ -358,25 +364,40 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
             gap: '4px'
           }}>
             {moment(message.timestamp).format('HH:mm')}
-            {message.metadata?.rag_used && (
+            {message.metadata && (
               <span style={{
-                background: 'rgba(82, 196, 26, 0.1)',
-                color: '#52c41a',
+                background: message.metadata.rag_used ? 'rgba(82, 196, 26, 0.1)' : 'rgba(64, 169, 255, 0.1)',
+                color: message.metadata.rag_used ? '#52c41a' : '#40a9ff',
                 padding: '1px 4px',
                 borderRadius: '4px',
                 fontSize: '10px'
               }}>
-                RAG
+                {message.metadata.rag_used ? 'RAG' : 'NORMAL'}
               </span>
             )}
             {message.metadata?.sources?.length > 0 && (
-              <span style={{
-                background: 'rgba(24, 144, 255, 0.1)',
-                color: '#1890ff',
-                padding: '1px 4px',
-                borderRadius: '4px',
-                fontSize: '10px'
-              }}>
+              <span 
+                style={{
+                  background: 'rgba(24, 144, 255, 0.1)',
+                  color: '#1890ff',
+                  padding: '1px 4px',
+                  borderRadius: '4px',
+                  fontSize: '10px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onClick={() => {
+                  setSelectedSources(message.metadata.sources);
+                  setSourcesModalVisible(true);
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(24, 144, 255, 0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(24, 144, 255, 0.1)';
+                }}
+              >
+                <InfoCircleOutlined style={{ marginRight: '2px' }} />
                 {message.metadata.sources.length} nguồn
               </span>
             )}
@@ -608,6 +629,97 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
           </div>
         </Card>
       </div>
+
+      {/* Sources Detail Modal */}
+      <Modal
+        title={
+          <Space>
+            <FileTextOutlined style={{ color: '#1890ff' }} />
+            <span>Chi tiết nguồn tài liệu</span>
+          </Space>
+        }
+        open={sourcesModalVisible}
+        onCancel={() => setSourcesModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setSourcesModalVisible(false)}>
+            Đóng
+          </Button>
+        ]}
+        width={800}
+        style={{ top: 20 }}
+      >
+        <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+          {selectedSources.map((source, index) => (
+            <Card
+              key={index}
+              size="small"
+              style={{
+                marginBottom: '16px',
+                border: '1px solid #f0f0f0',
+                borderRadius: '8px'
+              }}
+              title={
+                <Space>
+                  <FileTextOutlined style={{ color: '#52c41a' }} />
+                  <Text strong style={{ color: '#D2691E' }}>
+                    Nguồn {index + 1}: {source.title || source.file_name}
+                  </Text>
+                </Space>
+              }
+              extra={
+                <Tag color="blue">
+                  Độ liên quan: {(source.score * 100).toFixed(1)}%
+                </Tag>
+              }
+            >
+              <Descriptions
+                column={1}
+                size="small"
+                bordered
+                style={{ marginBottom: '12px' }}
+              >
+                <Descriptions.Item label="Tên file">
+                  <Text code>{source.file_name}</Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Phần/Mục">
+                  <Text>{source.section || 'Không xác định'}</Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Độ tin cậy">
+                  <Space>
+                    <Text>{(source.score * 100).toFixed(2)}%</Text>
+                    <Tag color={source.score > 0.8 ? 'green' : source.score > 0.6 ? 'orange' : 'red'}>
+                      {source.score > 0.8 ? 'Cao' : source.score > 0.6 ? 'Trung bình' : 'Thấp'}
+                    </Tag>
+                  </Space>
+                </Descriptions.Item>
+              </Descriptions>
+              
+              <div>
+                <Text strong style={{ color: '#666' }}>Nội dung trích xuất:</Text>
+                <div style={{
+                  background: '#f9f9f9',
+                  padding: '12px',
+                  borderRadius: '6px',
+                  marginTop: '8px',
+                  border: '1px solid #e8e8e8'
+                }}>
+                  <Text style={{ 
+                    fontSize: '13px', 
+                    lineHeight: '1.6',
+                    color: '#333'
+                  }}>
+                    {source.content_preview || source.content || 'Không có nội dung preview'}
+                  </Text>
+                </div>
+              </div>
+            </Card>
+          ))}
+          
+          {selectedSources.length === 0 && (
+            <Empty description="Không có nguồn tài liệu nào" />
+          )}
+        </div>
+      </Modal>
     </div>
   );
 });
