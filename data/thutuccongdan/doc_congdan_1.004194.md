@@ -197,3 +197,4 @@ Văn phòng Chính phủ
 - Đối với hồ sơ trực tuyến, không bắt buộc phải công chứng, chứng thực, ký số
 - Có thể sử dụng bản quét, bản chụp thay vì bản sao có chứng thực
 - Có nhiều trường hợp đặc biệt cần lưu ý khi đăng ký tạm trú
+

@@ -136,3 +136,4 @@ Văn phòng Chính phủ
 - Đối với hồ sơ trực tuyến, cần chứng thực điện tử hoặc gửi bổ sung qua bưu chính
 - Đối với người đặc biệt, người đại diện hợp pháp có thể khai và ký thay
 - Có thể bổ sung hồ sơ qua dịch vụ bưu chính công ích nếu cần thiết
+

@@ -123,3 +123,4 @@ Văn phòng Chính phủ
 - Đối với trường hợp trở lại quốc tịch Việt Nam, thực hiện như thủ tục cấp mới
 - Cần kiểm tra và ký xác nhận các phiếu thu thập thông tin
 - Có thể nhận kết quả bằng nhiều hình thức khác nhau
+

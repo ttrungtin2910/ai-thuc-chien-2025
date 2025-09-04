@@ -140,3 +140,4 @@ Văn phòng Chính phủ
 - Có thể nộp hồ sơ tại Trung tâm phục vụ hành chính công (nếu đã triển khai)
 - Có thể nhận kết quả bằng nhiều hình thức khác nhau
 - Cần kiểm tra và ký xác nhận các phiếu thu thập thông tin
+

@@ -133,3 +133,5 @@ Văn phòng Chính phủ
 - Có các mẫu phiếu khác nhau tùy thuộc vào tình trạng hồ sơ
 - Đối với người chưa thành niên, người đại diện hợp pháp có thể thực hiện khai báo thay
 - Nội dung khai báo cần đầy đủ thông tin cá nhân, lý do, thời gian và địa chỉ tạm vắng
+
+

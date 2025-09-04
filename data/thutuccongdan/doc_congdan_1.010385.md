@@ -115,3 +115,5 @@ Văn phòng Chính phủ
 - Hộ chiếu bị mất sẽ được hủy giá trị sử dụng
 - Có thể nộp hồ sơ tại trụ sở Công an cấp huyện nơi gần nhất
 - Có thể sử dụng các cổng dịch vụ công trực tuyến để nộp hồ sơ
+
+

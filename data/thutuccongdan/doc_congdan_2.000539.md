@@ -124,3 +124,4 @@ Văn phòng Chính phủ
 - Đối với người đặc biệt (mất năng lực, chưa đủ 14 tuổi), cần người đại diện hợp pháp
 - Thời hạn nộp đơn báo mất là 02 ngày làm việc kể từ ngày phát hiện mất
 - Có thể gia hạn thời hạn nộp đơn trong trường hợp bất khả kháng
+

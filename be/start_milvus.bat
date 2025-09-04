@@ -41,3 +41,5 @@ echo    echo OPENAI_API_KEY=sk-your-key-here > .env
 echo.
 pause
 
+
+

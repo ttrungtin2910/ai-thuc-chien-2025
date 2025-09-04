@@ -98,3 +98,4 @@ Văn phòng Chính phủ
 - Cần kiểm tra và ký xác nhận các phiếu thu thập thông tin
 - Có thể nhận kết quả bằng nhiều hình thức khác nhau
 - Cần thu thẻ căn cước cũ khi thực hiện thủ tục
+

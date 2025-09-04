@@ -131,3 +131,4 @@ Văn phòng Chính phủ
 - Đối với người trở lại quốc tịch Việt Nam, thực hiện như cấp mới
 - Đối với người dưới 14 tuổi, cần người đại diện hợp pháp
 - Có thể nhận kết quả bằng nhiều hình thức khác nhau
+

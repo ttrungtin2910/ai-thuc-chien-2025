@@ -111,3 +111,4 @@ Văn phòng Chính phủ
 - Đối với người đặc biệt, người đại diện hợp pháp có thể khai và ký thay
 - Kết quả được thông báo bằng văn bản
 - Hộ chiếu bị mất sẽ được hủy giá trị sử dụng
+

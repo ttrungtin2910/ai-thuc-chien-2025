@@ -40,3 +40,5 @@ echo "💡 Note: Make sure you have set OPENAI_API_KEY in your environment"
 echo "   echo 'OPENAI_API_KEY=sk-your-key-here' > .env"
 echo ""
 
+
+

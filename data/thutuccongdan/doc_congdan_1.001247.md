@@ -103,3 +103,4 @@ Văn phòng Chính phủ
 - Có thể nhận kết quả bằng nhiều hình thức khác nhau
 - Cần thu thẻ Căn cước công dân cũ (nếu có) khi thực hiện thủ tục
 - Đối tượng áp dụng: người từ đủ 14 tuổi trở lên
+

@@ -99,3 +99,4 @@ Văn phòng Chính phủ
 - Có nhiều đối tượng có trách nhiệm thông báo lưu trú khác nhau
 - Thời gian thông báo phải tuân thủ quy định cụ thể
 - Có trường hợp miễn thông báo nhiều lần đối với người thân ruột thịt
+

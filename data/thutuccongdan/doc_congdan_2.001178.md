@@ -103,3 +103,4 @@ Văn phòng Chính phủ
 - Đối với thông tin chưa có trong CSDL: 07 ngày làm việc
 - Đối với thông tin đã có trong CSDL: 03 ngày làm việc
 - Có thể nhận kết quả bằng nhiều hình thức khác nhau
+

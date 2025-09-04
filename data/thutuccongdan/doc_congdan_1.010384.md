@@ -135,3 +135,5 @@ Văn phòng Chính phủ
 - Đối với người đặc biệt, người đại diện hợp pháp có thể khai và ký thay
 - Có thể bổ sung hồ sơ qua dịch vụ bưu chính công ích nếu cần thiết
 - Có thể yêu cầu nhận kết quả qua bưu chính khi nộp hồ sơ trực tuyến
+
+

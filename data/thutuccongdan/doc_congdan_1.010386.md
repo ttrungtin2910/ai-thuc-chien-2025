@@ -116,3 +116,5 @@ Văn phòng Chính phủ
 - Có thể nộp hồ sơ tại trụ sở Công an cấp xã nơi gần nhất
 - Có thể sử dụng các cổng dịch vụ công trực tuyến để nộp hồ sơ
 - Đây là cấp thấp nhất trong hệ thống hành chính để thực hiện thủ tục này
+
+
