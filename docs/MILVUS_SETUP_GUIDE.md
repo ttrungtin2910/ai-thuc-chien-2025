@@ -11,7 +11,30 @@ cd be
 pip install -r requirements.txt
 ```
 
-### 2. Khởi động Milvus với Docker
+### 2. Cài đặt Docker Compose (nếu cần)
+
+**Trên Ubuntu:**
+```bash
+# Cài đặt Docker Compose plugin (khuyến nghị)
+sudo apt-get update
+sudo apt-get install docker-compose-plugin
+
+# Hoặc chạy script tự động
+cd be
+chmod +x scripts/install_docker_compose_ubuntu.sh
+./scripts/install_docker_compose_ubuntu.sh
+```
+
+**Kiểm tra Docker Compose:**
+```bash
+# Kiểm tra phiên bản mới (v2)
+docker compose version
+
+# Hoặc phiên bản cũ (v1)
+docker-compose --version
+```
+
+### 3. Khởi động Milvus với Docker
 
 **Trên Windows:**
 ```cmd
@@ -22,10 +45,13 @@ start_milvus.bat
 **Trên Linux/macOS:**
 ```bash
 cd be
+chmod +x start_milvus.sh
 ./start_milvus.sh
 ```
 
-### 3. Load documents vào Milvus
+**Lưu ý:** Script sẽ tự động phát hiện và sử dụng phiên bản Docker Compose có sẵn (v1 hoặc v2).
+
+### 4. Load documents vào Milvus
 ```bash
 cd be
 python load_documents_to_milvus.py
