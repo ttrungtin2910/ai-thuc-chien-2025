@@ -86,8 +86,8 @@ docker compose logs -f
 # Restart specific service
 docker compose restart backend
 
-# Quick troubleshooting
-./quick-fix.sh
+# Quick troubleshooting  
+./setup-docker.sh           # Fix Docker permissions
 ```
 
 ---
@@ -120,7 +120,6 @@ docker compose restart backend
 ├── 🚀 docker-build.sh      # Main deployment script
 ├── 🛠️ setup-docker.sh      # Docker setup (first time)
 ├── ▶️  start.sh             # Start existing containers
-├── 🔧 quick-fix.sh         # Troubleshooting helper
 └── 🐳 docker-compose.yml   # Docker orchestration
 ```
 

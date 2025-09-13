@@ -436,8 +436,8 @@ docker-compose logs -f | grep -i error
 
 ### **Health Check Commands**
 ```bash
-# System health
-./quick-fix.sh
+# Fix Docker permissions and setup
+./setup-docker.sh
 
 # Service health
 docker-compose ps
