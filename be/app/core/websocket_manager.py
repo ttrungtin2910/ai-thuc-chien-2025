@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class WebSocketManager:
     def __init__(self):
         self.sio = socketio.AsyncServer(
-            cors_allowed_origins="*",  # Allow all origins for now, can be restricted later
+            cors_allowed_origins=Config.WEBSOCKET_CORS_ORIGINS + ["*"],  # Allow configured origins plus all others for flexibility
             async_mode='asgi'
         )
         

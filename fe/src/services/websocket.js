@@ -18,7 +18,9 @@ class WebSocketService {
 
     const token = Cookies.get('access_token');
     
-    this.socket = io('http://localhost:8001', {
+    const wsUrl = process.env.REACT_APP_WS_URL || 'http://localhost:8001';
+    
+    this.socket = io(wsUrl, {
       auth: {
         user_id: userId,
         token: token

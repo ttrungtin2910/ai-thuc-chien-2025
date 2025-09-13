@@ -14,9 +14,10 @@ logger = logging.getLogger(__name__)
 class WebSocketManager:
     def __init__(self):
         """Initialize WebSocket manager with Socket.IO"""
+        from .config import Config
         self.sio = socketio.AsyncServer(
             async_mode='asgi',
-            cors_allowed_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+            cors_allowed_origins=Config.WEBSOCKET_CORS_ORIGINS + ["*"],
             logger=False,
             engineio_logger=False
         )
