@@ -82,6 +82,9 @@ dist/
 .env.development.local
 .env.test.local
 .env.production.local
+*/.env
+be/.env
+fe/.env
 
 # Temporary files
 *.tmp
