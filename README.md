@@ -1,114 +1,169 @@
-# DVC.AI - Virtual Assistant Platform
+# 🚀 DVC.AI - Virtual Assistant Platform
 
 DVC.AI là một nền tảng trợ lý ảo thông minh được xây dựng với kiến trúc microservices, tích hợp các công nghệ AI tiên tiến để cung cấp dịch vụ hỗ trợ công dân trong các thủ tục hành chính.
 
-## 🚀 Tính năng chính
+## ✨ **Tính năng chính**
 
-- **Chatbot thông minh**: Tích hợp LangChain và OpenAI để trả lời câu hỏi về thủ tục hành chính
-- **RAG System**: Hệ thống Retrieval-Augmented Generation để tìm kiếm thông tin chính xác
-- **Vector Database**: Sử dụng Milvus để lưu trữ và tìm kiếm vector embeddings
-- **WebSocket**: Giao tiếp real-time với người dùng
-- **Microservices**: Kiến trúc tách biệt giữa frontend, backend, và các dịch vụ hỗ trợ
-- **Docker**: Triển khai dễ dàng với containerization
+- 🤖 **AI Chatbot**: Tích hợp LangChain và OpenAI GPT-4
+- 📚 **RAG System**: Retrieval-Augmented Generation cho tìm kiếm thông tin chính xác  
+- 🗄️ **Vector Database**: Milvus để lưu trữ và tìm kiếm embeddings
+- ⚡ **Real-time**: WebSocket communication
+- 🏗️ **Microservices**: Kiến trúc tách biệt, dễ scale
+- 🐳 **Docker**: Triển khai container hóa hoàn toàn
 
-## 📁 Cấu trúc dự án
+## 🏁 **Khởi động nhanh (Ubuntu/Linux)**
+
+```bash
+# 1. Clone repository
+git clone <repository-url>
+cd dvc-ai-project
+
+# 2. Setup Docker (chỉ lần đầu)
+chmod +x setup-docker.sh && ./setup-docker.sh
+
+# 3. Deploy DVC.AI  
+chmod +x docker-build.sh && ./docker-build.sh
+
+# 4. Truy cập ứng dụng
+# Frontend: http://localhost:3000
+# Backend: http://localhost:8001
+# API Docs: http://localhost:8001/docs
+```
+
+## 📁 **Cấu trúc dự án**
 
 ```
-├── fe/                 # Frontend (React.js)
-├── be/                 # Backend (FastAPI + Python)
-├── docs/               # Tài liệu hướng dẫn
-├── data/               # Dữ liệu thủ tục công dân
-└── docker-compose.yml  # Docker orchestration
+dvc-ai-project/
+├── 🎨 fe/                     # Frontend (React.js)
+├── ⚙️  be/                     # Backend (FastAPI + Python)  
+├── 📚 docs/                   # Documentation
+├── 📊 data/                   # Dữ liệu thủ tục công dân
+├── 🐳 docker-compose.yml      # Docker orchestration
+├── 🚀 docker-build.sh         # Deployment script
+├── 🛠️ setup-docker.sh         # Docker setup
+├── ▶️  start.sh               # Start services
+└── 🔧 quick-fix.sh           # Fix common issues
 ```
 
-## 🛠️ Hướng dẫn cài đặt và triển khai
+## 🛠️ **Scripts & Commands**
 
-### 📚 Tài liệu hướng dẫn
+| Script | Mục đích | Khi nào sử dụng |
+|--------|----------|------------------|
+| `setup-docker.sh` | Cài đặt Docker & permissions | Lần đầu setup |
+| `docker-build.sh` | Build & deploy toàn bộ | Deploy chính, cập nhật lớn |
+| `start.sh` | Start containers có sẵn | Khởi động hàng ngày |
+| `quick-fix.sh` | Fix lỗi thường gặp | Troubleshooting |
 
-Tất cả các hướng dẫn chi tiết đã được tổ chức trong thư mục `docs/`:
+### **Thao tác hàng ngày:**
 
-#### 🚀 Bắt đầu nhanh
-- **[Quick Start Guide](docs/QUICK_START.md)** - Hướng dẫn cài đặt và chạy nhanh dự án
+```bash
+# Khởi động services
+./start.sh
 
-#### 🏗️ Triển khai và Docker
-- **[Docker Deployment Guide](docs/DOCKER_DEPLOYMENT_GUIDE.md)** - Hướng dẫn triển khai với Docker
-- **[Rebuild Deploy Guide](docs/REBUILD_DEPLOY_GUIDE.md)** - Hướng dẫn rebuild và deploy lại
+# Dừng services  
+docker compose down
 
-#### 🏛️ Kiến trúc và cấu trúc
-- **[Complete Guide](docs/COMPLETE_GUIDE.md)** - Hướng dẫn tổng quan và đầy đủ
-- **[Microservice Structure](docs/MICROSERVICE_STRUCTURE.md)** - Kiến trúc microservices
-- **[Vector Database Structure](docs/VECTOR_DB_STRUCTURE.md)** - Cấu trúc cơ sở dữ liệu vector
+# Xem logs
+docker compose logs -f
 
-#### 🤖 AI và Virtual Assistant
-- **[Virtual Assistant Guide](docs/VIRTUAL_ASSISTANT_GUIDE.md)** - Hướng dẫn về trợ lý ảo
-- **[Enhanced Agent Guide](docs/ENHANCED_AGENT_GUIDE.md)** - Hướng dẫn về enhanced agent
-- **[Milvus Setup Guide](docs/MILVUS_SETUP_GUIDE.md)** - Cài đặt và cấu hình Milvus
+# Restart service cụ thể
+docker compose restart backend
+```
 
-### ⚡ Khởi động nhanh
+## 🌐 **Truy cập ứng dụng**
 
-1. **Clone repository:**
-   ```bash
-   git clone <repository-url>
-   cd 02-AI-ThucChien
-   ```
+Sau khi deploy thành công:
 
-2. **Chạy với Docker (Khuyến nghị):**
-   ```bash
-   # Windows
-   docker-build.bat
-   
-   # Linux/Mac
-   ./docker-build.sh
-   ```
+- **🎨 Frontend**: http://localhost:3000
+- **⚙️ Backend API**: http://localhost:8001  
+- **📖 API Documentation**: http://localhost:8001/docs
+- **🗄️ MongoDB**: localhost:27017 (admin/dvcai2025)
+- **🔴 Redis**: localhost:6379
+- **🔍 Milvus**: localhost:19530
 
-3. **Truy cập ứng dụng:**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000
-   - Milvus Dashboard: http://localhost:3001
+## 📚 **Tài liệu chi tiết**
 
-## 🔧 Công nghệ sử dụng
+### **📋 Deployment:**
+- **[🚀 Deployment Guide](DEPLOYMENT_GUIDE.md)** - Hướng dẫn deployment Ubuntu/Linux đầy đủ
+- **[🐳 Docker Setup](setup-docker.sh)** - Script setup Docker tự động
 
-### Backend
-- **FastAPI** - Web framework
-- **LangChain** - LLM framework
-- **OpenAI** - AI API
-- **Milvus** - Vector database
-- **MongoDB** - Document database
-- **Redis** - Cache và message broker
-- **Celery** - Background tasks
+### **🏗️ Architecture:**
+- **[📐 Complete Guide](docs/COMPLETE_GUIDE.md)** - Hướng dẫn tổng quan
+- **[🏛️ Microservice Structure](docs/MICROSERVICE_STRUCTURE.md)** - Kiến trúc microservices
+- **[🗄️ Vector Database](docs/VECTOR_DB_STRUCTURE.md)** - Cấu trúc Milvus
 
-### Frontend
-- **React.js** - UI framework
-- **WebSocket** - Real-time communication
-- **MaisonNeue** - Font chính (theo brand guidelines)
+### **🤖 AI Features:**
+- **[🧠 Virtual Assistant](docs/VIRTUAL_ASSISTANT_GUIDE.md)** - Hướng dẫn AI assistant
+- **[⚡ Enhanced Agent](docs/ENHANCED_AGENT_GUIDE.md)** - Enhanced agent features
 
-### Infrastructure
-- **Docker** - Containerization
-- **Nginx** - Reverse proxy
-- **Google Cloud Storage** - File storage
+## ⚙️ **Cấu hình**
 
-## 📊 Dữ liệu
+### **Environment Variables (.env):**
 
-Dự án sử dụng dữ liệu thủ tục công dân từ Văn phòng Đăng ký Đất đai tỉnh Vĩnh Long, được xử lý và vector hóa để phục vụ tìm kiếm thông tin.
+```env
+# OpenAI (Required)
+OPENAI_API_KEY=your-openai-api-key-here
+OPENAI_CHAT_MODEL=gpt-4o
+OPENAI_EMBEDDING_MODEL=text-embedding-3-large
 
-## 🤝 Đóng góp
+# Security
+SECRET_KEY=your-secret-key-here
+
+# Database (Auto-configured for Docker)
+MONGODB_URL=mongodb://admin:dvcai2025@mongodb:27017/dvc_ai_db?authSource=admin
+REDIS_URL=redis://redis:6379/0
+MILVUS_HOST=milvus
+MILVUS_PORT=19530
+```
+
+## 🔧 **Yêu cầu hệ thống**
+
+- **OS**: Ubuntu 18.04+, Debian 10+, CentOS 7+
+- **RAM**: 4GB tối thiểu (8GB khuyến nghị)
+- **Disk**: 20GB free space
+- **Docker**: 20.10+
+- **Docker Compose**: v1.29+ hoặc v2.x
+
+## 🐛 **Troubleshooting**
+
+### **Lỗi phổ biến:**
+
+```bash
+# Docker permission denied
+./setup-docker.sh
+
+# Port đã được sử dụng
+sudo netstat -tulpn | grep :3000
+sudo kill -9 <PID>
+
+# Service không start
+docker compose logs backend
+
+# Fix line endings 
+./quick-fix.sh
+
+# Clean Docker 
+docker system prune -a
+```
+
+## 🤝 **Đóng góp**
 
 1. Fork repository
-2. Tạo feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
+2. Tạo feature branch (`git checkout -b feature/new-feature`)
+3. Commit changes (`git commit -am 'Add new feature'`)
+4. Push to branch (`git push origin feature/new-feature`)
 5. Tạo Pull Request
 
-## 📝 License
+## 📄 **License**
 
-Dự án này được phát triển cho mục đích nghiên cứu và học tập.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 📞 Liên hệ
+## 🆘 **Hỗ trợ**
 
-- **Phát triển bởi**: DVC.AI Team
-- **Màu sắc chủ đạo**: Orange-brown (theo brand guidelines)
-- **Font chính**: MaisonNeue
+- 📖 **Documentation**: [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
+- 🔧 **Issues**: Create GitHub issue
+- 💬 **Discussions**: GitHub Discussions
 
 ---
 
-> 💡 **Lưu ý**: Để có hướng dẫn chi tiết về từng thành phần, vui lòng tham khảo các file trong thư mục `docs/`.
+**🎯 Phát triển bởi DVC.AI Team - Trợ lý ảo thông minh cho dịch vụ công! 🚀**

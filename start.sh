@@ -1,90 +1,57 @@
 #!/bin/bash
 
-echo "================================================"
-echo "          DVC.AI - DIGITAL ASSISTANT"
-echo "    Trợ lý dịch vụ công và cổng Kiến thức"
-echo "================================================"
-echo ""
+# 🚀 DVC.AI Start Script - Start existing Docker containers
+# =========================================================
 
-echo "[1/3] Kiem tra moi truong..."
-echo ""
+# Colors for output
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
 
-# Kiem tra Python
-if ! command -v python3 &> /dev/null; then
-    echo "ERROR: Python3 khong duoc cai dat!"
-    echo "Vui long cai dat Python3"
+echo "🚀 Starting DVC.AI Services"
+echo "==========================="
+
+# Check for docker compose
+DOCKER_COMPOSE=""
+if docker compose version &> /dev/null; then
+    DOCKER_COMPOSE="docker compose"
+elif docker-compose --version &> /dev/null; then
+    DOCKER_COMPOSE="docker-compose"
+else
+    echo -e "${RED}❌ Docker Compose not found!${NC}"
+    echo "Run setup first: ./setup-docker.sh"
     exit 1
 fi
 
-# Kiem tra Node.js
-if ! command -v node &> /dev/null; then
-    echo "ERROR: Node.js khong duoc cai dat!"
-    echo "Vui long cai dat Node.js tu https://nodejs.org"
+# Check if containers exist
+if ! $DOCKER_COMPOSE ps | grep -q "dvc-ai"; then
+    echo -e "${YELLOW}⚠️  No DVC.AI containers found${NC}"
+    echo "Run full deployment first: ./docker-build.sh"
     exit 1
 fi
 
-echo "[2/3] Khoi dong Backend (FastAPI)..."
-echo ""
+# Start services
+echo -e "${BLUE}▶️  Starting DVC.AI services...${NC}"
+$DOCKER_COMPOSE up -d
 
-# Khoi dong backend trong terminal moi
-gnome-terminal --title="Backend - FastAPI" -- bash -c "
-    cd be
-    echo 'Dang khoi dong Backend...'
-    python3 main.py
-    exec bash
-" 2>/dev/null || \
-xterm -title 'Backend - FastAPI' -e "
-    cd be
-    echo 'Dang khoi dong Backend...'
-    python3 main.py
-    exec bash
-" 2>/dev/null || \
-echo "Khoi dong backend trong background..."
+# Wait for services
+echo -e "${BLUE}▶️  Waiting for services to start...${NC}"
+sleep 10
 
-echo "Cho Backend khoi dong... (5 giay)"
-sleep 5
-
-echo "[3/3] Khoi dong Frontend (ReactJS)..."
-echo ""
-
-# Khoi dong frontend trong terminal moi
-gnome-terminal --title="Frontend - ReactJS" -- bash -c "
-    cd fe
-    echo 'Dang cai dat dependencies...'
-    npm install
-    echo 'Dang khoi dong Frontend...'
-    npm start
-    exec bash
-" 2>/dev/null || \
-xterm -title 'Frontend - ReactJS' -e "
-    cd fe
-    echo 'Dang cai dat dependencies...'
-    npm install
-    echo 'Dang khoi dong Frontend...'
-    npm start
-    exec bash
-" 2>/dev/null || \
-echo "Khoi dong frontend trong background..."
+# Show status
+echo -e "${BLUE}▶️  Service status:${NC}"
+$DOCKER_COMPOSE ps
 
 echo ""
-echo "================================================"
-echo "THONG TIN TRUY CAP:"
-echo "================================================"
-echo "Frontend: http://localhost:3000"
-echo "Backend:  http://localhost:8000"
-echo "API Docs: http://localhost:8000/docs"
+echo -e "${GREEN}🎉 DVC.AI Services Started!${NC}"
+echo "============================="
+echo -e "${GREEN}✅ Frontend:${NC} http://localhost:3000"
+echo -e "${GREEN}✅ Backend API:${NC} http://localhost:8001"
+echo -e "${GREEN}✅ API Documentation:${NC} http://localhost:8001/docs"
 echo ""
-echo "TAI KHOAN MAC DINH:"
-echo "Username: admin"
-echo "Password: password123"
-echo "================================================"
-echo "THEME: Mệnh Thổ (Earth Element) - Tone màu ấm áp"
-echo "BRANDING: DVC.AI - AI Assistant for Government"
-echo "================================================"
-echo ""
-echo "Cac ung dung dang chay trong cac cua so terminal rieng biet."
-echo "Nhan Ctrl+C de thoat."
-echo ""
-
-# Keep script running
-read -p "Nhan Enter de thoat..."
+echo "📋 Commands:"
+echo "  $DOCKER_COMPOSE logs -f          # View logs"
+echo "  $DOCKER_COMPOSE down             # Stop services"
+echo "  $DOCKER_COMPOSE restart          # Restart services"
