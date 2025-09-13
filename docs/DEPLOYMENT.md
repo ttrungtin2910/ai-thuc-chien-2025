@@ -28,6 +28,7 @@ Ensure these ports are available:
 ### **Ubuntu/Linux**
 ```bash
 # Auto setup script
+cd deps
 chmod +x setup-docker.sh
 ./setup-docker.sh
 
@@ -97,13 +98,15 @@ GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
 
 **Ubuntu/Linux:**
 ```bash
+cd deps
 chmod +x docker-build.sh
 ./docker-build.sh
 ```
 
 **Windows:**
 ```cmd
-docker-build.bat
+cd deps
+python setup.py
 ```
 
 ### **Method 2: Manual Deployment**
@@ -167,7 +170,7 @@ curl http://localhost:3000
 ### **Start/Stop Services**
 ```bash
 # Start (after initial deployment)
-./start.sh
+./deps/start.sh
 # or
 docker compose up -d
 
@@ -213,7 +216,7 @@ sudo usermod -aG docker $USER
 newgrp docker
 
 # Solution 2: Use setup script
-./setup-docker.sh
+./deps/setup-docker.sh
 ```
 
 #### **Port Already in Use**

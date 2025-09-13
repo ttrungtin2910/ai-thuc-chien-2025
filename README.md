@@ -20,14 +20,14 @@ DVC.AI là một nền tảng trợ lý ảo thông minh được xây dựng v�
 # Ubuntu/Linux
 git clone <repository-url>
 cd dvc-ai-project
-chmod +x docker-build.sh && ./docker-build.sh
+cd deps && chmod +x docker-build.sh && ./docker-build.sh
 ```
 
 ```cmd
 # Windows  
 git clone <repository-url>
 cd dvc-ai-project
-docker-build.bat
+cd deps && python setup.py
 ```
 
 **➡️ Truy cập:** http://localhost:3000
@@ -75,7 +75,7 @@ Comprehensive documentation is available in the [`docs/`](docs/) directory:
 
 ```bash
 # Start services (after initial setup)
-./start.sh
+./deps/start.sh
 
 # Stop all services  
 docker compose down
@@ -87,7 +87,7 @@ docker compose logs -f
 docker compose restart backend
 
 # Quick troubleshooting  
-./setup-docker.sh           # Fix Docker permissions
+./deps/setup-docker.sh      # Fix Docker permissions
 ```
 
 ---
@@ -115,11 +115,9 @@ docker compose restart backend
 📁 DVC.AI Project
 ├── 🎨 fe/                    # Frontend (React.js)
 ├── ⚙️  be/                   # Backend (FastAPI + AI Agent)
+├── 🛠️ deps/                 # Dependencies & Setup Scripts
 ├── 📚 docs/                 # Documentation
 ├── 📊 data/                 # Sample data
-├── 🚀 docker-build.sh      # Main deployment script
-├── 🛠️ setup-docker.sh      # Docker setup (first time)
-├── ▶️  start.sh             # Start existing containers
 └── 🐳 docker-compose.yml   # Docker orchestration
 ```
 
@@ -129,7 +127,7 @@ docker compose restart backend
 
 | Problem | Quick Solution |
 |---------|---------------|
-| Docker permission denied | `./setup-docker.sh` |
+| Docker permission denied | `./deps/setup-docker.sh` |
 | Port already in use | `sudo netstat -tulpn \| grep :3000` |
 | Service not starting | `docker compose logs [service]` |
 | OpenAI API issues | Check `OPENAI_API_KEY` in `.env` |

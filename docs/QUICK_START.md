@@ -6,7 +6,7 @@
 # Clone và khởi động toàn bộ hệ thống
 git clone <repository-url>
 cd dvc-ai-project
-chmod +x docker-build.sh && ./docker-build.sh
+cd deps && chmod +x docker-build.sh && ./docker-build.sh
 ```
 
 **➡️ Truy cập:** http://localhost:3000
@@ -44,13 +44,13 @@ nano .env
 ### **Option 1: Full Auto (Ubuntu/Linux)**
 ```bash
 # Setup Docker (first time)
-./setup-docker.sh
+./deps/setup-docker.sh
 
 # Deploy DVC.AI
-./docker-build.sh
+./deps/docker-build.sh
 
 # Start services (subsequent times)
-./start.sh
+./deps/start.sh
 ```
 
 ### **Option 2: Manual Steps**
@@ -86,7 +86,7 @@ python scripts/load_documents_to_milvus.py
 
 ```bash
 # Start services
-./start.sh
+./deps/start.sh
 
 # Stop services  
 docker compose down
@@ -104,7 +104,7 @@ docker compose restart backend
 
 | Problem | Solution |
 |---------|----------|
-| Permission denied | `./setup-docker.sh` |
+| Permission denied | `./deps/setup-docker.sh` |
 | Port in use | `sudo netstat -tulpn \| grep :3000` |
 | Service not starting | `docker compose logs [service]` |
 

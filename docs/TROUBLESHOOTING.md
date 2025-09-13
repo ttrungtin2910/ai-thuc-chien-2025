@@ -15,7 +15,7 @@ sudo usermod -aG docker $USER
 newgrp docker
 
 # 2. Use setup script
-./setup-docker.sh
+./deps/setup-docker.sh
 
 # 3. Restart Docker service
 sudo systemctl restart docker
@@ -379,6 +379,7 @@ Permission denied when accessing files
 
 # Solutions
 # 1. Fix script permissions
+cd deps
 chmod +x docker-build.sh
 chmod +x setup-docker.sh
 chmod +x start.sh
@@ -437,7 +438,7 @@ docker-compose logs -f | grep -i error
 ### **Health Check Commands**
 ```bash
 # Fix Docker permissions and setup
-./setup-docker.sh
+./deps/setup-docker.sh
 
 # Service health
 docker-compose ps
