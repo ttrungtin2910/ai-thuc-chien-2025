@@ -1,73 +1,111 @@
-# 🚀 Quick Start Guide - DVC.AI with OpenAI
+# 🚀 Quick Start - DVC.AI
 
-## 📋 Prerequisites
+## ⚡ **1-Command Setup (Recommended)**
 
-1. **OpenAI API Key** (required)
-2. **Docker & Docker Compose** (for Milvus)
-3. **Python 3.8+** with conda/pip
-
-## ⚡ Quick Setup
-
-### 1️⃣ Setup OpenAI API Key
 ```bash
-# Create .env file with your OpenAI API key
+# Clone và khởi động toàn bộ hệ thống
+git clone <repository-url>
+cd dvc-ai-project
+chmod +x docker-build.sh && ./docker-build.sh
+```
+
+**➡️ Truy cập:** http://localhost:3000
+
+---
+
+## 📋 **Prerequisites**
+
+- **Docker & Docker Compose** (Docker Desktop >= 20.0)
+- **OpenAI API Key** ([Get here](https://platform.openai.com/api-keys))
+- **4GB RAM**, 20GB disk space
+
+---
+
+## ⚙️ **Configuration**
+
+### 1. Setup API Key
+```bash
+# Tạo file .env với OpenAI API key
 echo "OPENAI_API_KEY=sk-your-api-key-here" > .env
 ```
 
-### 2️⃣ Install Dependencies
+### 2. Optional: Custom Configuration
 ```bash
-pip install -r requirements.txt
-```
-
-### 3️⃣ Start Milvus Vector Database
-
-**Windows:**
-```cmd
-start_milvus.bat
-```
-
-**Linux/macOS:**
-```bash
-./start_milvus.sh
-```
-
-### 4️⃣ Load Documents to Milvus
-```bash
-python scripts/load_documents_to_milvus.py
-```
-
-### 5️⃣ Start Backend Server
-```bash
-python main.py
-```
-
-### 6️⃣ Start Frontend (in new terminal)
-```bash
-cd ../fe
-npm install
-npm start
-```
-
-## 🌐 Access Points
-
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8001
-- **API Docs**: http://localhost:8001/docs
-- **Milvus UI**: http://localhost:3001
-- **MinIO Console**: http://localhost:9001
-
-## 🧪 Test RAG System
-
-```bash
-python scripts/test_rag_system.py
-```
-
-## 📱 Interactive Quick Start
-
-```bash
-python start_openai_system.py
+# Copy template (nếu cần custom)
+cp be/env.example .env
+# Edit với editor
+nano .env
 ```
 
 ---
 
-**Need help?** Check `COMPLETE_GUIDE.md` for detailed instructions.
+## 🐳 **Deployment Options**
+
+### **Option 1: Full Auto (Ubuntu/Linux)**
+```bash
+# Setup Docker (first time)
+./setup-docker.sh
+
+# Deploy DVC.AI
+./docker-build.sh
+
+# Start services (subsequent times)
+./start.sh
+```
+
+### **Option 2: Manual Steps**
+```bash
+# 1. Build images
+docker build -t dvc-ai-backend ./be
+docker build -t dvc-ai-frontend ./fe
+
+# 2. Start services
+docker compose up -d
+
+# 3. Load documents (optional)
+cd be
+python scripts/load_documents_to_milvus.py
+```
+
+---
+
+## 🌐 **Access Points**
+
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| 🎨 **Frontend** | http://localhost:3000 | - |
+| ⚙️ **Backend API** | http://localhost:8001 | - |
+| 📖 **API Docs** | http://localhost:8001/docs | - |
+| 🗄️ **MongoDB** | localhost:27017 | admin/dvcai2025 |
+| 🔴 **Redis** | localhost:6379 | - |
+| 🔍 **Milvus** | localhost:19530 | - |
+
+---
+
+## 🎯 **Daily Commands**
+
+```bash
+# Start services
+./start.sh
+
+# Stop services  
+docker compose down
+
+# View logs
+docker compose logs -f
+
+# Restart specific service
+docker compose restart backend
+```
+
+---
+
+## 🔧 **Common Issues**
+
+| Problem | Solution |
+|---------|----------|
+| Permission denied | `./setup-docker.sh` |
+| Port in use | `sudo netstat -tulpn \| grep :3000` |
+| Service not starting | `docker compose logs [service]` |
+
+**Need detailed help?** ➡️ [Deployment Guide](DEPLOYMENT.md)

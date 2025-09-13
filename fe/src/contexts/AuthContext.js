@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import Cookies from 'js-cookie';
+import Cookies from '../../node_modules/@types/js-cookie';
 import { authAPI } from '../services/api';
 
 const AuthContext = createContext();

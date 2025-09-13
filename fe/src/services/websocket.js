@@ -1,5 +1,5 @@
 import { io } from 'socket.io-client';
-import Cookies from 'js-cookie';
+import Cookies from '../../node_modules/@types/js-cookie';
 
 class WebSocketService {
   constructor() {

@@ -11,159 +11,156 @@ DVC.AI là một nền tảng trợ lý ảo thông minh được xây dựng v�
 - 🏗️ **Microservices**: Kiến trúc tách biệt, dễ scale
 - 🐳 **Docker**: Triển khai container hóa hoàn toàn
 
-## 🏁 **Khởi động nhanh (Ubuntu/Linux)**
+---
 
+## 🚀 **Khởi động nhanh** 
+
+### **1-Command Setup (Recommended):**
 ```bash
-# 1. Clone repository
+# Ubuntu/Linux
 git clone <repository-url>
 cd dvc-ai-project
-
-# 2. Setup Docker (chỉ lần đầu)
-chmod +x setup-docker.sh && ./setup-docker.sh
-
-# 3. Deploy DVC.AI  
 chmod +x docker-build.sh && ./docker-build.sh
-
-# 4. Truy cập ứng dụng
-# Frontend: http://localhost:3000
-# Backend: http://localhost:8001
-# API Docs: http://localhost:8001/docs
 ```
 
-## 📁 **Cấu trúc dự án**
-
-```
-dvc-ai-project/
-├── 🎨 fe/                     # Frontend (React.js)
-├── ⚙️  be/                     # Backend (FastAPI + Python)  
-├── 📚 docs/                   # Documentation
-├── 📊 data/                   # Dữ liệu thủ tục công dân
-├── 🐳 docker-compose.yml      # Docker orchestration
-├── 🚀 docker-build.sh         # Deployment script
-├── 🛠️ setup-docker.sh         # Docker setup
-├── ▶️  start.sh               # Start services
-└── 🔧 quick-fix.sh           # Fix common issues
+```cmd
+# Windows  
+git clone <repository-url>
+cd dvc-ai-project
+docker-build.bat
 ```
 
-## 🛠️ **Scripts & Commands**
+**➡️ Truy cập:** http://localhost:3000
 
-| Script | Mục đích | Khi nào sử dụng |
-|--------|----------|------------------|
-| `setup-docker.sh` | Cài đặt Docker & permissions | Lần đầu setup |
-| `docker-build.sh` | Build & deploy toàn bộ | Deploy chính, cập nhật lớn |
-| `start.sh` | Start containers có sẵn | Khởi động hàng ngày |
-| `quick-fix.sh` | Fix lỗi thường gặp | Troubleshooting |
+### **Prerequisites:**
+- Docker Desktop >= 20.0
+- OpenAI API Key ([Get here](https://platform.openai.com/api-keys))
+- 4GB RAM, 20GB disk space
 
-### **Thao tác hàng ngày:**
+### **Configuration:**
+```bash
+# Tạo .env với OpenAI API key
+echo "OPENAI_API_KEY=sk-your-api-key-here" > .env
+```
+
+---
+
+## 🌐 **Access Points**
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| 🎨 **Frontend** | http://localhost:3000 | Main application |
+| ⚙️ **Backend API** | http://localhost:8001 | REST API |
+| 📖 **API Docs** | http://localhost:8001/docs | Interactive API documentation |
+
+---
+
+## 📚 **Documentation**
+
+Comprehensive documentation is available in the [`docs/`](docs/) directory:
+
+- 🚀 **[Quick Start](docs/QUICK_START.md)** - Get started in 5 minutes
+- 🐳 **[Deployment](docs/DEPLOYMENT.md)** - Complete deployment guide  
+- 🛠️ **[Development](docs/DEVELOPMENT.md)** - Developer guide
+- 🏗️ **[Architecture](docs/ARCHITECTURE.md)** - System architecture & AI
+- 🗄️ **[Database](docs/DATABASE.md)** - MongoDB, Vector DB, Redis
+- 🔧 **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Problem solving
+- ⚙️ **[Backend API](be/README.md)** - Backend-specific documentation
+
+**📖 Start here:** [`docs/README.md`](docs/README.md)
+
+---
+
+## 🔧 **Daily Commands**
 
 ```bash
-# Khởi động services
+# Start services (after initial setup)
 ./start.sh
 
-# Dừng services  
+# Stop all services  
 docker compose down
 
-# Xem logs
+# View logs
 docker compose logs -f
 
-# Restart service cụ thể
+# Restart specific service
 docker compose restart backend
-```
 
-## 🌐 **Truy cập ứng dụng**
-
-Sau khi deploy thành công:
-
-- **🎨 Frontend**: http://localhost:3000
-- **⚙️ Backend API**: http://localhost:8001  
-- **📖 API Documentation**: http://localhost:8001/docs
-- **🗄️ MongoDB**: localhost:27017 (admin/dvcai2025)
-- **🔴 Redis**: localhost:6379
-- **🔍 Milvus**: localhost:19530
-
-## 📚 **Tài liệu chi tiết**
-
-### **📋 Deployment:**
-- **[🚀 Deployment Guide](DEPLOYMENT_GUIDE.md)** - Hướng dẫn deployment Ubuntu/Linux đầy đủ
-- **[🐳 Docker Setup](setup-docker.sh)** - Script setup Docker tự động
-
-### **🏗️ Architecture:**
-- **[📐 Complete Guide](docs/COMPLETE_GUIDE.md)** - Hướng dẫn tổng quan
-- **[🏛️ Microservice Structure](docs/MICROSERVICE_STRUCTURE.md)** - Kiến trúc microservices
-- **[🗄️ Vector Database](docs/VECTOR_DB_STRUCTURE.md)** - Cấu trúc Milvus
-
-### **🤖 AI Features:**
-- **[🧠 Virtual Assistant](docs/VIRTUAL_ASSISTANT_GUIDE.md)** - Hướng dẫn AI assistant
-- **[⚡ Enhanced Agent](docs/ENHANCED_AGENT_GUIDE.md)** - Enhanced agent features
-
-## ⚙️ **Cấu hình**
-
-### **Environment Variables (.env):**
-
-```env
-# OpenAI (Required)
-OPENAI_API_KEY=your-openai-api-key-here
-OPENAI_CHAT_MODEL=gpt-4o
-OPENAI_EMBEDDING_MODEL=text-embedding-3-large
-
-# Security
-SECRET_KEY=your-secret-key-here
-
-# Database (Auto-configured for Docker)
-MONGODB_URL=mongodb://admin:dvcai2025@mongodb:27017/dvc_ai_db?authSource=admin
-REDIS_URL=redis://redis:6379/0
-MILVUS_HOST=milvus
-MILVUS_PORT=19530
-```
-
-## 🔧 **Yêu cầu hệ thống**
-
-- **OS**: Ubuntu 18.04+, Debian 10+, CentOS 7+
-- **RAM**: 4GB tối thiểu (8GB khuyến nghị)
-- **Disk**: 20GB free space
-- **Docker**: 20.10+
-- **Docker Compose**: v1.29+ hoặc v2.x
-
-## 🐛 **Troubleshooting**
-
-### **Lỗi phổ biến:**
-
-```bash
-# Docker permission denied
-./setup-docker.sh
-
-# Port đã được sử dụng
-sudo netstat -tulpn | grep :3000
-sudo kill -9 <PID>
-
-# Service không start
-docker compose logs backend
-
-# Fix line endings 
+# Quick troubleshooting
 ./quick-fix.sh
-
-# Clean Docker 
-docker system prune -a
 ```
 
-## 🤝 **Đóng góp**
+---
 
-1. Fork repository
-2. Tạo feature branch (`git checkout -b feature/new-feature`)
-3. Commit changes (`git commit -am 'Add new feature'`)
-4. Push to branch (`git push origin feature/new-feature`)
-5. Tạo Pull Request
+## ⚙️ **System Requirements**
+
+### **Minimum:**
+- **OS**: Ubuntu 18.04+, Windows 10+, macOS 10.15+
+- **RAM**: 4GB (8GB recommended)
+- **Storage**: 20GB free space
+- **Docker**: 20.10+ with Docker Compose
+
+### **Required Ports:**
+- `3000` - Frontend
+- `8001` - Backend API  
+- `27017` - MongoDB
+- `6379` - Redis
+- `19530` - Milvus Vector DB
+
+---
+
+## 🏗️ **Project Structure**
+
+```
+📁 DVC.AI Project
+├── 🎨 fe/                    # Frontend (React.js)
+├── ⚙️  be/                   # Backend (FastAPI + AI Agent)
+├── 📚 docs/                 # Documentation
+├── 📊 data/                 # Sample data
+├── 🚀 docker-build.sh      # Main deployment script
+├── 🛠️ setup-docker.sh      # Docker setup (first time)
+├── ▶️  start.sh             # Start existing containers
+├── 🔧 quick-fix.sh         # Troubleshooting helper
+└── 🐳 docker-compose.yml   # Docker orchestration
+```
+
+---
+
+## 🔧 **Common Issues**
+
+| Problem | Quick Solution |
+|---------|---------------|
+| Docker permission denied | `./setup-docker.sh` |
+| Port already in use | `sudo netstat -tulpn \| grep :3000` |
+| Service not starting | `docker compose logs [service]` |
+| OpenAI API issues | Check `OPENAI_API_KEY` in `.env` |
+
+**For detailed troubleshooting:** [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
+
+---
+
+## 🤝 **Contributing**
+
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/new-feature`
+3. Commit changes: `git commit -am 'Add new feature'`
+4. Push to branch: `git push origin feature/new-feature`
+5. Create Pull Request
+
+**Development setup:** [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
+
+---
 
 ## 📄 **License**
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
-## 🆘 **Hỗ trợ**
+## 🆘 **Support**
 
-- 📖 **Documentation**: [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
+- 📖 **Documentation**: [docs/](docs/)
 - 🔧 **Issues**: Create GitHub issue
 - 💬 **Discussions**: GitHub Discussions
 
 ---
 
-**🎯 Phát triển bởi DVC.AI Team - Trợ lý ảo thông minh cho dịch vụ công! 🚀**
+**🎉 Ready to build intelligent virtual assistants? Start with [Quick Start Guide](docs/QUICK_START.md)! 🚀**
