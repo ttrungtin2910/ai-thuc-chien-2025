@@ -1,0 +1,235 @@
+version: '3.8'
+
+services:
+  # MongoDB Database [[memory:7927413]]
+  mongodb:
+    image: mongo:7.0
+    container_name: dvc-ai-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: dvcai2025
+      MONGO_INITDB_DATABASE: dvc_ai_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./be/scripts/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - dvc-ai-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache & Message Broker
+  redis:
+    image: redis:7-alpine
+    container_name: dvc-ai-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - dvc-ai-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Milvus Vector Database
+  milvus:
+    image: milvusdb/milvus:v2.3.2
+    container_name: dvc-ai-milvus
+    restart: unless-stopped
+    command: milvus run standalone
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    volumes:
+      - milvus_data:/var/lib/milvus
+    networks:
+      - dvc-ai-network
+    depends_on:
+      - etcd
+      - minio
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # Etcd for Milvus
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.5
+    container_name: dvc-ai-etcd
+    restart: unless-stopped
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    volumes:
+      - etcd_data:/etcd
+    networks:
+      - dvc-ai-network
+
+  # MinIO for Milvus
+  minio:
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    container_name: dvc-ai-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    command: minio server /minio_data --console-address ":9001"
+    volumes:
+      - minio_data:/minio_data
+    networks:
+      - dvc-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # Backend API
+  backend:
+    build:
+      context: ./be
+      dockerfile: Dockerfile
+    container_name: dvc-ai-backend
+    restart: unless-stopped
+    environment:
+      # Database Configuration
+      MONGODB_URL: mongodb://admin:dvcai2025@mongodb:27017/dvc_ai_db?authSource=admin
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      
+      # Milvus Configuration
+      MILVUS_HOST: milvus
+      MILVUS_PORT: 19530
+      
+      # Security
+      SECRET_KEY: ${SECRET_KEY:-dvc-ai-super-secret-key-change-in-production-2025}
+      
+      # OpenAI Configuration - Set these in .env file
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-large}
+      OPENAI_CHAT_MODEL: ${OPENAI_CHAT_MODEL:-gpt-4o}
+      
+      # Google Cloud Storage - Optional
+      PROJECT_ID: ${PROJECT_ID:-}
+      GCS_BUCKET_NAME: ${GCS_BUCKET_NAME:-}
+      GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-}
+      
+      # Upload Configuration
+      MAX_FILE_SIZE_MB: ${MAX_FILE_SIZE_MB:-100}
+      UPLOAD_DIR: /app/uploads
+      
+      # WebSocket Configuration
+      WEBSOCKET_CORS_ORIGINS: http://localhost:3000,http://localhost:80
+      
+      # API Configuration
+      DEBUG: ${DEBUG:-false}
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./be/uploads:/app/uploads
+      - ./be/data:/app/data
+      - ./be/database:/app/database
+    networks:
+      - dvc-ai-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      milvus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Celery Worker for Background Tasks
+  celery-worker:
+    build:
+      context: ./be
+      dockerfile: Dockerfile
+    container_name: dvc-ai-celery-worker
+    restart: unless-stopped
+    command: celery -A app.workers.celery_app worker --loglevel=info
+    environment:
+      # Same environment as backend
+      MONGODB_URL: mongodb://admin:dvcai2025@mongodb:27017/dvc_ai_db?authSource=admin
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      MILVUS_HOST: milvus
+      MILVUS_PORT: 19530
+      SECRET_KEY: ${SECRET_KEY:-dvc-ai-super-secret-key-change-in-production-2025}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-large}
+      PROJECT_ID: ${PROJECT_ID:-}
+      GCS_BUCKET_NAME: ${GCS_BUCKET_NAME:-}
+      GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-}
+    volumes:
+      - ./be/uploads:/app/uploads
+      - ./be/data:/app/data
+      - ./be/database:/app/database
+    networks:
+      - dvc-ai-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+
+  # Frontend
+  frontend:
+    build:
+      context: ./fe
+      dockerfile: Dockerfile
+    container_name: dvc-ai-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    networks:
+      - dvc-ai-network
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mongodb_data:
+    driver: local
+  redis_data:
+    driver: local
+  milvus_data:
+    driver: local
+  etcd_data:
+    driver: local
+  minio_data:
+    driver: local
+
+networks:
+  dvc-ai-network:
+    driver: bridge
+    name: dvc-ai-network

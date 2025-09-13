@@ -1,0 +1,34 @@
+# Ignore .env files to prevent local config from overriding Docker environment variables
+.env
+.env.local
+.env.example
+.env.example.complete
+
+# Ignore local development files
+.vscode/
+.idea/
+*.log
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Ignore uploads and data directories (mounted as volumes)
+uploads/
+data/uploads/
+
+# Ignore Docker files
+Dockerfile
+.dockerignore
+
+# Ignore git and documentation
+.git/
+.gitignore
+README.md
+*.md
+
+# Ignore test files
+test_*
+*_test.py
+tests/

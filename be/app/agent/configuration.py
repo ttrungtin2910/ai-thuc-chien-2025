@@ -7,7 +7,7 @@ from langchain_core.runnables import RunnableConfig, ensure_config
 from ..core.config import Config
 
 
-@dataclass(kw_only=True)
+@dataclass
 class Configuration:
     """The configuration for the agent."""
 

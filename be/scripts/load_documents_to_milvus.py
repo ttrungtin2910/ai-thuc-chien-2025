@@ -153,7 +153,6 @@ def check_prerequisites():
     # Check if required packages are installed
     try:
         import pymilvus
-        import sentence_transformers
         print("✅ Required packages are installed")
     except ImportError as e:
         print(f"❌ Missing required package: {e}")

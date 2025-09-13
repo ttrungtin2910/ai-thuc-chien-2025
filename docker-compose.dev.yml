@@ -1,0 +1,85 @@
+# Development Docker Compose - với hot reload
+version: '3.8'
+
+services:
+  # Backend với volume mounting cho development
+  backend:
+    build:
+      context: ./be
+      dockerfile: Dockerfile
+    container_name: dvc-ai-backend-dev
+    restart: unless-stopped
+    environment:
+      # Database Configuration
+      MONGODB_URL: mongodb://admin:dvcai2025@mongodb:27017/dvc_ai_db?authSource=admin
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      
+      # Milvus Configuration
+      MILVUS_HOST: milvus
+      MILVUS_PORT: 19530
+      
+      # Security
+      SECRET_KEY: ${SECRET_KEY:-dvc-ai-super-secret-key-change-in-production-2025}
+      
+      # OpenAI Configuration
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-large}
+      OPENAI_CHAT_MODEL: ${OPENAI_CHAT_MODEL:-gpt-4o}
+      
+      # Development settings
+      DEBUG: true
+      
+      # Upload Configuration
+      MAX_FILE_SIZE_MB: ${MAX_FILE_SIZE_MB:-100}
+      UPLOAD_DIR: /app/uploads
+      
+      # WebSocket Configuration
+      WEBSOCKET_CORS_ORIGINS: http://localhost:3000,http://localhost:80
+    ports:
+      - "8001:8001"
+    volumes:
+      # Mount source code for hot reload
+      - ./be/app:/app/app:ro
+      - ./be/uploads:/app/uploads
+      - ./be/data:/app/data
+      - ./be/database:/app/database
+    networks:
+      - dvc-ai-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      milvus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend với volume mounting (nếu sử dụng dev server)
+  frontend-dev:
+    build:
+      context: ./fe
+      dockerfile: Dockerfile.dev  # Tạo Dockerfile riêng cho dev
+    container_name: dvc-ai-frontend-dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./fe/src:/app/src:ro
+      - ./fe/public:/app/public:ro
+      - /app/node_modules  # Anonymous volume for node_modules
+    networks:
+      - dvc-ai-network
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_API_URL=http://localhost:8001
+
+networks:
+  dvc-ai-network:
+    external: true
