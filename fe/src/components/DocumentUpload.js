@@ -161,6 +161,7 @@ const DocumentUpload = React.memo(() => {
     websocketService.on('file_upload_progress', handleFileProgress);
     websocketService.on('file_upload_complete', handleFileComplete);
     websocketService.on('file_upload_error', handleFileError);
+    websocketService.on('file_processing_update', handleFileProgress); // Also handle processing updates
     websocketService.on('bulk_upload_progress', handleBulkProgress);
     websocketService.on('bulk_upload_complete', handleBulkComplete);
     websocketService.on('bulk_upload_error', handleBulkError);
@@ -169,6 +170,7 @@ const DocumentUpload = React.memo(() => {
       websocketService.off('file_upload_progress', handleFileProgress);
       websocketService.off('file_upload_complete', handleFileComplete);
       websocketService.off('file_upload_error', handleFileError);
+      websocketService.off('file_processing_update', handleFileProgress);
       websocketService.off('bulk_upload_progress', handleBulkProgress);
       websocketService.off('bulk_upload_complete', handleBulkComplete);
       websocketService.off('bulk_upload_error', handleBulkError);

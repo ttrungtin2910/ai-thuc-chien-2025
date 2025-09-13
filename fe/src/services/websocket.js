@@ -1,5 +1,5 @@
 import { io } from 'socket.io-client';
-import Cookies from '../../node_modules/@types/js-cookie';
+import Cookies from 'js-cookie';
 
 class WebSocketService {
   constructor() {
@@ -102,6 +102,35 @@ class WebSocketService {
 
     this.socket.on('error', (data) => {
       this.emit('error', data);
+    });
+
+    // Direct event handlers for file upload events (backend emits these directly)
+    this.socket.on('file_upload_progress', (data) => {
+      this.emit('file_upload_progress', data);
+    });
+
+    this.socket.on('file_upload_complete', (data) => {
+      this.emit('file_upload_complete', data);
+    });
+
+    this.socket.on('file_upload_error', (data) => {
+      this.emit('file_upload_error', data);
+    });
+
+    this.socket.on('file_processing_update', (data) => {
+      this.emit('file_processing_update', data);
+    });
+
+    this.socket.on('bulk_upload_progress', (data) => {
+      this.emit('bulk_upload_progress', data);
+    });
+
+    this.socket.on('bulk_upload_complete', (data) => {
+      this.emit('bulk_upload_complete', data);
+    });
+
+    this.socket.on('bulk_upload_error', (data) => {
+      this.emit('bulk_upload_error', data);
     });
   }
 

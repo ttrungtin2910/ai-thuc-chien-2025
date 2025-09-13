@@ -10,20 +10,21 @@ from typing import List, Dict, Any, Optional
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 from langchain.schema import BaseMessage, HumanMessage, AIMessage
+from ..core.config import Config
 
 logger = logging.getLogger(__name__)
 
 class ConversationMemoryService:
-    def __init__(self, mongodb_url: str = "mongodb://localhost:27017", db_name: str = "dvc_ai_db"):
+    def __init__(self, mongodb_url: str = None, db_name: str = None):
         """
         Initialize conversation memory service
         
         Args:
-            mongodb_url: MongoDB connection URL
-            db_name: Database name
+            mongodb_url: MongoDB connection URL (defaults to Config.MONGODB_URL)
+            db_name: Database name (defaults to Config.MONGODB_DATABASE)
         """
-        self.mongodb_url = mongodb_url
-        self.db_name = db_name
+        self.mongodb_url = mongodb_url or Config.MONGODB_URL
+        self.db_name = db_name or Config.MONGODB_DATABASE
         self.collection_name = "conversations"
         self.client = None
         self.db = None

@@ -20,12 +20,23 @@ class GCSService:
         # Try to initialize client
         try:
             if self.credentials_path and os.path.exists(self.credentials_path):
+                logger.info(f"Initializing GCS with credentials file: {self.credentials_path}")
+                logger.info(f"Project ID: {self.project_id}")
+                logger.info(f"Bucket name: {self.bucket_name}")
+                
                 credentials = service_account.Credentials.from_service_account_file(
                     self.credentials_path
                 )
                 self.client = storage.Client(credentials=credentials, project=self.project_id)
+                
+                # Test the credentials by attempting to get bucket info
+                if self.bucket_name:
+                    test_bucket = self.client.bucket(self.bucket_name)
+                    test_bucket.reload()  # This will fail if credentials are invalid
+                    
             elif self.project_id:
                 # Fallback to default credentials (for Google Cloud environments)
+                logger.info(f"Using default credentials with project: {self.project_id}")
                 self.client = storage.Client(project=self.project_id)
             
             if self.client and self.bucket_name:
@@ -37,6 +48,9 @@ class GCSService:
                 
         except Exception as e:
             logger.error(f"GCS Service initialization failed: {e}")
+            logger.error(f"Credentials path: {self.credentials_path}")
+            logger.error(f"Project ID: {self.project_id}")
+            logger.error(f"Bucket name: {self.bucket_name}")
             logger.info("File upload will use local storage only")
             self.client = None
             self.bucket = None
@@ -59,21 +73,31 @@ class GCSService:
             logger.info(f"GCS not available, keeping file locally: {filename}")
             return f"local://{file_path}"
         
-        if not destination_path:
-            # Generate unique filename
+        try:
+            if not destination_path:
+                # Generate unique filename
+                filename = os.path.basename(file_path)
+                name, ext = os.path.splitext(filename)
+                destination_path = f"uploads/{uuid.uuid4().hex}_{filename}"
+            
+            blob = self.bucket.blob(destination_path)
+            
+            # Upload file
+            logger.info(f"Uploading file to GCS: {destination_path}")
+            blob.upload_from_filename(file_path)
+            
+            # Return the GCS URL (works with uniform bucket-level access)
+            # Note: If bucket has uniform bucket-level access enabled, 
+            # public access needs to be configured at bucket level
+            logger.info(f"Successfully uploaded file to GCS: {destination_path}")
+            return f"gs://{self.bucket_name}/{destination_path}"
+            
+        except Exception as e:
+            logger.error(f"Failed to upload file to GCS: {e}")
+            # Fallback to local storage
             filename = os.path.basename(file_path)
-            name, ext = os.path.splitext(filename)
-            destination_path = f"uploads/{uuid.uuid4().hex}_{filename}"
-        
-        blob = self.bucket.blob(destination_path)
-        
-        # Upload file
-        blob.upload_from_filename(file_path)
-        
-        # Return the GCS URL (works with uniform bucket-level access)
-        # Note: If bucket has uniform bucket-level access enabled, 
-        # public access needs to be configured at bucket level
-        return f"gs://{self.bucket_name}/{destination_path}"
+            logger.info(f"Falling back to local storage for: {filename}")
+            return f"local://{file_path}"
     
     def upload_file_from_bytes(self, file_content: bytes, filename: str, content_type: str = None) -> str:
         """

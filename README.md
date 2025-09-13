@@ -52,6 +52,9 @@ echo "OPENAI_API_KEY=sk-your-api-key-here" > .env
 | 🎨 **Frontend** | http://localhost:3000 | Main application |
 | ⚙️ **Backend API** | http://localhost:8001 | REST API |
 | 📖 **API Docs** | http://localhost:8001/docs | Interactive API documentation |
+| 🗄️ **MongoDB** | localhost:27017 | Database (admin/dvcai2025) |
+| 🔍 **Milvus** | localhost:19530 | Vector Database |
+| 🎛️ **Attu** | http://localhost:8080 | Milvus Admin UI |
 
 ---
 

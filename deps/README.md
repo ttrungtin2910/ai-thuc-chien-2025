@@ -175,8 +175,10 @@ After successful setup:
 - 🎨 **Frontend:** http://localhost:3000
 - ⚙️ **Backend API:** http://localhost:8001
 - 📖 **API Docs:** http://localhost:8001/docs
-- 🗄️ **MongoDB:** localhost:27017
+- 🗄️ **MongoDB:** localhost:27017 (admin/dvcai2025)
 - 🔍 **Milvus:** localhost:19530
+- 🎛️ **Attu (Milvus Admin):** http://localhost:8080
+- 🗂️ **MinIO Console:** http://localhost:9001 (minioadmin/minioadmin)
 
 ---
 

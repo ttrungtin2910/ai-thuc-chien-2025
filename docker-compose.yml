@@ -99,6 +99,25 @@ services:
       timeout: 20s
       retries: 3
 
+  # Attu - Milvus Admin UI
+  attu:
+    image: zilliz/attu:v2.3.1
+    container_name: dvc-ai-attu
+    restart: unless-stopped
+    environment:
+      MILVUS_URL: milvus:19530
+    ports:
+      - "8080:3000"
+    networks:
+      - dvc-ai-network
+    depends_on:
+      - milvus
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   # Backend API
   backend:
     build:

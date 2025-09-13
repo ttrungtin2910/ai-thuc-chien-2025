@@ -38,8 +38,8 @@ class DVCAISetup:
     """Main setup class for DVC.AI project"""
     
     def __init__(self):
-        self.project_root = Path(__file__).parent
-        self.docker_dir = self.project_root / "docker"
+        self.project_root = Path(__file__).parent.parent  # Go up to actual project root
+        self.deps_dir = Path(__file__).parent  # deps directory
         self.is_windows = platform.system().lower() == 'windows'
         
     def print_header(self, title):
@@ -148,7 +148,7 @@ class DVCAISetup:
         """Install Python dependencies"""
         self.print_step(4, "Installing Python dependencies...")
         
-        requirements_file = self.project_root / "requirements.txt"
+        requirements_file = self.project_root / "be" / "requirements.txt"
         if not requirements_file.exists():
             self.print_error("requirements.txt not found")
             return False
@@ -173,7 +173,7 @@ class DVCAISetup:
         self.print_step(5, "Setting up environment configuration...")
         
         env_file = self.project_root / ".env"
-        env_example = self.project_root / "env.example"
+        env_example = self.project_root / "be" / "env.example"
         
         if env_file.exists():
             self.print_warning(".env file already exists")
@@ -242,12 +242,12 @@ class DVCAISetup:
             return True
         
         try:
-            os.chdir(self.docker_dir)
+            os.chdir(self.project_root)
             
             if compose_cmd == "docker compose":
-                cmd = ["docker", "compose", "-f", "docker-compose-mongodb.yml", "up", "-d"]
+                cmd = ["docker", "compose", "up", "-d", "mongodb"]
             else:
-                cmd = ["docker-compose", "-f", "docker-compose-mongodb.yml", "up", "-d"]
+                cmd = ["docker-compose", "up", "-d", "mongodb"]
             
             self.run_command(cmd)
             
@@ -276,12 +276,12 @@ class DVCAISetup:
             return True
         
         try:
-            os.chdir(self.docker_dir)
+            os.chdir(self.project_root)
             
             if compose_cmd == "docker compose":
-                cmd = ["docker", "compose", "-f", "docker-compose.yml", "up", "-d"]
+                cmd = ["docker", "compose", "up", "-d", "redis"]
             else:
-                cmd = ["docker-compose", "-f", "docker-compose.yml", "up", "-d"]
+                cmd = ["docker-compose", "up", "-d", "redis"]
             
             self.run_command(cmd)
             
@@ -310,12 +310,12 @@ class DVCAISetup:
             return True
         
         try:
-            os.chdir(self.docker_dir)
+            os.chdir(self.project_root)
             
             if compose_cmd == "docker compose":
-                cmd = ["docker", "compose", "-f", "docker-compose-milvus.yml", "up", "-d"]
+                cmd = ["docker", "compose", "up", "-d", "milvus", "etcd", "minio", "attu"]
             else:
-                cmd = ["docker-compose", "-f", "docker-compose-milvus.yml", "up", "-d"]
+                cmd = ["docker-compose", "up", "-d", "milvus", "etcd", "minio", "attu"]
             
             self.run_command(cmd)
             
@@ -367,17 +367,16 @@ class DVCAISetup:
         
         services = [
             ("MongoDB", "localhost:27017", "Database"),
-            ("Mongo Express", "http://localhost:8081", "MongoDB Admin UI (admin/admin123)"),
             ("Redis", "localhost:6379", "Cache & Session Storage"),
             ("Milvus", "localhost:19530", "Vector Database"),
-            ("Attu", "http://localhost:3001", "Milvus Admin UI"),
+            ("Attu", "http://localhost:8080", "Milvus Admin UI"),
             ("MinIO", "http://localhost:9001", "Object Storage (minioadmin/minioadmin)")
         ]
         
         for name, url, description in services:
             status = "🟢" if self.check_service_running(name, 
                 int(url.split(':')[-1]) if ':' in url and url.split(':')[-1].isdigit() 
-                else 8081 if 'Express' in name else 3001 if 'Attu' in name else 9001 if 'MinIO' in name else 0
+                else 8081 if 'Express' in name else 8080 if 'Attu' in name else 9001 if 'MinIO' in name else 0
             ) else "🔴"
             print(f"{status} {Colors.colored(name, Colors.BOLD)}: {url}")
             print(f"   {description}")
@@ -435,29 +434,15 @@ class DVCAISetup:
             return False
         
         try:
-            os.chdir(self.docker_dir)
-            
-            # Stop all compose files
-            compose_files = [
-                "docker-compose-mongodb.yml",
-                "docker-compose.yml", 
-                "docker-compose-milvus.yml"
-            ]
-            
-            for compose_file in compose_files:
-                if (self.docker_dir / compose_file).exists():
-                    if compose_cmd == "docker compose":
-                        cmd = ["docker", "compose", "-f", compose_file, "down"]
-                    else:
-                        cmd = ["docker-compose", "-f", compose_file, "down"]
-                    
-                    try:
-                        self.run_command(cmd)
-                        self.print_success(f"Stopped services from {compose_file}")
-                    except:
-                        self.print_warning(f"Could not stop services from {compose_file}")
-            
             os.chdir(self.project_root)
+            
+            # Stop all services from main compose file
+            if compose_cmd == "docker compose":
+                cmd = ["docker", "compose", "down"]
+            else:
+                cmd = ["docker-compose", "down"]
+            
+            self.run_command(cmd)
             self.print_success("All services stopped!")
             return True
             
