@@ -104,26 +104,18 @@ class DockerSetup:
             self.print_error(f"Error starting {name}: {e}")
     
     def check_service_running(self, service_name, port):
-        """Check if a service is running on specified port"""
+        """Check if a service is running on specified port using Python socket"""
+        import socket
         try:
-            if self.is_windows:
-                result = self.run_command(
-                    f"netstat -an | findstr :{port}", 
-                    service_name,
-                    shell=True, 
-                    capture_output=True,
-                    check=False
-                )
-            else:
-                result = self.run_command(
-                    ["nc", "-z", "localhost", str(port)], 
-                    service_name,
-                    capture_output=True,
-                    check=False
-                )
+            # Create socket and attempt to connect
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(2)  # 2 second timeout
+            result = sock.connect_ex(('localhost', int(port)))
+            sock.close()
             
-            return result and result.returncode == 0
-        except:
+            # Return True if connection successful (result == 0)
+            return result == 0
+        except Exception as e:
             return False
 
     def check_redis_connection(self):
