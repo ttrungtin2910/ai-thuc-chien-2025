@@ -304,11 +304,15 @@ const DocumentUpload = React.memo(() => {
 
   const getStatusTag = (status) => {
     const statusConfig = {
-      completed: { color: 'success', text: 'Hoàn thành' },
-      failed: { color: 'error', text: 'Thất bại' },
-      uploading: { color: 'processing', text: 'Đang xử lý' },
-      processing: { color: 'processing', text: 'Đang xử lý' },
-      pending: { color: 'default', text: 'Chờ xử lý' }
+      completed: { color: 'success', text: '✅ Hoàn thành' },
+      failed: { color: 'error', text: '❌ Thất bại' },
+      uploading: { color: 'processing', text: '⬆️ Đang tải lên' },
+      extracting_content: { color: 'processing', text: '🔍 Trích xuất nội dung' },
+      uploading_to_cloud: { color: 'processing', text: '☁️ Lưu cloud storage' },
+      saving_to_vector_db: { color: 'processing', text: '🗄️ Lưu vector DB' },
+      finalizing: { color: 'processing', text: '🔄 Đang hoàn tất' },
+      processing: { color: 'processing', text: '⚙️ Đang xử lý' },
+      pending: { color: 'default', text: '⏳ Chờ xử lý' }
     };
 
     const config = statusConfig[status] || statusConfig.pending;
@@ -391,6 +395,9 @@ const DocumentUpload = React.memo(() => {
             </p>
             <p style={{ margin: '8px 0' }}>
               ✅ <strong>Định dạng:</strong> PDF, DOCX, DOC, TXT, PNG, JPG, JPEG • Tối đa 100MB/file • 50 file/lần
+            </p>
+            <p style={{ margin: '8px 0' }}>
+              🤖 <strong>AI Tự động:</strong> Trích xuất văn bản từ PDF & hình ảnh • Lưu vào vector database để tìm kiếm thông minh
             </p>
           </div>
         }
@@ -1003,10 +1010,8 @@ const DocumentUpload = React.memo(() => {
           {Object.entries(uploadProgress).map(([taskId, progress]) => (
             <div key={taskId} style={{ marginBottom: '16px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <span className="font-medium">{progress.filename}</span>
-                <Tag color={progress.status === 'uploading' ? 'processing' : 'default'}>
-                  {progress.status === 'uploading' ? 'Uploading' : progress.status}
-                </Tag>
+                <span className="font-medium" style={{ color: '#D2691E' }}>{progress.filename}</span>
+                {getStatusTag(progress.status)}
               </div>
               <Progress 
                 percent={progress.progress || 0} 

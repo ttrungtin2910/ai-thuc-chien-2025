@@ -83,22 +83,32 @@ class OpenAIService:
         Returns:
             List of embedding vectors
         """
+        logger.info(f"🤖 [OPENAI] Starting embedding generation for {len(texts)} texts")
+        
         if not self.enabled:
-            logger.error("OpenAI service is not enabled")
+            logger.error("❌ [OPENAI] OpenAI service is not enabled")
             return []
         
         try:
+            # Log text stats
+            total_chars = sum(len(text) for text in texts)
+            avg_chars = total_chars / len(texts) if texts else 0
+            logger.info(f"📊 [OPENAI] Text stats: {total_chars} total chars, {avg_chars:.0f} avg chars per text")
+            logger.info(f"🔧 [OPENAI] Using model: {self.embedding_model}")
+            
             response = self.client.embeddings.create(
                 model=self.embedding_model,
                 input=texts
             )
             
             embeddings = [data.embedding for data in response.data]
-            logger.info(f"Generated embeddings for {len(texts)} texts using model: {self.embedding_model}")
+            logger.info(f"✅ [OPENAI] Generated {len(embeddings)} embeddings successfully")
+            logger.info(f"📏 [OPENAI] Embedding dimension: {len(embeddings[0]) if embeddings else 'Unknown'}")
+            
             return embeddings
             
         except Exception as e:
-            logger.error(f"Error generating embeddings: {e}")
+            logger.error(f"💥 [OPENAI] Error generating embeddings: {e}", exc_info=True)
             return []
     
     def get_embedding(self, text: str) -> List[float]:

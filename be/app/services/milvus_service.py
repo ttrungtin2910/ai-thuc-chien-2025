@@ -112,20 +112,29 @@ class MilvusService:
             documents: List of document dictionaries with keys:
                       - file_name, chunk_id, content, title, section
         """
+        logger.info(f"🚀 [MILVUS] Starting to insert {len(documents)} documents")
+        
         try:
             if not self.collection:
-                logger.error("Collection not initialized")
+                logger.error("❌ [MILVUS] Collection not initialized")
                 return False
+            
+            logger.info(f"✅ [MILVUS] Collection available: {self.collection_name}")
             
             # Prepare texts for batch embedding
             texts = [doc["content"] for doc in documents]
+            logger.info(f"📝 [MILVUS] Preparing {len(texts)} texts for embedding")
             
             # Generate embeddings using OpenAI
+            logger.info(f"🤖 [MILVUS] Generating embeddings using OpenAI...")
             embeddings = openai_service.get_embeddings(texts)
             
             if not embeddings:
-                logger.error("Failed to generate embeddings")
+                logger.error("❌ [MILVUS] Failed to generate embeddings")
                 return False
+            
+            logger.info(f"✅ [MILVUS] Generated {len(embeddings)} embeddings")
+            logger.info(f"📊 [MILVUS] Embedding dimension: {len(embeddings[0]) if embeddings else 'Unknown'}")
             
             # Prepare data for insertion - ensure correct data types
             file_names = []
@@ -135,6 +144,7 @@ class MilvusService:
             sections = []
             embedding_vectors = []
             
+            logger.info(f"🔧 [MILVUS] Preparing data for insertion...")
             for i, doc in enumerate(documents):
                 file_names.append(str(doc["file_name"]))
                 chunk_ids.append(int(doc["chunk_id"]))
@@ -142,19 +152,28 @@ class MilvusService:
                 titles.append(str(doc["title"]))
                 sections.append(str(doc["section"]))
                 embedding_vectors.append(embeddings[i])
+                logger.debug(f"📄 [MILVUS] Doc {i}: {doc['file_name']}, chunk {doc['chunk_id']}, content length: {len(doc['content'])}")
             
             # Insert data with correct structure
             data = [file_names, chunk_ids, contents, titles, sections, embedding_vectors]
+            logger.info(f"💾 [MILVUS] Inserting data into collection...")
             
             # Insert data
             insert_result = self.collection.insert(data)
+            logger.info(f"✅ [MILVUS] Data inserted, flushing collection...")
             self.collection.flush()
             
-            logger.info(f"Inserted {len(documents)} documents. IDs: {insert_result.primary_keys[:5]}...")
+            logger.info(f"🎉 [MILVUS] Successfully inserted {len(documents)} documents")
+            logger.info(f"🔑 [MILVUS] Primary keys sample: {insert_result.primary_keys[:5]}...")
+            
+            # Get updated stats
+            stats = self.get_collection_stats()
+            logger.info(f"📊 [MILVUS] Collection stats after insert: {stats} total entities")
+            
             return True
             
         except Exception as e:
-            logger.error(f"Failed to insert documents: {e}")
+            logger.error(f"💥 [MILVUS] Failed to insert documents: {e}", exc_info=True)
             return False
     
     def search_similar(self, query: str, top_k: int = 5) -> List[Dict]:

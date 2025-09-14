@@ -4,7 +4,11 @@ import threading
 from celery import current_task
 from .celery_app import celery_app
 from ..services.gcs_service import gcs_service
+from ..services.milvus_service import MilvusService
+from ..services.openai_service import openai_service
+from ..utils.document_processor import DocumentProcessor
 from ..core.websocket import websocket_manager
+from ..core.config import Config
 import logging
 import uuid
 from datetime import datetime
@@ -71,7 +75,7 @@ def send_websocket_message(user_id: str, message: dict):
 
 @celery_app.task(bind=True)
 def process_file_upload(self, file_path: str, filename: str, user_id: str, task_id: str):
-    """Process file upload to Google Cloud Storage"""
+    """Process file upload with content extraction and Milvus storage"""
     try:
         current_task.update_state(
             state='PROGRESS',
@@ -83,7 +87,7 @@ def process_file_upload(self, file_path: str, filename: str, user_id: str, task_
             'task_id': task_id,
             'filename': filename,
             'status': 'uploading',
-            'progress': 10
+            'progress': 5
         })
         
         send_websocket_message(user_id, {
@@ -91,38 +95,107 @@ def process_file_upload(self, file_path: str, filename: str, user_id: str, task_
             'task_id': task_id,
             'filename': filename,
             'status': 'uploading',
-            'progress': 10
+            'progress': 5
         })
         
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"File not found: {file_path}")
         
+        # Step 1: Extract content using Document Processor
+        logger.info(f"🎬 [UPLOAD-TASK] Starting file processing for: {filename}")
+        logger.info(f"📍 [UPLOAD-TASK] Task ID: {task_id}, User: {user_id}")
+        logger.info(f"📁 [UPLOAD-TASK] File path: {file_path}")
+        
         current_task.update_state(
             state='PROGRESS',
-            meta={'current': 25, 'total': 100, 'status': 'Uploading to Google Cloud Storage...'}
+            meta={'current': 15, 'total': 100, 'status': 'Extracting content from file...'}
         )
         
         send_websocket_message(user_id, {
             'type': 'file_processing_update',
             'task_id': task_id,
             'filename': filename,
-            'status': 'processing',
-            'progress': 25
+            'status': 'extracting_content',
+            'progress': 15
+        })
+        
+        # Initialize document processor with OpenAI service
+        logger.info(f"🔧 [UPLOAD-TASK] Initializing document processor with OpenAI service")
+        doc_processor = DocumentProcessor(openai_service=openai_service)
+        
+        # Step 2: Upload to Google Cloud Storage
+        logger.info(f"☁️ [UPLOAD-TASK] Step 2: Uploading to Google Cloud Storage")
+        current_task.update_state(
+            state='PROGRESS',
+            meta={'current': 35, 'total': 100, 'status': 'Uploading to Google Cloud Storage...'}
+        )
+        
+        send_websocket_message(user_id, {
+            'type': 'file_processing_update',
+            'task_id': task_id,
+            'filename': filename,
+            'status': 'uploading_to_cloud',
+            'progress': 35
         })
         
         public_url = gcs_service.upload_file(file_path, f"documents/{filename}")
+        logger.info(f"✅ [UPLOAD-TASK] File uploaded to GCS: {public_url}")
         
+        # Step 3: Process and save to Milvus
+        logger.info(f"🗄️ [UPLOAD-TASK] Step 3: Processing and saving to Milvus vector database")
         current_task.update_state(
             state='PROGRESS',
-            meta={'current': 75, 'total': 100, 'status': 'Finalizing...'}
+            meta={'current': 60, 'total': 100, 'status': 'Processing content and saving to vector database...'}
         )
         
         send_websocket_message(user_id, {
             'type': 'file_processing_update',
             'task_id': task_id,
             'filename': filename,
-            'status': 'processing',
-            'progress': 75
+            'status': 'saving_to_vector_db',
+            'progress': 60
+        })
+        
+        # Initialize and connect to Milvus
+        logger.info(f"🔌 [UPLOAD-TASK] Connecting to Milvus at {Config.MILVUS_HOST}:{Config.MILVUS_PORT}")
+        milvus_service = MilvusService(host=Config.MILVUS_HOST, port=Config.MILVUS_PORT)
+        
+        if milvus_service.connect():
+            logger.info(f"✅ [UPLOAD-TASK] Connected to Milvus successfully")
+            
+            logger.info(f"🏗️ [UPLOAD-TASK] Setting up Milvus collection")
+            milvus_service.create_collection()
+            milvus_service.load_collection()
+            
+            # Process and save to Milvus
+            logger.info(f"💾 [UPLOAD-TASK] Processing and saving file to Milvus")
+            milvus_success = doc_processor.process_and_save_to_milvus(
+                file_path, filename, milvus_service
+            )
+            
+            if milvus_success:
+                logger.info(f"🎉 [UPLOAD-TASK] Successfully saved {filename} to Milvus")
+            else:
+                logger.error(f"❌ [UPLOAD-TASK] Failed to save {filename} to Milvus, but continuing with upload")
+            
+            milvus_service.disconnect()
+            logger.info(f"🔌 [UPLOAD-TASK] Disconnected from Milvus")
+        else:
+            logger.error(f"❌ [UPLOAD-TASK] Failed to connect to Milvus, skipping vector database storage")
+            logger.error(f"🔧 [UPLOAD-TASK] Check if Milvus is running at {Config.MILVUS_HOST}:{Config.MILVUS_PORT}")
+        
+        # Step 4: Save document metadata
+        current_task.update_state(
+            state='PROGRESS',
+            meta={'current': 85, 'total': 100, 'status': 'Finalizing...'}
+        )
+        
+        send_websocket_message(user_id, {
+            'type': 'file_processing_update',
+            'task_id': task_id,
+            'filename': filename,
+            'status': 'finalizing',
+            'progress': 85
         })
         
         file_size = os.path.getsize(file_path) if os.path.exists(file_path) else 0
@@ -136,11 +209,13 @@ def process_file_upload(self, file_path: str, filename: str, user_id: str, task_
             stored_filename=filename
         )
         
+        # Clean up temporary file
         try:
             os.remove(file_path)
         except Exception as e:
             logger.warning(f"Could not remove local file {file_path}: {e}")
         
+        # Completion
         send_websocket_message(user_id, {
             'type': 'file_upload_complete',
             'task_id': task_id,
@@ -156,7 +231,7 @@ def process_file_upload(self, file_path: str, filename: str, user_id: str, task_
             'filename': filename,
             'public_url': public_url,
             'document_id': document['id'],
-            'message': f'File {filename} uploaded successfully'
+            'message': f'File {filename} uploaded and processed successfully'
         }
         
     except Exception as e:
@@ -207,9 +282,12 @@ def process_bulk_upload(self, file_paths: list, user_id: str, bulk_task_id: str)
                     'type': 'file_processing_update',
                     'task_id': f"{bulk_task_id}_{filename}",
                     'filename': filename,
-                    'status': 'processing',
-                    'progress': 0
+                    'status': 'extracting_content',
+                    'progress': 10
                 })
+                
+                # Initialize document processor for bulk processing
+                doc_processor = DocumentProcessor(openai_service=openai_service)
                 
                 file_size = os.path.getsize(file_path) if os.path.exists(file_path) else 0
                 file_extension = os.path.splitext(filename)[1].lower()
@@ -218,11 +296,34 @@ def process_bulk_upload(self, file_paths: list, user_id: str, bulk_task_id: str)
                     'type': 'file_processing_update',
                     'task_id': f"{bulk_task_id}_{filename}",
                     'filename': filename,
-                    'status': 'processing',
-                    'progress': 50
+                    'status': 'uploading_to_cloud',
+                    'progress': 35
                 })
                 
                 public_url = gcs_service.upload_file(file_path, f"documents/{filename}")
+                
+                send_websocket_message(user_id, {
+                    'type': 'file_processing_update',
+                    'task_id': f"{bulk_task_id}_{filename}",
+                    'filename': filename,
+                    'status': 'saving_to_vector_db',
+                    'progress': 65
+                })
+                
+                # Process and save to Milvus
+                milvus_service = MilvusService(host=Config.MILVUS_HOST, port=Config.MILVUS_PORT)
+                if milvus_service.connect():
+                    milvus_service.create_collection()
+                    milvus_service.load_collection()
+                    
+                    milvus_success = doc_processor.process_and_save_to_milvus(
+                        file_path, filename, milvus_service
+                    )
+                    
+                    if not milvus_success:
+                        logger.warning(f"Failed to save {filename} to Milvus during bulk upload")
+                    
+                    milvus_service.disconnect()
                 
                 document = add_document(
                     filename=filename,

@@ -4,12 +4,26 @@ DVC.AI là một nền tảng trợ lý ảo thông minh được xây dựng v�
 
 ## ✨ **Tính năng chính**
 
-- 🤖 **AI Chatbot**: Tích hợp LangChain và OpenAI GPT-4
-- 📚 **RAG System**: Retrieval-Augmented Generation cho tìm kiếm thông tin chính xác  
-- 🗄️ **Vector Database**: Milvus để lưu trữ và tìm kiếm embeddings
-- ⚡ **Real-time**: WebSocket communication
-- 🏗️ **Microservices**: Kiến trúc tách biệt, dễ scale
-- 🐳 **Docker**: Triển khai container hóa hoàn toàn
+### 🤖 **AI-Powered Document Processing**
+- **Multi-format support**: PDF, DOCX, TXT, Markdown, Images (PNG/JPG/JPEG)
+- **Smart content extraction**: Tự động trích xuất nội dung từ mọi loại file
+- **AI Vision analysis**: GPT-4V phân tích hình ảnh và OCR thông minh
+- **Intelligent chunking**: Tối ưu phân chia nội dung cho vector search
+
+### 📚 **Advanced RAG System**
+- **Semantic search**: OpenAI embeddings với Milvus vector database
+- **Real-time indexing**: Tự động index nội dung khi upload file
+- **Context-aware retrieval**: Tìm kiếm thông tin chính xác với ngữ cảnh
+
+### ⚡ **Real-time Processing**
+- **WebSocket updates**: Theo dõi tiến trình upload real-time
+- **Background processing**: Celery xử lý bất đồng bộ
+- **Multi-stage workflow**: Extract → Upload → Index → Store
+
+### 🏗️ **System Architecture**
+- **Microservices**: Kiến trúc tách biệt, dễ scale
+- **Docker**: Triển khai container hóa hoàn toàn  
+- **Vector Database**: Milvus để lưu trữ và tìm kiếm embeddings
 
 ---
 
@@ -39,8 +53,12 @@ cd deps && python setup.py
 
 ### **Configuration:**
 ```bash
-# Tạo .env với OpenAI API key
+# Tạo file .env với cấu hình cần thiết
 echo "OPENAI_API_KEY=sk-your-api-key-here" > .env
+echo "OPENAI_EMBEDDING_MODEL=text-embedding-3-large" >> .env
+echo "OPENAI_CHAT_MODEL=gpt-4o" >> .env
+echo "MILVUS_HOST=localhost" >> .env
+echo "MILVUS_PORT=19530" >> .env
 ```
 
 ---
@@ -104,11 +122,11 @@ docker compose restart backend
 - **Docker**: 20.10+ with Docker Compose
 
 ### **Required Ports:**
-- `3000` - Frontend
-- `8001` - Backend API  
-- `27017` - MongoDB
-- `6379` - Redis
-- `19530` - Milvus Vector DB
+- `3000` - Frontend React App
+- `8001` - Backend FastAPI + AI Services
+- `27017` - MongoDB (Document metadata)
+- `6379` - Redis (Task queue)
+- `19530` - Milvus Vector DB (AI embeddings)
 
 ---
 
@@ -117,10 +135,15 @@ docker compose restart backend
 ```
 📁 DVC.AI Project
 ├── 🎨 fe/                    # Frontend (React.js)
+│   ├── components/          # UI Components với AI upload
+│   └── services/            # API services
 ├── ⚙️  be/                   # Backend (FastAPI + AI Agent)
+│   ├── app/utils/           # AI Document Processor
+│   ├── app/workers/         # Celery AI tasks
+│   └── app/services/        # Milvus, OpenAI services
 ├── 🛠️ deps/                 # Dependencies & Setup Scripts
 ├── 📚 docs/                 # Documentation
-├── 📊 data/                 # Sample data
+├── 📊 data/                 # Sample documents
 └── 🐳 docker-compose.yml   # Docker orchestration
 ```
 
@@ -134,6 +157,9 @@ docker compose restart backend
 | Port already in use | `sudo netstat -tulpn \| grep :3000` |
 | Service not starting | `docker compose logs [service]` |
 | OpenAI API issues | Check `OPENAI_API_KEY` in `.env` |
+| File upload fails | Check Tesseract OCR installed |
+| Milvus connection error | `docker ps \| grep milvus` |
+| No content in vector DB | Check Celery worker logs |
 
 **For detailed troubleshooting:** [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 
