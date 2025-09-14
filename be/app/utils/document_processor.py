@@ -5,6 +5,14 @@ from pathlib import Path
 import logging
 import base64
 from io import BytesIO
+from ..core.config import Config
+
+# LangChain text splitter
+try:
+    from langchain.text_splitter import RecursiveCharacterTextSplitter, MarkdownHeaderTextSplitter
+except ImportError:
+    RecursiveCharacterTextSplitter = None
+    MarkdownHeaderTextSplitter = None
 
 # PDF processing
 try:
@@ -40,9 +48,40 @@ class DocumentProcessor:
             openai_service: OpenAI service instance for LLM-based extraction
         """
         self.data_dir = data_dir
-        self.chunk_size = 1000  # Maximum characters per chunk
-        self.chunk_overlap = 200  # Overlap between chunks
+        self.chunk_size = Config.CHUNK_SIZE
+        self.chunk_overlap = Config.CHUNK_OVERLAP
+        self.separators = Config.CHUNK_SEPARATORS
         self.openai_service = openai_service
+        
+        # Initialize LangChain text splitters
+        if RecursiveCharacterTextSplitter:
+            self.text_splitter = RecursiveCharacterTextSplitter(
+                chunk_size=self.chunk_size,
+                chunk_overlap=self.chunk_overlap,
+                separators=self.separators,
+                length_function=len,
+                is_separator_regex=False
+            )
+            logger.info(f"🔧 [PROCESSOR] Initialized LangChain text splitter with chunk_size={self.chunk_size}, overlap={self.chunk_overlap}")
+        else:
+            self.text_splitter = None
+            logger.warning("⚠️ [PROCESSOR] LangChain not available, falling back to simple chunking")
+            
+        # Initialize Markdown header splitter for header preservation
+        if MarkdownHeaderTextSplitter:
+            self.md_header_splitter = MarkdownHeaderTextSplitter(
+                headers_to_split_on=[
+                    ("#", "Header 1"),
+                    ("##", "Header 2"), 
+                    ("###", "Header 3"),
+                    ("####", "Header 4"),
+                    ("#####", "Header 5"),
+                    ("######", "Header 6"),
+                ]
+            )
+            logger.info("🔧 [PROCESSOR] Initialized Markdown header splitter for context preservation")
+        else:
+            self.md_header_splitter = None
         
         # Supported file types and their processors
         self.processors = {
@@ -385,7 +424,7 @@ class DocumentProcessor:
                     chunked_docs.append(chunked_doc)
             
             # Also create chunks for the full document
-            full_content_chunks = self._split_text(doc["content"])
+            full_content_chunks = self._split_text(doc["content"], ".md")  # Assume markdown for legacy method
             for chunk_idx, chunk in enumerate(full_content_chunks):
                 chunked_doc = {
                     "file_name": doc["file_name"],
@@ -399,9 +438,262 @@ class DocumentProcessor:
         logger.info(f"Created {len(chunked_docs)} chunks from {len(documents)} documents")
         return chunked_docs
     
-    def _split_text(self, text: str) -> List[str]:
+    def _split_text(self, text: str, file_type: str = None) -> List[str]:
         """
-        Split text into chunks with overlap
+        Split text into chunks with header preservation
+        
+        Args:
+            text: Text to split
+            file_type: File extension to determine splitting strategy
+            
+        Returns:
+            List of text chunks with preserved context
+        """
+        logger.debug(f"📝 [CHUNKER] Starting context-aware split for text of {len(text)} characters")
+        logger.debug(f"⚙️ [CHUNKER] Using chunk_size={self.chunk_size}, overlap={self.chunk_overlap}")
+        logger.debug(f"🔧 [CHUNKER] File type: {file_type}")
+        
+        # Check if header preservation is enabled
+        if not Config.PRESERVE_HEADERS:
+            logger.debug("🔧 [CHUNKER] Header preservation disabled, using standard splitting")
+            return self._standard_split(text) if self.text_splitter else self._simple_split(text)
+        
+        # For Markdown files, use header-aware splitting
+        if file_type == '.md' and self.md_header_splitter and self.text_splitter:
+            return self._split_markdown_with_headers(text)
+        
+        # For other text files, detect and preserve headers
+        elif self._has_headers(text) and self.text_splitter:
+            return self._split_text_with_header_context(text)
+        
+        # Standard splitting for non-structured text
+        elif self.text_splitter:
+            return self._standard_split(text)
+        
+        else:
+            # Fallback to simple splitting if LangChain not available
+            logger.warning("⚠️ [CHUNKER] LangChain not available, using simple fallback")
+            return self._simple_split(text)
+    
+    def _split_markdown_with_headers(self, text: str) -> List[str]:
+        """Split markdown text preserving header context"""
+        logger.info("📋 [CHUNKER] Using Markdown header-aware splitting")
+        
+        try:
+            # First split by headers to get sections with metadata
+            md_header_splits = self.md_header_splitter.split_text(text)
+            
+            final_chunks = []
+            
+            for doc in md_header_splits:
+                # Get header context from metadata
+                header_context = self._build_header_context(doc.metadata)
+                
+                # Split the content if it's too large
+                if len(doc.page_content) <= self.chunk_size:
+                    # Small enough, keep as is with header context
+                    chunk_with_context = header_context + doc.page_content if header_context else doc.page_content
+                    final_chunks.append(chunk_with_context.strip())
+                else:
+                    # Too large, need to split further
+                    sub_chunks = self.text_splitter.split_text(doc.page_content)
+                    
+                    for sub_chunk in sub_chunks:
+                        if sub_chunk.strip():
+                            # Add header context to each sub-chunk
+                            chunk_with_context = header_context + sub_chunk if header_context else sub_chunk
+                            final_chunks.append(chunk_with_context.strip())
+            
+            logger.info(f"🎯 [CHUNKER] Markdown header splitting generated {len(final_chunks)} chunks")
+            return final_chunks
+            
+        except Exception as e:
+            logger.error(f"💥 [CHUNKER] Markdown header splitting failed: {e}")
+            return self._standard_split(text)
+    
+    def _split_text_with_header_context(self, text: str) -> List[str]:
+        """Split text while preserving header context for non-markdown files"""
+        logger.info("📄 [CHUNKER] Using header context preservation for structured text")
+        
+        try:
+            # Extract headers and their positions
+            headers = self._extract_headers(text)
+            
+            # Standard split first
+            chunks = self.text_splitter.split_text(text)
+            
+            # Add header context to each chunk
+            enhanced_chunks = []
+            
+            for chunk in chunks:
+                if chunk.strip():
+                    # Find relevant headers for this chunk
+                    chunk_start = text.find(chunk[:50])  # Find approximate position
+                    relevant_headers = self._find_relevant_headers(headers, chunk_start)
+                    
+                    # Build header context
+                    header_context = self._build_text_header_context(relevant_headers)
+                    
+                    # Combine header context with chunk
+                    if header_context:
+                        enhanced_chunk = header_context + "\n\n" + chunk
+                    else:
+                        enhanced_chunk = chunk
+                    
+                    enhanced_chunks.append(enhanced_chunk.strip())
+            
+            logger.info(f"🎯 [CHUNKER] Header context splitting generated {len(enhanced_chunks)} chunks")
+            return enhanced_chunks
+            
+        except Exception as e:
+            logger.error(f"💥 [CHUNKER] Header context splitting failed: {e}")
+            return self._standard_split(text)
+    
+    def _standard_split(self, text: str) -> List[str]:
+        """Standard LangChain splitting without header context"""
+        try:
+            chunks = self.text_splitter.split_text(text)
+            chunks = [chunk.strip() for chunk in chunks if chunk.strip()]
+            
+            logger.info(f"🎯 [CHUNKER] Standard splitting generated {len(chunks)} chunks")
+            
+            # Log chunk size statistics
+            if chunks:
+                chunk_sizes = [len(chunk) for chunk in chunks]
+                avg_size = sum(chunk_sizes) / len(chunk_sizes)
+                min_size = min(chunk_sizes)
+                max_size = max(chunk_sizes)
+                
+                logger.debug(f"📊 [CHUNKER] Chunk stats: avg={avg_size:.0f}, min={min_size}, max={max_size}")
+            
+            return chunks
+            
+        except Exception as e:
+            logger.error(f"💥 [CHUNKER] Standard splitting failed: {e}")
+            return self._simple_split(text)
+    
+    def _has_headers(self, text: str) -> bool:
+        """Check if text has header-like structures"""
+        # Check for markdown headers
+        if re.search(r'^#{1,6}\s+.+$', text, re.MULTILINE):
+            return True
+        
+        # Check for numbered headers (1. 2. etc.)
+        if re.search(r'^\d+\.\s+.+$', text, re.MULTILINE):
+            return True
+        
+        # Check for ALL CAPS headers
+        if re.search(r'^[A-Z][A-Z\s]{3,}$', text, re.MULTILINE):
+            return True
+        
+        return False
+    
+    def _extract_headers(self, text: str) -> List[dict]:
+        """Extract headers and their positions from text"""
+        headers = []
+        lines = text.split('\n')
+        position = 0
+        
+        for line in lines:
+            line_stripped = line.strip()
+            
+            # Markdown headers
+            md_match = re.match(r'^(#{1,6})\s+(.+)$', line_stripped)
+            if md_match:
+                level = len(md_match.group(1))
+                title = md_match.group(2)
+                headers.append({
+                    'level': level,
+                    'title': title,
+                    'position': position,
+                    'type': 'markdown'
+                })
+            
+            # Numbered headers
+            elif re.match(r'^\d+\.\s+.+$', line_stripped):
+                headers.append({
+                    'level': 2,  # Treat as level 2
+                    'title': line_stripped,
+                    'position': position,
+                    'type': 'numbered'
+                })
+            
+            # ALL CAPS headers
+            elif re.match(r'^[A-Z][A-Z\s]{3,}$', line_stripped) and len(line_stripped) < 100:
+                headers.append({
+                    'level': 1,  # Treat as level 1
+                    'title': line_stripped,
+                    'position': position,
+                    'type': 'caps'
+                })
+            
+            position += len(line) + 1  # +1 for newline
+        
+        return headers
+    
+    def _find_relevant_headers(self, headers: List[dict], chunk_position: int) -> List[dict]:
+        """Find headers that should provide context for a chunk at given position"""
+        relevant_headers = []
+        
+        # Find headers before this chunk position
+        for header in reversed(headers):  # Start from most recent
+            if header['position'] <= chunk_position:
+                # Add this header and any higher-level headers above it
+                relevant_headers.insert(0, header)
+                
+                # Look for higher-level headers
+                current_level = header['level']
+                for prev_header in reversed(headers):
+                    if (prev_header['position'] < header['position'] and 
+                        prev_header['level'] < current_level):
+                        relevant_headers.insert(0, prev_header)
+                        current_level = prev_header['level']
+                        if current_level == 1:  # Found top level
+                            break
+                break
+        
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_headers = []
+        for header in relevant_headers:
+            key = (header['position'], header['title'])
+            if key not in seen:
+                seen.add(key)
+                unique_headers.append(header)
+        
+        return unique_headers
+    
+    def _build_header_context(self, metadata: dict) -> str:
+        """Build header context string from markdown metadata"""
+        context_parts = []
+        
+        # Sort by header level
+        for i in range(1, 7):
+            header_key = f"Header {i}"
+            if header_key in metadata:
+                level_prefix = "#" * i
+                context_parts.append(f"{level_prefix} {metadata[header_key]}")
+        
+        return "\n".join(context_parts) + "\n\n" if context_parts else ""
+    
+    def _build_text_header_context(self, headers: List[dict]) -> str:
+        """Build header context string from extracted headers"""
+        if not headers:
+            return ""
+        
+        context_parts = []
+        for header in headers:
+            if header['type'] == 'markdown':
+                level_prefix = "#" * header['level']
+                context_parts.append(f"{level_prefix} {header['title']}")
+            else:
+                context_parts.append(header['title'])
+        
+        return "\n".join(context_parts) if context_parts else ""
+    
+    def _simple_split(self, text: str) -> List[str]:
+        """
+        Simple fallback text splitting method
         
         Args:
             text: Text to split
@@ -409,8 +701,10 @@ class DocumentProcessor:
         Returns:
             List of text chunks
         """
+        logger.debug(f"🔪 [CHUNKER] Simple fallback split for {len(text)} chars")
+        
         if len(text) <= self.chunk_size:
-            return [text]
+            return [text.strip()] if text.strip() else []
         
         chunks = []
         start = 0
@@ -433,6 +727,7 @@ class DocumentProcessor:
             chunk = text[start:end].strip()
             if chunk:
                 chunks.append(chunk)
+                logger.debug(f"📦 [CHUNKER] Simple chunk: {len(chunk)} chars")
             
             # Move start position with overlap
             start = max(end - self.chunk_overlap, start + 1)
@@ -441,6 +736,7 @@ class DocumentProcessor:
             if start >= len(text):
                 break
         
+        logger.debug(f"✅ [CHUNKER] Simple split created {len(chunks)} chunks")
         return chunks
     
     def process_and_save_to_milvus(self, file_path: str, filename: str, milvus_service) -> bool:
@@ -467,9 +763,9 @@ class DocumentProcessor:
             
             logger.info(f"✅ [MILVUS-PROCESSOR] Content extracted successfully")
             
-            # Split content into chunks
-            logger.info(f"✂️ [MILVUS-PROCESSOR] Step 2: Splitting content into chunks")
-            chunks = self._split_text(doc["content"])
+            # Split content into chunks with context preservation
+            logger.info(f"✂️ [MILVUS-PROCESSOR] Step 2: Splitting content into chunks with header preservation")
+            chunks = self._split_text(doc["content"], doc["file_type"])
             logger.info(f"📊 [MILVUS-PROCESSOR] Generated {len(chunks)} chunks from content")
             
             if not chunks:

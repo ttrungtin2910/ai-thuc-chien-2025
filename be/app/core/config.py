@@ -57,6 +57,17 @@ class Config:
     OPENAI_MAX_TOKENS = int(os.getenv("OPENAI_MAX_TOKENS", "1000"))
     OPENAI_TIMEOUT = int(os.getenv("OPENAI_TIMEOUT", "30"))
     
+    # Document Chunking Configuration (LangChain)
+    CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "1000"))
+    CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "200"))
+    # LangChain separators in order of preference (most semantic to least)
+    CHUNK_SEPARATORS = [
+        sep.strip().replace('\\n', '\n').replace('\\t', '\t') 
+        for sep in os.getenv("CHUNK_SEPARATORS", "\n\n,\n,. ,? ,! ,; ,: ,\t, ").split(",")
+    ]
+    # Header preservation setting
+    PRESERVE_HEADERS = os.getenv("PRESERVE_HEADERS", "true").lower() == "true"
+    
     # API Configuration
     API_V1_PREFIX = "/api"
     APP_NAME = os.getenv("APP_NAME", "DVC.AI - Document Management")
