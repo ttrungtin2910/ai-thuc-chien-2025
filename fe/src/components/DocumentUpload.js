@@ -184,11 +184,11 @@ const DocumentUpload = React.memo(() => {
 
   const handleUpload = async (file) => {
     // Kiểm tra loại file
-    const allowedTypes = ['.pdf', '.docx', '.doc', '.txt', '.png', '.jpg', '.jpeg'];
+    const allowedTypes = ['.pdf', '.docx', '.doc', '.txt', '.md', '.png', '.jpg', '.jpeg'];
     const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
     
     if (!allowedTypes.includes(fileExtension)) {
-      message.error('Chỉ hỗ trợ file PDF, DOCX, DOC, TXT, PNG, JPG, JPEG!');
+      message.error('Chỉ hỗ trợ file PDF, DOCX, DOC, TXT, MD (Markdown), PNG, JPG, JPEG!');
       return false;
     }
 
@@ -337,7 +337,7 @@ const DocumentUpload = React.memo(() => {
         setTimeout(() => setFileList([]), 100);
       }
     },
-    accept: '.pdf,.docx,.doc,.txt,.png,.jpg,.jpeg',
+    accept: '.pdf,.docx,.doc,.txt,.md,.png,.jpg,.jpeg',
     maxCount: 50,
   };
 
@@ -345,7 +345,7 @@ const DocumentUpload = React.memo(() => {
     multiple: true,
     beforeUpload: handleUpload,
     showUploadList: false,
-    accept: '.pdf,.docx,.doc,.txt,.png,.jpg,.jpeg',
+    accept: '.pdf,.docx,.doc,.txt,.md,.png,.jpg,.jpeg',
   };
 
   return (
@@ -394,10 +394,10 @@ const DocumentUpload = React.memo(() => {
               📂 <strong>Upload hàng loạt:</strong> Chọn nhiều file → Kiểm tra danh sách → Nhấn "Tải lên tất cả"
             </p>
             <p style={{ margin: '8px 0' }}>
-              ✅ <strong>Định dạng:</strong> PDF, DOCX, DOC, TXT, PNG, JPG, JPEG • Tối đa 100MB/file • 50 file/lần
+              ✅ <strong>Định dạng:</strong> PDF, DOCX, DOC, TXT, MD (Markdown), PNG, JPG, JPEG • Tối đa 100MB/file • 50 file/lần
             </p>
             <p style={{ margin: '8px 0' }}>
-              🤖 <strong>AI Tự động:</strong> Trích xuất văn bản từ PDF & hình ảnh • Lưu vào vector database để tìm kiếm thông minh
+              🤖 <strong>AI Tự động:</strong> Trích xuất văn bản từ PDF, Markdown & hình ảnh • Header preservation cho chunks • Lưu vào vector database để tìm kiếm thông minh
             </p>
           </div>
         }
