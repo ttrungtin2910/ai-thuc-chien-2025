@@ -13,6 +13,7 @@ import {
 import { 
   FileTextFilled, 
   UploadOutlined,
+  DatabaseOutlined,
   MessageFilled, 
   UserOutlined, 
   LogoutOutlined,
@@ -22,6 +23,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import DocumentManagement from '../components/DocumentManagement';
 import DocumentUpload from '../components/DocumentUpload';
+import ChunksViewer from '../components/ChunksViewer';
 import ChatBot from '../components/ChatBot';
 import logo from '../assets/logo.png';
 
@@ -62,6 +64,15 @@ const MainPage = () => {
             <Space>
               <UploadOutlined />
               <span>Tải lên Tài liệu</span>
+            </Space>
+          ),
+        }];
+      case 'chunks':
+        return [...baseItems, {
+          title: (
+            <Space>
+              <DatabaseOutlined />
+              <span>Vector Chunks</span>
             </Space>
           ),
         }];
@@ -128,6 +139,16 @@ const MainPage = () => {
         </span>
       ),
       children: <DocumentUpload />
+    },
+    {
+      key: 'chunks',
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <DatabaseOutlined style={{ padding: '2px', background: 'rgba(210, 105, 30, 0.1)', borderRadius: '4px' }} />
+          Vector Chunks
+        </span>
+      ),
+      children: <ChunksViewer />
     },
     {
       key: 'chatbot',

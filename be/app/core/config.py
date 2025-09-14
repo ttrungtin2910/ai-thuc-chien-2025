@@ -58,13 +58,22 @@ class Config:
     OPENAI_TIMEOUT = int(os.getenv("OPENAI_TIMEOUT", "30"))
     
     # Document Chunking Configuration (LangChain)
-    CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "1000"))
+    CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "3000"))
     CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "200"))
     # LangChain separators in order of preference (most semantic to least)
-    CHUNK_SEPARATORS = [
-        sep.strip().replace('\\n', '\n').replace('\\t', '\t') 
-        for sep in os.getenv("CHUNK_SEPARATORS", "\n\n,\n,. ,? ,! ,; ,: ,\t, ").split(",")
-    ]
+    separators_raw = os.getenv("CHUNK_SEPARATORS", "\n\n|\n|. |? |! |; |: |\t| ")
+    CHUNK_SEPARATORS = []
+    
+    # Parse separators using | as delimiter instead of comma to avoid conflicts
+    for sep in separators_raw.split("|"):
+        if sep.strip():  # Only add non-empty separators
+            # Replace escape sequences
+            processed_sep = sep.replace('\\n', '\n').replace('\\t', '\t')
+            CHUNK_SEPARATORS.append(processed_sep)
+    
+    # Fallback if no separators parsed
+    if not CHUNK_SEPARATORS:
+        CHUNK_SEPARATORS = ["\n\n", "\n", ". ", "? ", "! ", "; ", ": ", "\t", " "]
     # Header preservation setting
     PRESERVE_HEADERS = os.getenv("PRESERVE_HEADERS", "true").lower() == "true"
     

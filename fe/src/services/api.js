@@ -86,6 +86,17 @@ export const documentsAPI = {
   deleteDocument: async (documentId) => {
     const response = await api.delete(`/api/documents/${documentId}`);
     return response.data;
+  },
+
+  // Chunks API
+  getChunks: async (params = {}) => {
+    const response = await api.get('/api/documents/chunks', { params });
+    return response.data;
+  },
+
+  getChunksStats: async () => {
+    const response = await api.get('/api/documents/chunks/stats');
+    return response.data;
   }
 };
 

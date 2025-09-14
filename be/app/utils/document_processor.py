@@ -9,10 +9,11 @@ from ..core.config import Config
 
 # LangChain text splitter
 try:
-    from langchain.text_splitter import RecursiveCharacterTextSplitter, MarkdownHeaderTextSplitter
+    from langchain.text_splitter import RecursiveCharacterTextSplitter, MarkdownHeaderTextSplitter, CharacterTextSplitter
 except ImportError:
     RecursiveCharacterTextSplitter = None
     MarkdownHeaderTextSplitter = None
+    CharacterTextSplitter = None
 
 # PDF processing
 try:
@@ -53,16 +54,25 @@ class DocumentProcessor:
         self.separators = Config.CHUNK_SEPARATORS
         self.openai_service = openai_service
         
-        # Initialize LangChain text splitters
-        if RecursiveCharacterTextSplitter:
+        # Initialize LangChain fixed-size text splitter (CharacterTextSplitter for consistency)
+        if CharacterTextSplitter:
+            self.text_splitter = CharacterTextSplitter(
+                chunk_size=Config.CHUNK_SIZE,
+                chunk_overlap=Config.CHUNK_OVERLAP,
+                separator="\n\n",  # Split by paragraphs primarily
+                length_function=len
+            )
+            logger.info(f"🔧 [PROCESSOR] Initialized LangChain CharacterTextSplitter (fixed-size) with chunk_size={Config.CHUNK_SIZE}, overlap={Config.CHUNK_OVERLAP}")
+        elif RecursiveCharacterTextSplitter:
+            # Fallback to RecursiveCharacterTextSplitter with limited separators
             self.text_splitter = RecursiveCharacterTextSplitter(
-                chunk_size=self.chunk_size,
-                chunk_overlap=self.chunk_overlap,
-                separators=self.separators,
+                chunk_size=Config.CHUNK_SIZE,
+                chunk_overlap=Config.CHUNK_OVERLAP,
+                separators=["\n\n", "\n", ". ", " "],  # Limited separators for more consistent sizes
                 length_function=len,
                 is_separator_regex=False
             )
-            logger.info(f"🔧 [PROCESSOR] Initialized LangChain text splitter with chunk_size={self.chunk_size}, overlap={self.chunk_overlap}")
+            logger.info(f"🔧 [PROCESSOR] Initialized RecursiveCharacterTextSplitter as fallback with chunk_size={Config.CHUNK_SIZE}, overlap={Config.CHUNK_OVERLAP}")
         else:
             self.text_splitter = None
             logger.warning("⚠️ [PROCESSOR] LangChain not available, falling back to simple chunking")
@@ -440,39 +450,28 @@ class DocumentProcessor:
     
     def _split_text(self, text: str, file_type: str = None) -> List[str]:
         """
-        Split text into chunks with header preservation
+        Split text using LangChain's fixed-size chunking for consistent chunks
         
         Args:
             text: Text to split
-            file_type: File extension to determine splitting strategy
+            file_type: File extension to determine header preservation
             
         Returns:
-            List of text chunks with preserved context
+            List of fixed-size text chunks
         """
-        logger.debug(f"📝 [CHUNKER] Starting context-aware split for text of {len(text)} characters")
-        logger.debug(f"⚙️ [CHUNKER] Using chunk_size={self.chunk_size}, overlap={self.chunk_overlap}")
+        logger.debug(f"📝 [CHUNKER] Starting LangChain fixed-size split for {len(text)} characters")
+        logger.debug(f"⚙️ [CHUNKER] Using CHUNK_SIZE={Config.CHUNK_SIZE}, OVERLAP={Config.CHUNK_OVERLAP}")
         logger.debug(f"🔧 [CHUNKER] File type: {file_type}")
         
-        # Check if header preservation is enabled
-        if not Config.PRESERVE_HEADERS:
-            logger.debug("🔧 [CHUNKER] Header preservation disabled, using standard splitting")
-            return self._standard_split(text) if self.text_splitter else self._simple_split(text)
-        
-        # For Markdown files, use header-aware splitting
-        if file_type == '.md' and self.md_header_splitter and self.text_splitter:
-            return self._split_markdown_with_headers(text)
-        
-        # For other text files, detect and preserve headers
-        elif self._has_headers(text) and self.text_splitter:
-            return self._split_text_with_header_context(text)
-        
-        # Standard splitting for non-structured text
-        elif self.text_splitter:
-            return self._standard_split(text)
-        
-        else:
-            # Fallback to simple splitting if LangChain not available
-            logger.warning("⚠️ [CHUNKER] LangChain not available, using simple fallback")
+        try:
+            if not text.strip():
+                return []
+            
+            # Use LangChain's fixed-size chunking
+            return self._langchain_fixed_size_split(text, file_type or "")
+                
+        except Exception as e:
+            logger.warning(f"🔄 LangChain fixed-size chunking failed: {e}. Using simple fallback.")
             return self._simple_split(text)
     
     def _split_markdown_with_headers(self, text: str) -> List[str]:
@@ -548,6 +547,169 @@ class DocumentProcessor:
         except Exception as e:
             logger.error(f"💥 [CHUNKER] Header context splitting failed: {e}")
             return self._standard_split(text)
+    
+    def _langchain_fixed_size_split(self, text: str, file_type: str) -> List[str]:
+        """LangChain-based fixed-size chunking with consistent chunk sizes"""
+        try:
+            # For markdown files with header preservation
+            if file_type == '.md' and Config.PRESERVE_HEADERS:
+                return self._langchain_markdown_fixed_split(text)
+            
+            # Standard fixed-size splitting using LangChain
+            if not self.text_splitter:
+                logger.warning("🔄 LangChain splitter not available, using fallback")
+                return self._simple_split(text)
+            
+            chunks = self.text_splitter.split_text(text)
+            chunks = [chunk.strip() for chunk in chunks if chunk.strip()]
+            
+            logger.info(f"📊 LangChain fixed-size split: {len(chunks)} chunks created")
+            for i, chunk in enumerate(chunks):
+                logger.debug(f"   Chunk {i+1}: {len(chunk)} chars")
+            
+            return chunks
+            
+        except Exception as e:
+            logger.error(f"❌ LangChain fixed-size splitting failed: {e}")
+            return self._simple_split(text)
+    
+    def _langchain_markdown_fixed_split(self, text: str) -> List[str]:
+        """Fixed-size chunking for markdown with header preservation"""
+        try:
+            # Extract document headers for context
+            headers_context = self._extract_document_headers(text)
+            
+            # Use LangChain's CharacterTextSplitter for consistent sizes
+            chunks = self.text_splitter.split_text(text)
+            chunks = [chunk.strip() for chunk in chunks if chunk.strip()]
+            
+            # Add header context to each chunk if available
+            if headers_context:
+                enhanced_chunks = []
+                for chunk in chunks:
+                    # Add headers to maintain context
+                    enhanced_chunk = headers_context + "\n\n" + chunk
+                    enhanced_chunks.append(enhanced_chunk)
+                chunks = enhanced_chunks
+            
+            logger.info(f"📊 LangChain markdown fixed-split: {len(chunks)} chunks with headers")
+            for i, chunk in enumerate(chunks):
+                logger.debug(f"   Chunk {i+1}: {len(chunk)} chars")
+            
+            return chunks
+            
+        except Exception as e:
+            logger.error(f"❌ LangChain markdown fixed-splitting failed: {e}")
+            return self.text_splitter.split_text(text) if self.text_splitter else self._simple_split(text)
+    
+    def _fixed_size_split(self, text: str, file_type: str) -> List[str]:
+        """Fixed-size chunking with optional header preservation"""
+        try:
+            chunk_size = Config.CHUNK_SIZE
+            chunk_overlap = Config.CHUNK_OVERLAP
+            
+            # Extract headers if markdown and preserve_headers is enabled
+            headers_context = ""
+            if file_type == '.md' and Config.PRESERVE_HEADERS:
+                headers_context = self._extract_document_headers(text)
+            
+            chunks = []
+            start = 0
+            text_length = len(text)
+            
+            while start < text_length:
+                # Calculate end position
+                end = start + chunk_size
+                
+                # If this is the last chunk and it's very small, merge with previous
+                if end >= text_length:
+                    chunk_text = text[start:]
+                    if len(chunk_text) < chunk_size * 0.3 and chunks:  # Less than 30% of chunk_size
+                        # Merge with last chunk
+                        chunks[-1] = chunks[-1] + "\n\n" + chunk_text
+                    else:
+                        # Add header context if needed
+                        if headers_context and file_type == '.md':
+                            chunk_text = headers_context + "\n\n" + chunk_text
+                        chunks.append(chunk_text)
+                    break
+                
+                # Find a good break point within the overlap zone
+                break_point = end
+                
+                # Look for natural break points in the overlap zone
+                search_start = max(start + chunk_size - chunk_overlap, start + chunk_size // 2)
+                search_end = min(end + chunk_overlap, text_length)
+                
+                # Try to find good break points in order of preference
+                break_candidates = []
+                
+                # Look for paragraph breaks first
+                for i in range(search_end - 1, search_start - 1, -1):
+                    if i + 1 < text_length and text[i:i+2] == '\n\n':
+                        break_candidates.append(i + 2)
+                        break
+                
+                # Look for sentence breaks
+                if not break_candidates:
+                    for i in range(search_end - 1, search_start - 1, -1):
+                        if text[i] in '.!?' and i + 1 < text_length and text[i + 1] in ' \n':
+                            break_candidates.append(i + 1)
+                            break
+                
+                # Look for line breaks
+                if not break_candidates:
+                    for i in range(search_end - 1, search_start - 1, -1):
+                        if text[i] == '\n':
+                            break_candidates.append(i + 1)
+                            break
+                
+                # Use the best break point found, or default to fixed position
+                if break_candidates:
+                    break_point = break_candidates[0]
+                
+                # Extract chunk
+                chunk_text = text[start:break_point].strip()
+                
+                # Add header context for markdown files
+                if headers_context and file_type == '.md':
+                    chunk_text = headers_context + "\n\n" + chunk_text
+                
+                if chunk_text:
+                    chunks.append(chunk_text)
+                
+                # Move start position (with overlap)
+                start = break_point - chunk_overlap if break_point > chunk_overlap else break_point
+            
+            logger.info(f"📊 Fixed-size split: {len(chunks)} chunks created")
+            for i, chunk in enumerate(chunks):
+                logger.debug(f"   Chunk {i+1}: {len(chunk)} chars")
+            
+            return chunks
+            
+        except Exception as e:
+            logger.error(f"❌ Fixed-size splitting failed: {e}")
+            return self._simple_split(text)
+    
+    def _extract_document_headers(self, text: str) -> str:
+        """Extract main document headers for context"""
+        lines = text.split('\n')
+        headers = []
+        
+        for line in lines[:20]:  # Check first 20 lines for main headers
+            line = line.strip()
+            if line.startswith('#') and len(line.split()) <= 10:  # Reasonable header length
+                # Only keep H1 and H2 headers for context
+                if line.startswith('##') and not line.startswith('###'):
+                    headers.append(line)
+                elif line.startswith('#') and not line.startswith('##'):
+                    headers.append(line)
+            
+            # Stop if we find content after headers
+            if not line.startswith('#') and line and len(headers) > 0:
+                break
+        
+        return '\n'.join(headers) if headers else ""
     
     def _standard_split(self, text: str) -> List[str]:
         """Standard LangChain splitting without header context"""
