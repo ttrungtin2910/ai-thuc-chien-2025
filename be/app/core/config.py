@@ -42,11 +42,11 @@ class Config:
     CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
     CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
     
-    # CORS Configuration
+    # CORS Configuration (dùng chung cho FastAPI và WebSocket)
     CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
     
-    # WebSocket Configuration
-    WEBSOCKET_CORS_ORIGINS = os.getenv("WEBSOCKET_CORS_ORIGINS", "http://localhost:3000").split(",")
+    # WebSocket Configuration (sử dụng chung CORS_ORIGINS)
+    WEBSOCKET_CORS_ORIGINS = CORS_ORIGINS
     
     # Milvus Configuration
     MILVUS_HOST = os.getenv("MILVUS_HOST", "localhost")
