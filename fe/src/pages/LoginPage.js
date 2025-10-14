@@ -31,18 +31,33 @@ const LoginPage = () => {
 
   return (
     <div className="login-container">
-      <Card className="login-box" style={{ boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)' }}>
+      <Card className="login-box" style={{ 
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+        maxWidth: window.innerWidth <= 768 ? 'calc(100vw - 32px)' : '400px',
+        margin: window.innerWidth <= 768 ? '16px' : '0'
+      }}>
         <div className="login-logo">
           <Space direction="vertical" align="center" size="small">
             <img 
               src={logo} 
               alt="DVC.AI Logo" 
-              style={{ width: '64px', height: '64px' }}
+              style={{ 
+                width: window.innerWidth <= 480 ? '48px' : '64px', 
+                height: window.innerWidth <= 480 ? '48px' : '64px' 
+              }}
             />
-            <Title level={2} style={{ margin: 0, color: '#D2691E', fontFamily: "'MaisonNeue', 'Inter', sans-serif" }}>
+            <Title level={2} style={{ 
+              margin: 0, 
+              color: '#D2691E', 
+              fontFamily: "'MaisonNeue', 'Inter', sans-serif",
+              fontSize: window.innerWidth <= 480 ? '20px' : '28px'
+            }}>
               DVC.AI
             </Title>
-            <Text type="secondary">
+            <Text type="secondary" style={{
+              fontSize: window.innerWidth <= 480 ? '13px' : '14px',
+              textAlign: 'center'
+            }}>
               Trợ lý dịch vụ công và cổng Kiến thức
             </Text>
           </Space>
@@ -52,11 +67,11 @@ const LoginPage = () => {
           name="login"
           onFinish={onFinish}
           layout="vertical"
-          size="large"
-          style={{ marginTop: '32px' }}
+          size={window.innerWidth <= 480 ? 'middle' : 'large'}
+          style={{ marginTop: window.innerWidth <= 480 ? '24px' : '32px' }}
         >
           <Form.Item
-            label="Tên đăng nhập"
+            label={<span style={{ fontSize: window.innerWidth <= 480 ? '14px' : '16px' }}>Tên đăng nhập</span>}
             name="username"
             rules={[
               {
@@ -68,12 +83,16 @@ const LoginPage = () => {
             <Input 
               prefix={<UserOutlined style={{ color: '#D2691E' }} />} 
               placeholder="Nhập tên đăng nhập"
-              style={{ borderRadius: '10px' }}
+              style={{ 
+                borderRadius: '10px',
+                fontSize: window.innerWidth <= 480 ? '14px' : '16px',
+                height: window.innerWidth <= 480 ? '40px' : 'auto'
+              }}
             />
           </Form.Item>
 
           <Form.Item
-            label="Mật khẩu"
+            label={<span style={{ fontSize: window.innerWidth <= 480 ? '14px' : '16px' }}>Mật khẩu</span>}
             name="password"
             rules={[
               {
@@ -85,11 +104,15 @@ const LoginPage = () => {
             <Input.Password
               prefix={<LockFilled style={{ color: '#D2691E' }} />}
               placeholder="Nhập mật khẩu"
-              style={{ borderRadius: '10px' }}
+              style={{ 
+                borderRadius: '10px',
+                fontSize: window.innerWidth <= 480 ? '14px' : '16px',
+                height: window.innerWidth <= 480 ? '40px' : 'auto'
+              }}
             />
           </Form.Item>
 
-          <Form.Item style={{ marginTop: '32px', marginBottom: 0 }}>
+          <Form.Item style={{ marginTop: window.innerWidth <= 480 ? '24px' : '32px', marginBottom: 0 }}>
             <Button
               type="primary"
               htmlType="submit"
@@ -97,10 +120,10 @@ const LoginPage = () => {
               block
               className="btn-government"
               style={{ 
-                height: '48px', 
-                fontSize: '16px',
+                height: window.innerWidth <= 480 ? '44px' : '48px', 
+                fontSize: window.innerWidth <= 480 ? '15px' : '16px',
                 fontWeight: '600',
-                borderRadius: '12px'
+                borderRadius: window.innerWidth <= 480 ? '10px' : '12px'
               }}
             >
               Đăng nhập
@@ -109,22 +132,22 @@ const LoginPage = () => {
         </Form>
 
         <div style={{ 
-          marginTop: '24px', 
-          padding: '16px', 
+          marginTop: window.innerWidth <= 480 ? '20px' : '24px', 
+          padding: window.innerWidth <= 480 ? '12px' : '16px', 
           background: '#f8f9fa', 
-          borderRadius: '12px',
+          borderRadius: window.innerWidth <= 480 ? '10px' : '12px',
           border: '1px solid #dee2e6'
         }}>
-          <Text type="secondary" style={{ fontSize: '13px' }}>
+          <Text type="secondary" style={{ fontSize: window.innerWidth <= 480 ? '12px' : '13px' }}>
             <strong>Tài khoản demo:</strong><br />
-            Tên đăng nhập: <code>admin</code><br />
-            Mật khẩu: <code>password123</code>
+            Tên đăng nhập: <code style={{ fontSize: window.innerWidth <= 480 ? '11px' : '12px' }}>admin</code><br />
+            Mật khẩu: <code style={{ fontSize: window.innerWidth <= 480 ? '11px' : '12px' }}>password123</code>
           </Text>
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: '24px' }}>
-          <Text type="secondary" style={{ fontSize: '12px' }}>
-            © 2024 Hệ thống Quản lý Tài liệu. Phiên bản 1.0.0
+        <div style={{ textAlign: 'center', marginTop: window.innerWidth <= 480 ? '20px' : '24px' }}>
+          <Text type="secondary" style={{ fontSize: window.innerWidth <= 480 ? '11px' : '12px' }}>
+            2025 DVC.ai
           </Text>
         </div>
       </Card>

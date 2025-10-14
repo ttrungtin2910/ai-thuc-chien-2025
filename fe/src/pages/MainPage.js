@@ -182,7 +182,6 @@ const MainPage = () => {
               style={{ 
                 width: 'clamp(32px, 5vw, 40px)', 
                 height: 'clamp(32px, 5vw, 40px)', 
-                filter: 'brightness(0) invert(1)',
                 flexShrink: 0
               }}
             />

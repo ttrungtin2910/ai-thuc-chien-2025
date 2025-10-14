@@ -407,6 +407,124 @@ code {
     max-width: 400px;
     padding: 32px;
   }
+  
+  /* Tablet table improvements */
+  .ant-table {
+    font-size: 13px;
+  }
+  
+  .ant-table-thead > tr > th {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+  
+  .ant-table-tbody > tr > td {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+  
+  /* Tablet button improvements */
+  .ant-btn {
+    height: 38px;
+    padding: 4px 14px;
+    font-size: 14px;
+  }
+  
+  /* Modal responsive for tablet */
+  .ant-modal {
+    max-width: calc(100vw - 64px);
+  }
+  
+  .ant-modal-body {
+    max-height: calc(100vh - 250px);
+    overflow-y: auto;
+  }
+  
+  /* Card improvements */
+  .ant-card {
+    margin-bottom: 20px;
+  }
+  
+  .ant-card-head-title {
+    font-size: 17px;
+  }
+  
+  /* Statistic for tablet */
+  .ant-statistic-title {
+    font-size: 13px;
+  }
+  
+  .ant-statistic-content {
+    font-size: 22px;
+  }
+}
+
+/* Small Mobile to Tablet */
+@media (min-width: 481px) and (max-width: 767px) {
+  .main-content {
+    padding: 18px 20px;
+  }
+  
+  .government-header {
+    height: 72px;
+    line-height: 72px;
+  }
+  
+  .government-header h1 {
+    font-size: 21px;
+  }
+  
+  .government-tabs .ant-tabs-tab {
+    padding: 12px 16px;
+    min-height: 48px;
+    font-size: 14px;
+  }
+  
+  .government-card .card-body {
+    padding: 18px 20px;
+  }
+  
+  .login-box {
+    margin: 20px;
+    padding: 28px;
+    max-width: calc(100vw - 40px);
+  }
+  
+  /* Button improvements */
+  .ant-btn {
+    height: 40px;
+    padding: 4px 14px;
+    font-size: 14px;
+  }
+  
+  /* Table improvements */
+  .ant-table {
+    font-size: 13px;
+  }
+  
+  .ant-table-thead > tr > th {
+    padding: 10px 6px;
+    font-size: 12px;
+  }
+  
+  .ant-table-tbody > tr > td {
+    padding: 10px 6px;
+    font-size: 13px;
+  }
+  
+  /* Card improvements */
+  .ant-card-head-title {
+    font-size: 16px;
+  }
+  
+  /* Statistic improvements */
+  .ant-statistic-title {
+    font-size: 12px;
+  }
+  
+  .ant-statistic-content {
+    font-size: 20px;
+  }
 }
 
 /* Mobile */
@@ -1047,12 +1165,100 @@ code {
   /* Compact table pagination */
   .ant-pagination {
     text-align: center;
+    margin: 16px 0 !important;
   }
   
   .ant-pagination-item {
-    min-width: 28px;
-    height: 28px;
-    line-height: 26px;
+    min-width: 32px;
+    height: 32px;
+    line-height: 30px;
+    font-size: 12px;
+    margin: 0 2px;
+  }
+  
+  .ant-pagination-prev,
+  .ant-pagination-next {
+    min-width: 32px;
+    height: 32px;
+    line-height: 30px;
+  }
+  
+  /* Login container mobile */
+  .login-container {
+    padding: 16px;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+  }
+  
+  .login-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 20px !important;
+  }
+  
+  /* Modal responsive */
+  .ant-modal {
+    max-width: calc(100vw - 32px) !important;
+    margin: 16px auto !important;
+  }
+  
+  .ant-modal-content {
+    border-radius: 10px !important;
+  }
+  
+  .ant-modal-body {
+    padding: 16px !important;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+  }
+  
+  /* Table improvements for mobile */
+  .ant-table {
+    font-size: 12px !important;
+  }
+  
+  .ant-table-thead > tr > th {
+    padding: 8px 4px !important;
+    font-size: 11px !important;
+  }
+  
+  .ant-table-tbody > tr > td {
+    padding: 8px 4px !important;
+    font-size: 12px !important;
+  }
+  
+  /* Form improvements */
+  .ant-form-item {
+    margin-bottom: 16px !important;
+  }
+  
+  .ant-form-item-label > label {
+    font-size: 14px !important;
+  }
+  
+  /* Card title responsive */
+  .ant-card-head-title {
+    font-size: 15px !important;
+    padding: 12px 0 !important;
+  }
+  
+  /* Space component */
+  .ant-space {
+    gap: 8px !important;
+  }
+  
+  /* Statistic responsive */
+  .ant-statistic {
+    text-align: center;
+  }
+  
+  .ant-statistic-title {
+    font-size: 11px !important;
+  }
+  
+  .ant-statistic-content {
+    font-size: 18px !important;
   }
 }
 
