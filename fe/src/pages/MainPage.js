@@ -34,7 +34,7 @@ const { Title, Text } = Typography;
 const MainPage = () => {
   const { user, logout } = useAuth();
   const { width } = useWindowSize();
-  const [activeTab, setActiveTab] = useState('documents');
+  const [activeTab, setActiveTab] = useState('chatbot');
 
   // Breadcrumb configuration
   const getBreadcrumbItems = () => {
@@ -51,6 +51,24 @@ const MainPage = () => {
     ];
 
     switch (activeTab) {
+      case 'chatbot':
+        return [...baseItems, {
+          title: (
+            <Space>
+              <MessageFilled />
+              <span>Hỗ trợ Trực tuyến</span>
+            </Space>
+          ),
+        }];
+      case 'chunks':
+        return [...baseItems, {
+          title: (
+            <Space>
+              <DatabaseOutlined />
+              <span>Kho tri thức</span>
+            </Space>
+          ),
+        }];
       case 'documents':
         return [...baseItems, {
           title: (
@@ -66,24 +84,6 @@ const MainPage = () => {
             <Space>
               <UploadOutlined />
               <span>Tải lên Tài liệu</span>
-            </Space>
-          ),
-        }];
-      case 'chunks':
-        return [...baseItems, {
-          title: (
-            <Space>
-              <DatabaseOutlined />
-              <span>Vector Chunks</span>
-            </Space>
-          ),
-        }];
-      case 'chat':
-        return [...baseItems, {
-          title: (
-            <Space>
-              <MessageFilled />
-              <span>Hỗ trợ Trực tuyến</span>
             </Space>
           ),
         }];
@@ -123,6 +123,26 @@ const MainPage = () => {
 
   const tabItems = [
     {
+      key: 'chatbot',
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <MessageFilled style={{ padding: '2px', background: 'rgba(210, 105, 30, 0.1)', borderRadius: '4px' }} />
+          Hỗ trợ Trực tuyến
+        </span>
+      ),
+      children: <ChatBot />
+    },
+    {
+      key: 'chunks',
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <DatabaseOutlined style={{ padding: '2px', background: 'rgba(210, 105, 30, 0.1)', borderRadius: '4px' }} />
+          Kho tri thức
+        </span>
+      ),
+      children: <ChunksViewer />
+    },
+    {
       key: 'documents',
       label: (
         <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -141,26 +161,6 @@ const MainPage = () => {
         </span>
       ),
       children: <DocumentUpload />
-    },
-    {
-      key: 'chunks',
-      label: (
-        <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <DatabaseOutlined style={{ padding: '2px', background: 'rgba(210, 105, 30, 0.1)', borderRadius: '4px' }} />
-          Vector Chunks
-        </span>
-      ),
-      children: <ChunksViewer />
-    },
-    {
-      key: 'chatbot',
-      label: (
-        <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <MessageFilled style={{ padding: '2px', background: 'rgba(210, 105, 30, 0.1)', borderRadius: '4px' }} />
-          Hỗ trợ Trực tuyến
-        </span>
-      ),
-      children: <ChatBot />
     }
   ];
 

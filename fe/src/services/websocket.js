@@ -13,6 +13,7 @@ class WebSocketService {
 
   connect(userId) {
     if (this.socket) {
+      console.log('[WebSocket] Disconnecting existing socket');
       this.disconnect();
     }
 
@@ -20,14 +21,24 @@ class WebSocketService {
     
     const wsUrl = process.env.REACT_APP_WS_URL || 'http://localhost:8001';
     
+    console.log('[WebSocket] Connecting to:', wsUrl);
+    console.log('[WebSocket] User ID:', userId);
+    console.log('[WebSocket] Token present:', !!token);
+    
     this.socket = io(wsUrl, {
       auth: {
         user_id: userId,
-        token: token
+        token: token || ''
       },
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'],  // Try polling first, then upgrade to websocket
       upgrade: true,
-      rememberUpgrade: true
+      rememberUpgrade: true,
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5,
+      timeout: 20000,
+      autoConnect: true
     });
 
     this.setupEventHandlers();
@@ -37,22 +48,32 @@ class WebSocketService {
     if (!this.socket) return;
 
     this.socket.on('connect', () => {
+      console.log('[WebSocket] ✓ Connected successfully');
       this.isConnected = true;
       this.reconnectAttempts = 0;
       this.emit('connection_status', { connected: true });
     });
 
     this.socket.on('disconnect', (reason) => {
+      console.log('[WebSocket] Disconnected. Reason:', reason);
       this.isConnected = false;
       this.emit('connection_status', { connected: false, reason });
       
       if (reason === 'io server disconnect') {
         // Server disconnected, need manual reconnection
+        console.log('[WebSocket] Server initiated disconnect, scheduling reconnect');
         this.scheduleReconnect();
       }
     });
 
     this.socket.on('connect_error', (error) => {
+      console.error('[WebSocket] Connection error:', error);
+      console.error('[WebSocket] Error details:', {
+        message: error.message,
+        description: error.description,
+        context: error.context,
+        type: error.type
+      });
       this.emit('connection_error', { error });
       this.scheduleReconnect();
     });

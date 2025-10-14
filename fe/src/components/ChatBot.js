@@ -65,18 +65,20 @@ const ChatBot = React.memo(() => {
     const welcomeMessage = {
       id: 1,
       type: 'bot',
-      content: `# Xin chào! 👋
+      content: `# Xin chào bạn! 👋✨
 
-Tôi là **DVC.AI**, trợ lý ảo thông minh chuyên về dịch vụ công và thủ tục hành chính Việt Nam.
+Mình là **DVC.AI** - trợ lý ảo thân thiện của bạn về dịch vụ công và thủ tục hành chính Việt Nam! 💙
 
-## 🔍 Tôi có thể giúp bạn:
+Mình rất vui được đồng hành cùng bạn hôm nay!
 
-- **Tìm kiếm thông tin** về thủ tục hành chính
-- **Hướng dẫn quy trình** làm giấy tờ
-- **Tư vấn về hồ sơ** và yêu cầu
-- **Trả lời các câu hỏi** về dịch vụ công
+## 🌟 Mình có thể giúp bạn:
 
-> Bạn có câu hỏi gì về thủ tục hành chính không? 🤔`,
+- ✨ **Tìm kiếm thông tin** về mọi thủ tục hành chính
+- 📋 **Hướng dẫn chi tiết** quy trình làm giấy tờ từng bước
+- 📄 **Tư vấn tận tình** về hồ sơ và yêu cầu
+- 💬 **Giải đáp mọi thắc mắc** về dịch vụ công
+
+> 💙 Bạn cứ thoải mái hỏi mình bất cứ điều gì nhé! Mình luôn sẵn sàng hỗ trợ bạn! 😊`,
       timestamp: new Date().toISOString(),
     };
     setMessages([welcomeMessage]);
@@ -251,12 +253,22 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
   };
 
   const quickQuestions = [
-    'Thủ tục làm căn cước công dân như thế nào?',
-    'Cần những giấy tờ gì để đăng ký thường trú?',
-    'Quy trình xin cấp hộ chiếu mới?',
-    'Thời gian xử lý hồ sơ là bao lâu?',
-    'Lệ phí các thủ tục hành chính?',
-    'Địa điểm nộp hồ sơ ở đâu?'
+    'Làm thế nào để cấp xác nhận số CMND 09 số?',
+    'Quy trình trình báo mất hộ chiếu như thế nào?',
+    'Thủ tục thông báo lưu trú cần làm gì?',
+    'Cách khôi phục giá trị sử dụng hộ chiếu đã mất?',
+    'Làm căn cước công dân cho người từ 14 tuổi cần gì?',
+    'Cấp đổi thẻ căn cước có mất phí không?',
+    'Cấp lại thẻ căn cước khi bị mất thì làm sao?',
+    'Gia hạn tạm trú phải làm trước bao nhiêu ngày?',
+    'Làm hộ chiếu phổ thông tốn bao nhiêu tiền?',
+    'Có thể nộp hồ sơ trực tuyến không?',
+    'Thu thập sinh trắc học khi làm căn cước là gì?',
+    'Thời gian làm hộ chiếu bao lâu?',
+    'Cấp thẻ căn cước tại cấp tỉnh hay trung ương?',
+    'Thẻ căn cước hết hạn thì phải làm gì?',
+    'Có thể làm hộ chiếu ở tỉnh khác không?',
+    'Miễn phí thủ tục nào về căn cước?'
   ];
 
   const MessageItem = ({ message }) => (
@@ -661,9 +673,7 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
 
           <div style={{ textAlign: 'center' }}>
             <Text type="secondary" style={{ fontSize: '12px', fontFamily: "'MaisonNeue', 'Inter', sans-serif" }}>
-              Trợ lý ảo DVC.AI sử dụng RAG và Langraph<br />
-              <strong>Hỗ trợ 24/7:</strong> support@dvc.gov.vn<br />
-              <strong>Hotline:</strong> 1900-xxxx
+              Trợ lý ảo DVC.AI sử dụng RAG và Langraph
             </Text>
             <div style={{ marginTop: '8px' }}>
               <Text type="secondary" style={{ fontSize: '11px', fontStyle: 'italic' }}>
