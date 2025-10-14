@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import useWindowSize from '../hooks/useWindowSize';
 import { 
   Layout, 
   Tabs, 
@@ -32,6 +33,7 @@ const { Title, Text } = Typography;
 
 const MainPage = () => {
   const { user, logout } = useAuth();
+  const { width } = useWindowSize();
   const [activeTab, setActiveTab] = useState('documents');
 
   // Breadcrumb configuration
@@ -248,7 +250,7 @@ const MainPage = () => {
                   }}
                 >
                                   <Avatar 
-                    size={window.innerWidth <= 768 ? 'small' : 'default'} 
+                    size={width <= 768 ? 'small' : 'default'} 
                     icon={<UserOutlined />} 
                     style={{ 
                       backgroundColor: 'rgba(255, 255, 255, 0.25)',

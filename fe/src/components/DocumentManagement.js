@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import useWindowSize from '../hooks/useWindowSize';
 import {
   Button,
   Table,
@@ -36,6 +37,7 @@ const { Title, Text } = Typography;
 
 const DocumentManagement = React.memo(() => {
   const { user } = useAuth();
+  const { width } = useWindowSize();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
   // Track file processing status for existing documents
@@ -284,7 +286,7 @@ const DocumentManagement = React.memo(() => {
           display: 'flex', 
           gap: 'clamp(4px, 1.5vw, 8px)',
           flexWrap: 'wrap',
-          justifyContent: window.innerWidth <= 768 ? 'center' : 'flex-start'
+          justifyContent: width <= 768 ? 'center' : 'flex-start'
         }}>
           <Button
             icon={<DownloadOutlined />}
@@ -385,7 +387,7 @@ const DocumentManagement = React.memo(() => {
       </div>
 
       {/* Statistics */}
-      <Row gutter={[window.innerWidth <= 768 ? 12 : 16, window.innerWidth <= 768 ? 12 : 16]} className="mb-4">
+      <Row gutter={[width <= 768 ? 12 : 16, width <= 768 ? 12 : 16]} className="mb-4">
         <Col xs={24} sm={12} md={6} lg={6} xl={6}>
           <Card 
             className="text-center stats-card card-animate hover-lift" 
@@ -559,20 +561,20 @@ const DocumentManagement = React.memo(() => {
             dataSource={documents}
             rowKey="id"
             pagination={{
-              pageSize: window.innerWidth <= 768 ? 5 : 8,
-              showSizeChanger: window.innerWidth > 768,
-              showQuickJumper: window.innerWidth > 768,
+              pageSize: width <= 768 ? 5 : 8,
+              showSizeChanger: width > 768,
+              showQuickJumper: width > 768,
               showTotal: (total, range) => (
                 <span className="text-sm font-medium" style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>
-                  {window.innerWidth <= 480 ? `${range[0]}-${range[1]}/${total}` : `Hiển thị ${range[0]}-${range[1]} của ${total} tài liệu`}
+                  {width <= 480 ? `${range[0]}-${range[1]}/${total}` : `Hiển thị ${range[0]}-${range[1]} của ${total} tài liệu`}
                 </span>
               ),
               pageSizeOptions: ['5', '8', '16', '24'],
               responsive: true,
-              size: window.innerWidth <= 768 ? 'small' : 'default'
+              size: width <= 768 ? 'small' : 'default'
             }}
-            scroll={{ x: window.innerWidth <= 768 ? 600 : 800 }}
-            size={window.innerWidth <= 768 ? 'small' : 'middle'}
+            scroll={{ x: width <= 768 ? 600 : 800 }}
+            size={width <= 768 ? 'small' : 'middle'}
             rowClassName={(record, index) => 
               index % 2 === 0 ? 'table-row-even' : 'table-row-odd'
             }
@@ -611,7 +613,7 @@ const DocumentManagement = React.memo(() => {
           display: 'flex', 
           gap: 'clamp(12px, 3vw, 16px)',
           flexWrap: 'wrap',
-          justifyContent: window.innerWidth <= 768 ? 'center' : 'flex-start'
+          justifyContent: width <= 768 ? 'center' : 'flex-start'
         }}>
           <Button 
             icon={<ReloadOutlined />} 
@@ -625,10 +627,10 @@ const DocumentManagement = React.memo(() => {
               fontSize: 'clamp(13px, 2.5vw, 16px)',
               padding: '0 clamp(16px, 4vw, 24px)',
               borderRadius: 'clamp(10px, 2vw, 12px)',
-              minWidth: window.innerWidth <= 768 ? '120px' : 'auto'
+              minWidth: width <= 768 ? '120px' : 'auto'
             }}
           >
-            {window.innerWidth <= 480 ? 'Làm mới' : 'Làm mới danh sách'}
+            {width <= 480 ? 'Làm mới' : 'Làm mới danh sách'}
           </Button>
         </div>
       </Card>

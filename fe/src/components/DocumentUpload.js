@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import useWindowSize from '../hooks/useWindowSize';
 import {
   Upload,
   Button,
@@ -35,6 +36,7 @@ const { Dragger } = Upload;
 
 const DocumentUpload = React.memo(() => {
   const { user } = useAuth();
+  const { width } = useWindowSize();
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
   
@@ -487,7 +489,7 @@ const DocumentUpload = React.memo(() => {
             display: 'flex', 
             gap: 'clamp(12px, 3vw, 16px)',
             flexWrap: 'wrap',
-            justifyContent: window.innerWidth <= 768 ? 'center' : 'flex-start',
+            justifyContent: width <= 768 ? 'center' : 'flex-start',
             marginBottom: '24px'
           }}>
             <Upload {...uploadProps}>
@@ -503,11 +505,11 @@ const DocumentUpload = React.memo(() => {
                   fontSize: 'clamp(13px, 2.5vw, 16px)',
                   padding: '0 clamp(16px, 4vw, 24px)',
                   borderRadius: 'clamp(12px, 2vw, 16px)',
-                  minWidth: window.innerWidth <= 768 ? '140px' : 'auto',
+                  minWidth: width <= 768 ? '140px' : 'auto',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
               >
-                {uploading ? 'Đang tải lên...' : (window.innerWidth <= 480 ? 'Chọn file' : 'Chọn file từ máy')}
+                {uploading ? 'Đang tải lên...' : (width <= 480 ? 'Chọn file' : 'Chọn file từ máy')}
               </Button>
             </Upload>
           </div>
@@ -528,9 +530,9 @@ const DocumentUpload = React.memo(() => {
                 <div style={{ 
                   display: 'flex', 
                   justifyContent: 'space-between', 
-                  alignItems: window.innerWidth <= 768 ? 'flex-start' : 'center',
-                  flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
-                  gap: window.innerWidth <= 768 ? '16px' : '8px'
+                  alignItems: width <= 768 ? 'flex-start' : 'center',
+                  flexDirection: width <= 768 ? 'column' : 'row',
+                  gap: width <= 768 ? '16px' : '8px'
                 }}>
                   <div>
                     <Text 
@@ -553,9 +555,9 @@ const DocumentUpload = React.memo(() => {
                     </div>
                   </div>
                   <Space 
-                    direction={window.innerWidth <= 480 ? 'vertical' : 'horizontal'}
+                    direction={width <= 480 ? 'vertical' : 'horizontal'}
                     style={{ 
-                      width: window.innerWidth <= 768 ? '100%' : 'auto' 
+                      width: width <= 768 ? '100%' : 'auto' 
                     }}
                   >
                     <Button 
@@ -570,8 +572,8 @@ const DocumentUpload = React.memo(() => {
                         height: 'clamp(40px, 8vw, 48px)',
                         fontSize: 'clamp(14px, 2.5vw, 16px)',
                         borderRadius: 'clamp(12px, 2vw, 16px)',
-                        width: window.innerWidth <= 768 ? '100%' : 'auto',
-                        minWidth: window.innerWidth <= 768 ? '120px' : '160px'
+                        width: width <= 768 ? '100%' : 'auto',
+                        minWidth: width <= 768 ? '120px' : '160px'
                       }}
                     >
                       {uploading ? '🔄 Đang tải lên...' : '⬆️ Tải lên tất cả'}
@@ -586,8 +588,8 @@ const DocumentUpload = React.memo(() => {
                         height: 'clamp(40px, 8vw, 48px)',
                         fontSize: 'clamp(14px, 2.5vw, 16px)',
                         borderRadius: 'clamp(10px, 2vw, 12px)',
-                        width: window.innerWidth <= 768 ? '100%' : 'auto',
-                        minWidth: window.innerWidth <= 768 ? '120px' : '140px'
+                        width: width <= 768 ? '100%' : 'auto',
+                        minWidth: width <= 768 ? '120px' : '140px'
                       }}
                     >
                       🗑️ Xóa tất cả

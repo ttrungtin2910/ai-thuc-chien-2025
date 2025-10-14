@@ -31,6 +31,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { documentsAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import useWindowSize from '../hooks/useWindowSize';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -38,6 +39,7 @@ const { Option } = Select;
 
 const ChunksViewer = React.memo(() => {
   const { user } = useAuth();
+  const { width } = useWindowSize();
   
   // State management
   const [chunks, setChunks] = useState([]);
@@ -236,39 +238,39 @@ const ChunksViewer = React.memo(() => {
 
   return (
     <div style={{ 
-      padding: window.innerWidth <= 768 ? 'clamp(12px, 3vw, 16px)' : '24px', 
+      padding: width <= 768 ? 'clamp(12px, 3vw, 16px)' : '24px', 
       backgroundColor: '#faf7f2' 
     }}>
       <Card 
         style={{ 
-          marginBottom: window.innerWidth <= 768 ? '16px' : '24px',
-          borderRadius: window.innerWidth <= 480 ? '10px' : '12px',
+          marginBottom: width <= 768 ? '16px' : '24px',
+          borderRadius: width <= 480 ? '10px' : '12px',
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           border: '1px solid #e8dcc0'
         }}
       >
-        <Row gutter={[window.innerWidth <= 768 ? 12 : 24, 16]} align="middle">
+        <Row gutter={[width <= 768 ? 12 : 24, 16]} align="middle">
           <Col xs={24} sm={18} md={18} lg="auto">
-            <Space align="center" size={window.innerWidth <= 768 ? 12 : 16} direction={window.innerWidth <= 480 ? 'vertical' : 'horizontal'} style={{ width: '100%' }}>
-              <DatabaseOutlined style={{ fontSize: window.innerWidth <= 480 ? '20px' : '24px', color: '#D2691E' }} />
-              <div style={{ textAlign: window.innerWidth <= 480 ? 'center' : 'left', width: window.innerWidth <= 480 ? '100%' : 'auto' }}>
+            <Space align="center" size={width <= 768 ? 12 : 16} direction={width <= 480 ? 'vertical' : 'horizontal'} style={{ width: '100%' }}>
+              <DatabaseOutlined style={{ fontSize: width <= 480 ? '20px' : '24px', color: '#D2691E' }} />
+              <div style={{ textAlign: width <= 480 ? 'center' : 'left', width: width <= 480 ? '100%' : 'auto' }}>
                 <Title level={3} style={{ 
                   margin: 0, 
                   color: '#6B3410',
-                  fontSize: window.innerWidth <= 480 ? 'clamp(18px, 4vw, 20px)' : 'clamp(20px, 4vw, 24px)'
+                  fontSize: width <= 480 ? 'clamp(18px, 4vw, 20px)' : 'clamp(20px, 4vw, 24px)'
                 }}>
                   📊 Vector Database Chunks
                 </Title>
                 <Text type="secondary" style={{ 
-                  fontSize: window.innerWidth <= 480 ? 'clamp(12px, 2.5vw, 13px)' : 'clamp(13px, 2.5vw, 14px)',
+                  fontSize: width <= 480 ? 'clamp(12px, 2.5vw, 13px)' : 'clamp(13px, 2.5vw, 14px)',
                   display: 'block'
                 }}>
-                  {window.innerWidth <= 480 ? 'Quản lý chunks trong Milvus' : 'Manage and view all chunks stored in Milvus vector database'}
+                  {width <= 480 ? 'Quản lý chunks trong Milvus' : 'Manage and view all chunks stored in Milvus vector database'}
                 </Text>
               </div>
             </Space>
           </Col>
-          <Col xs={24} sm={6} md={6} lg={6} style={{ textAlign: window.innerWidth <= 768 ? 'center' : 'right' }}>
+          <Col xs={24} sm={6} md={6} lg={6} style={{ textAlign: width <= 768 ? 'center' : 'right' }}>
             <Button 
               type="primary"
               icon={<ReloadOutlined />}
@@ -277,14 +279,14 @@ const ChunksViewer = React.memo(() => {
               style={{ 
                 backgroundColor: '#D2691E',
                 borderColor: '#D2691E',
-                borderRadius: window.innerWidth <= 480 ? '8px' : '10px',
-                height: window.innerWidth <= 480 ? '40px' : 'auto',
-                fontSize: window.innerWidth <= 480 ? '14px' : '16px',
-                width: window.innerWidth <= 480 ? '100%' : 'auto',
-                minWidth: window.innerWidth <= 768 ? '120px' : 'auto'
+                borderRadius: width <= 480 ? '8px' : '10px',
+                height: width <= 480 ? '40px' : 'auto',
+                fontSize: width <= 480 ? '14px' : '16px',
+                width: width <= 480 ? '100%' : 'auto',
+                minWidth: width <= 768 ? '120px' : 'auto'
               }}
             >
-              {window.innerWidth <= 480 ? 'Làm mới' : 'Refresh'}
+              {width <= 480 ? 'Làm mới' : 'Refresh'}
             </Button>
           </Col>
         </Row>
@@ -292,20 +294,20 @@ const ChunksViewer = React.memo(() => {
 
       {/* Statistics Cards */}
       {stats && (
-        <Row gutter={[window.innerWidth <= 768 ? 12 : 16, window.innerWidth <= 768 ? 12 : 16]} style={{ marginBottom: window.innerWidth <= 768 ? '16px' : '24px' }}>
+        <Row gutter={[width <= 768 ? 12 : 16, width <= 768 ? 12 : 16]} style={{ marginBottom: width <= 768 ? '16px' : '24px' }}>
           <Col xs={12} sm={12} md={6}>
             <Card size="small" style={{ 
               textAlign: 'center', 
-              borderRadius: window.innerWidth <= 480 ? '8px' : '10px',
-              padding: window.innerWidth <= 480 ? '8px' : '12px'
+              borderRadius: width <= 480 ? '8px' : '10px',
+              padding: width <= 480 ? '8px' : '12px'
             }}>
               <Statistic
-                title={<span style={{ fontSize: window.innerWidth <= 480 ? '11px' : '14px' }}>{window.innerWidth <= 480 ? 'Chunks' : 'Total Chunks'}</span>}
+                title={<span style={{ fontSize: width <= 480 ? '11px' : '14px' }}>{width <= 480 ? 'Chunks' : 'Total Chunks'}</span>}
                 value={stats.total_chunks}
-                prefix={<DatabaseOutlined style={{ color: '#D2691E', fontSize: window.innerWidth <= 480 ? '16px' : '20px' }} />}
+                prefix={<DatabaseOutlined style={{ color: '#D2691E', fontSize: width <= 480 ? '16px' : '20px' }} />}
                 valueStyle={{ 
                   color: '#D2691E',
-                  fontSize: window.innerWidth <= 480 ? 'clamp(18px, 4vw, 20px)' : 'clamp(20px, 4vw, 24px)'
+                  fontSize: width <= 480 ? 'clamp(18px, 4vw, 20px)' : 'clamp(20px, 4vw, 24px)'
                 }}
               />
             </Card>
@@ -313,16 +315,16 @@ const ChunksViewer = React.memo(() => {
           <Col xs={12} sm={12} md={6}>
             <Card size="small" style={{ 
               textAlign: 'center', 
-              borderRadius: window.innerWidth <= 480 ? '8px' : '10px',
-              padding: window.innerWidth <= 480 ? '8px' : '12px'
+              borderRadius: width <= 480 ? '8px' : '10px',
+              padding: width <= 480 ? '8px' : '12px'
             }}>
               <Statistic
-                title={<span style={{ fontSize: window.innerWidth <= 480 ? '11px' : '14px' }}>{window.innerWidth <= 480 ? 'Docs' : 'Documents'}</span>}
+                title={<span style={{ fontSize: width <= 480 ? '11px' : '14px' }}>{width <= 480 ? 'Docs' : 'Documents'}</span>}
                 value={stats.total_documents}
-                prefix={<FileTextOutlined style={{ color: '#B8860B', fontSize: window.innerWidth <= 480 ? '16px' : '20px' }} />}
+                prefix={<FileTextOutlined style={{ color: '#B8860B', fontSize: width <= 480 ? '16px' : '20px' }} />}
                 valueStyle={{ 
                   color: '#B8860B',
-                  fontSize: window.innerWidth <= 480 ? 'clamp(18px, 4vw, 20px)' : 'clamp(20px, 4vw, 24px)'
+                  fontSize: width <= 480 ? 'clamp(18px, 4vw, 20px)' : 'clamp(20px, 4vw, 24px)'
                 }}
               />
             </Card>
@@ -330,16 +332,16 @@ const ChunksViewer = React.memo(() => {
           <Col xs={12} sm={12} md={6}>
             <Card size="small" style={{ 
               textAlign: 'center', 
-              borderRadius: window.innerWidth <= 480 ? '8px' : '10px',
-              padding: window.innerWidth <= 480 ? '8px' : '12px'
+              borderRadius: width <= 480 ? '8px' : '10px',
+              padding: width <= 480 ? '8px' : '12px'
             }}>
               <Statistic
-                title={<span style={{ fontSize: window.innerWidth <= 480 ? '11px' : '14px' }}>Avg/Doc</span>}
+                title={<span style={{ fontSize: width <= 480 ? '11px' : '14px' }}>Avg/Doc</span>}
                 value={stats.avg_chunks_per_document}
-                prefix={<BarChartOutlined style={{ color: '#CD853F', fontSize: window.innerWidth <= 480 ? '16px' : '20px' }} />}
+                prefix={<BarChartOutlined style={{ color: '#CD853F', fontSize: width <= 480 ? '16px' : '20px' }} />}
                 valueStyle={{ 
                   color: '#CD853F',
-                  fontSize: window.innerWidth <= 480 ? 'clamp(18px, 4vw, 20px)' : 'clamp(20px, 4vw, 24px)'
+                  fontSize: width <= 480 ? 'clamp(18px, 4vw, 20px)' : 'clamp(20px, 4vw, 24px)'
                 }}
                 precision={1}
               />
@@ -348,16 +350,16 @@ const ChunksViewer = React.memo(() => {
           <Col xs={12} sm={12} md={6}>
             <Card size="small" style={{ 
               textAlign: 'center', 
-              borderRadius: window.innerWidth <= 480 ? '8px' : '10px',
-              padding: window.innerWidth <= 480 ? '8px' : '12px'
+              borderRadius: width <= 480 ? '8px' : '10px',
+              padding: width <= 480 ? '8px' : '12px'
             }}>
               <Statistic
-                title={<span style={{ fontSize: window.innerWidth <= 480 ? '11px' : '14px' }}>{window.innerWidth <= 480 ? 'Types' : 'File Types'}</span>}
+                title={<span style={{ fontSize: width <= 480 ? '11px' : '14px' }}>{width <= 480 ? 'Types' : 'File Types'}</span>}
                 value={Object.keys(stats.file_types || {}).length}
-                prefix={<FolderOpenOutlined style={{ color: '#A0522D', fontSize: window.innerWidth <= 480 ? '16px' : '20px' }} />}
+                prefix={<FolderOpenOutlined style={{ color: '#A0522D', fontSize: width <= 480 ? '16px' : '20px' }} />}
                 valueStyle={{ 
                   color: '#A0522D',
-                  fontSize: window.innerWidth <= 480 ? 'clamp(18px, 4vw, 20px)' : 'clamp(20px, 4vw, 24px)'
+                  fontSize: width <= 480 ? 'clamp(18px, 4vw, 20px)' : 'clamp(20px, 4vw, 24px)'
                 }}
               />
             </Card>
@@ -369,37 +371,37 @@ const ChunksViewer = React.memo(() => {
       <Card 
         size="small" 
         style={{ 
-          marginBottom: window.innerWidth <= 768 ? '12px' : '16px',
-          borderRadius: window.innerWidth <= 480 ? '8px' : '10px',
+          marginBottom: width <= 768 ? '12px' : '16px',
+          borderRadius: width <= 480 ? '8px' : '10px',
           backgroundColor: '#fdf9f3',
-          padding: window.innerWidth <= 480 ? '8px' : '12px'
+          padding: width <= 480 ? '8px' : '12px'
         }}
       >
-        <Row gutter={[window.innerWidth <= 768 ? 12 : 16, window.innerWidth <= 768 ? 12 : 16]} align="middle">
+        <Row gutter={[width <= 768 ? 12 : 16, width <= 768 ? 12 : 16]} align="middle">
           <Col xs={24} sm={12} md={8}>
             <Input
-              placeholder={window.innerWidth <= 480 ? '🔍 Tìm kiếm...' : '🔍 Search in title, content, section...'}
+              placeholder={width <= 480 ? '🔍 Tìm kiếm...' : '🔍 Search in title, content, section...'}
               prefix={<SearchOutlined />}
               value={filters.searchText}
               onChange={(e) => setFilters(prev => ({ ...prev, searchText: e.target.value }))}
               allowClear
               style={{
-                fontSize: window.innerWidth <= 480 ? '13px' : '14px',
-                height: window.innerWidth <= 480 ? '36px' : 'auto'
+                fontSize: width <= 480 ? '13px' : '14px',
+                height: width <= 480 ? '36px' : 'auto'
               }}
             />
           </Col>
           <Col xs={24} sm={12} md={8}>
             <Select
-              placeholder={window.innerWidth <= 480 ? 'Lọc theo file' : 'Filter by file name'}
+              placeholder={width <= 480 ? 'Lọc theo file' : 'Filter by file name'}
               value={filters.fileName}
               onChange={(value) => setFilters(prev => ({ ...prev, fileName: value }))}
               allowClear
               style={{ 
                 width: '100%',
-                fontSize: window.innerWidth <= 480 ? '13px' : '14px'
+                fontSize: width <= 480 ? '13px' : '14px'
               }}
-              size={window.innerWidth <= 480 ? 'middle' : 'default'}
+              size={width <= 480 ? 'middle' : 'default'}
             >
               {uniqueFileNames.map(fileName => (
                 <Option key={fileName} value={fileName}>
@@ -408,10 +410,10 @@ const ChunksViewer = React.memo(() => {
               ))}
             </Select>
           </Col>
-          <Col xs={24} sm={24} md={8} style={{ textAlign: window.innerWidth <= 768 ? 'center' : 'left' }}>
+          <Col xs={24} sm={24} md={8} style={{ textAlign: width <= 768 ? 'center' : 'left' }}>
             <Space>
-              <Text type="secondary" style={{ fontSize: window.innerWidth <= 480 ? '11px' : '12px' }}>
-                {window.innerWidth <= 480 
+              <Text type="secondary" style={{ fontSize: width <= 480 ? '11px' : '12px' }}>
+                {width <= 480 
                   ? `${filteredChunks.length}/${pagination.total}` 
                   : `Showing ${filteredChunks.length} of ${pagination.total} chunks`}
               </Text>
@@ -423,10 +425,10 @@ const ChunksViewer = React.memo(() => {
       {/* Main Table */}
       <Card 
         style={{ 
-          borderRadius: window.innerWidth <= 480 ? '10px' : '12px',
+          borderRadius: width <= 480 ? '10px' : '12px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           border: '1px solid #e8dcc0',
-          padding: window.innerWidth <= 480 ? '8px' : '12px'
+          padding: width <= 480 ? '8px' : '12px'
         }}
       >
         {filteredChunks.length === 0 && !loading ? (
@@ -434,12 +436,12 @@ const ChunksViewer = React.memo(() => {
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={
               <div>
-                <Text type="secondary" style={{ fontSize: window.innerWidth <= 480 ? '13px' : '14px' }}>
-                  {window.innerWidth <= 480 ? 'Chưa có chunks' : 'No chunks found in vector database'}
+                <Text type="secondary" style={{ fontSize: width <= 480 ? '13px' : '14px' }}>
+                  {width <= 480 ? 'Chưa có chunks' : 'No chunks found in vector database'}
                 </Text>
                 <br />
-                <Text type="secondary" style={{ fontSize: window.innerWidth <= 480 ? '11px' : '12px' }}>
-                  {window.innerWidth <= 480 ? 'Tải tài liệu lên để xem chunks' : 'Upload some documents to see chunks here'}
+                <Text type="secondary" style={{ fontSize: width <= 480 ? '11px' : '12px' }}>
+                  {width <= 480 ? 'Tải tài liệu lên để xem chunks' : 'Upload some documents to see chunks here'}
                 </Text>
               </div>
             }
@@ -451,19 +453,19 @@ const ChunksViewer = React.memo(() => {
             loading={loading}
             pagination={{
               ...pagination,
-              pageSize: window.innerWidth <= 768 ? 10 : 20,
-              size: window.innerWidth <= 480 ? 'small' : 'default',
-              showSizeChanger: window.innerWidth > 768,
-              showQuickJumper: window.innerWidth > 768,
+              pageSize: width <= 768 ? 10 : 20,
+              size: width <= 480 ? 'small' : 'default',
+              showSizeChanger: width > 768,
+              showQuickJumper: width > 768,
               responsive: true
             }}
             onChange={handleTableChange}
             rowKey="id"
-            size={window.innerWidth <= 768 ? 'small' : 'middle'}
-            scroll={{ x: window.innerWidth <= 768 ? 800 : 1200 }}
+            size={width <= 768 ? 'small' : 'middle'}
+            scroll={{ x: width <= 768 ? 800 : 1200 }}
             style={{ 
               backgroundColor: 'white',
-              fontSize: window.innerWidth <= 480 ? '12px' : '14px'
+              fontSize: width <= 480 ? '12px' : '14px'
             }}
             rowClassName={(record, index) => 
               index % 2 === 0 ? 'table-row-light' : 'table-row-dark'
@@ -476,9 +478,9 @@ const ChunksViewer = React.memo(() => {
       <Modal
         title={
           <Space>
-            <EyeOutlined style={{ color: '#D2691E', fontSize: window.innerWidth <= 480 ? '16px' : '18px' }} />
-            <span style={{ fontSize: window.innerWidth <= 480 ? '15px' : '16px' }}>
-              {window.innerWidth <= 480 ? 'Xem Chunk' : 'Chunk Content Preview'}
+            <EyeOutlined style={{ color: '#D2691E', fontSize: width <= 480 ? '16px' : '18px' }} />
+            <span style={{ fontSize: width <= 480 ? '15px' : '16px' }}>
+              {width <= 480 ? 'Xem Chunk' : 'Chunk Content Preview'}
             </span>
           </Space>
         }
@@ -489,15 +491,15 @@ const ChunksViewer = React.memo(() => {
             key="close"
             onClick={() => setPreviewModal({ visible: false, chunk: null, showMarkdown: false })}
             style={{
-              height: window.innerWidth <= 480 ? '36px' : 'auto',
-              fontSize: window.innerWidth <= 480 ? '13px' : '14px'
+              height: width <= 480 ? '36px' : 'auto',
+              fontSize: width <= 480 ? '13px' : '14px'
             }}
           >
-            {window.innerWidth <= 480 ? 'Đóng' : 'Close'}
+            {width <= 480 ? 'Đóng' : 'Close'}
           </Button>
         ]}
-        width={window.innerWidth <= 768 ? '95vw' : 800}
-        style={{ top: window.innerWidth <= 768 ? 20 : 40 }}
+        width={width <= 768 ? '95vw' : 800}
+        style={{ top: width <= 768 ? 20 : 40 }}
       >
         {previewModal.chunk && (
           <div>

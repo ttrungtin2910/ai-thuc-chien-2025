@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import useWindowSize from '../hooks/useWindowSize';
 import {
   Card,
   Input,
@@ -45,6 +46,7 @@ const ChatBot = React.memo(() => {
   const [selectedSources, setSelectedSources] = useState([]);
   const messagesEndRef = useRef(null);
   const { user } = useAuth();
+  const { width } = useWindowSize();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -267,11 +269,11 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
         display: 'flex',
         flexDirection: message.type === 'user' ? 'row-reverse' : 'row',
         alignItems: 'flex-start',
-        maxWidth: window.innerWidth <= 768 ? '90%' : 'clamp(70%, 15vw, 80%)',
+        maxWidth: width <= 768 ? '90%' : 'clamp(70%, 15vw, 80%)',
         gap: 'clamp(6px, 1.5vw, 12px)'
       }}>
         <Avatar
-          size={window.innerWidth <= 768 ? 'small' : 'default'}
+          size={width <= 768 ? 'small' : 'default'}
           icon={message.type === 'user' ? <UserOutlined /> : <RobotFilled />}
           style={{
             backgroundColor: message.type === 'user' ? '#D2691E' : '#52c41a',
@@ -438,7 +440,7 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
         display: 'flex', 
         gap: 'clamp(12px, 3vw, 24px)', 
         flex: 1,
-        flexDirection: window.innerWidth <= 992 ? 'column' : 'row',
+        flexDirection: width <= 992 ? 'column' : 'row',
         overflow: 'hidden'
       }}>
         {/* Chat Area */}
@@ -587,7 +589,7 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Nhập tin nhắn của bạn..."
-                autoSize={{ minRows: 1, maxRows: window.innerWidth <= 768 ? 3 : 4 }}
+                autoSize={{ minRows: 1, maxRows: width <= 768 ? 3 : 4 }}
                 style={{ 
                   flex: 1,
                   borderRadius: 'clamp(12px, 2vw, 16px)',
@@ -627,8 +629,8 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
             </span>
           }
           style={{ 
-            width: window.innerWidth <= 992 ? '100%' : 'clamp(280px, 25vw, 380px)',
-            minHeight: window.innerWidth <= 992 ? 'auto' : '300px'
+            width: width <= 992 ? '100%' : 'clamp(280px, 25vw, 380px)',
+            minHeight: width <= 992 ? 'auto' : '300px'
           }}
           size="small"
         >
