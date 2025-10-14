@@ -663,13 +663,11 @@ Tôi là **DVC.AI**, sẵn sàng hỗ trợ bạn về các thủ tục hành ch
               <strong>Hỗ trợ 24/7:</strong> support@dvc.gov.vn<br />
               <strong>Hotline:</strong> 1900-xxxx
             </Text>
-            {isWebSocketConnected && (
-              <div style={{ marginTop: '8px' }}>
-                <Tag color="green" size="small">
-                  ⚡ Real-time Active
-                </Tag>
-              </div>
-            )}
+            <div style={{ marginTop: '8px' }}>
+              <Text type="secondary" style={{ fontSize: '11px', fontStyle: 'italic' }}>
+                Trợ lý ảo dịch vụ công trực tuyến
+              </Text>
+            </div>
           </div>
         </Card>
       </div>
